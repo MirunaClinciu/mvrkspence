@@ -25,6 +25,22 @@
         data.intro && h('p', {}, data.intro));
     const paragraphs = value => String(value || '').split(/\n\s*\n/)
         .filter(Boolean).map((text, index) => h('p', { key: index }, text));
+    const formatLabels = { print: 'Art print', tshirt: 'T-shirt', framed: 'Framed print', canvas: 'Canvas' };
+    const moneyFor = currency => price => {
+        try { return new Intl.NumberFormat('en', { style: 'currency', currency: currency || 'GBP' }).format(price); }
+        catch (_) { return String(price || 0); }
+    };
+    const productPreview = (props, product, index, money) => {
+        const canBuy = product.purchasable !== false && Number(product.price) > 0;
+        return h('article', { className: 'editor-product', key: index },
+            image(props, product.image, product.imageAlt || product.name),
+            h('div', { className: 'editor-product-copy' },
+                product.available === false && h('p', { className: 'eyebrow' }, 'Hidden from website'),
+                h('h2', {}, product.name),
+                h('p', {}, product.description),
+                h('strong', {}, canBuy ? money(product.price) : 'Enquiries welcome'),
+                h('span', { className: 'editor-button' }, canBuy ? 'Add to basket' : 'Enquire about this piece')));
+    };
 
     CMS.registerPreviewStyle('/admin/editor.css');
     CMS.registerPreviewTemplate('home', props => {
@@ -53,22 +69,38 @@
     });
     CMS.registerPreviewTemplate('shop', props => {
         const data = dataFor(props);
-        const money = price => {
-            try { return new Intl.NumberFormat('en', { style: 'currency', currency: data.currency || 'USD' }).format(price); }
-            catch (_) { return String(price || 0); }
-        };
+        const money = moneyFor(data.currency);
+        const photographs = Array.isArray(data.photographs) ? data.photographs : [];
+        const products = Array.isArray(data.products) ? data.products : [];
         return h('main', { className: 'editor-page' }, intro(data),
-            !(data.products || []).length && h('p', {}, data.emptyMessage || 'Add your first product using the Products list.'),
-            h('div', { className: 'editor-grid' }, (data.products || []).map((product, index) => {
-                const canBuy = product.purchasable !== false && Number(product.price) > 0;
-                return h('article', { className: 'editor-product', key: index },
-                    image(props, product.image, product.imageAlt || product.name),
+            !photographs.length && !products.length && h('p', {}, data.emptyMessage || 'Use Add Photograph to upload a photograph and choose its product formats.'),
+            photographs.length > 0 && h('h2', {}, data.photographsTitle || 'Photographs & artwork'),
+            photographs.length > 0 && data.photographsIntro && h('p', {}, data.photographsIntro),
+            h('div', { className: 'editor-grid' }, photographs.map((photograph, index) =>
+                h('article', { className: 'editor-product', key: index },
+                    image(props, photograph.image, photograph.imageAlt || photograph.name),
                     h('div', { className: 'editor-product-copy' },
-                        product.available === false && h('p', { className: 'eyebrow' }, 'Hidden from website'),
-                        h('h2', {}, product.name),
-                        h('p', {}, product.description),
-                        h('strong', {}, canBuy ? money(product.price) : 'Enquiries welcome'),
-                        h('span', { className: 'editor-button' }, canBuy ? 'Add to basket' : 'Enquire about this piece')));
-            })));
+                        photograph.available === false && h('p', { className: 'eyebrow' }, 'Photograph and formats hidden'),
+                        h('h2', {}, photograph.name),
+                        h('p', {}, photograph.description),
+                        h('h3', {}, 'Formats & sizes'),
+                        !(photograph.variants || []).length && h('p', {}, 'Add a format to offer this photograph as a product.'),
+                        h('ul', { className: 'editor-formats' }, (photograph.variants || []).map((variant, variantIndex) =>
+                            h('li', { key: variantIndex },
+                                h('span', {}, `${formatLabels[variant.format] || 'Format'}${variant.option ? ` · ${variant.option}` : ''}`),
+                                h('strong', {}, variant.available === false ? 'Not offered'
+                                    : variant.purchasable === true && Number(variant.price) > 0 ? money(variant.price) : 'Enquiries welcome')))),
+                        h('p', { className: 'editor-format-note' }, 'One photograph is reused for every format. Books are edited in the separate Books entry.'))))),
+            products.length > 0 && h('h2', {}, 'Other / existing products'),
+            h('div', { className: 'editor-grid' }, products.map((product, index) => productPreview(props, product, index, money))));
+    });
+    CMS.registerPreviewTemplate('books', props => {
+        const data = dataFor(props);
+        const books = Array.isArray(data.books) ? data.books : [];
+        const bookPrice = price => `${Number(price).toFixed(2)} · shop currency`;
+        return h('main', { className: 'editor-page' }, intro(data),
+            h('p', { className: 'editor-format-note' }, 'Book prices use the currency and shipping settings in Photographs & shop settings.'),
+            !books.length && h('p', {}, 'Use Add Book to upload a cover and add your first book.'),
+            h('div', { className: 'editor-grid' }, books.map((book, index) => productPreview(props, book, index, bookPrice))));
     });
 })();

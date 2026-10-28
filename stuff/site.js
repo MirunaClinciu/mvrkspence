@@ -390,14 +390,101 @@ function renderConceptPosts(posts) {
     return journal;
 }
 
-function renderArtwork(data) {
+function renderProductFooter(footer, product, data) {
+    footer.replaceChildren();
+    if (product.purchasable !== false && Number(product.price) > 0) {
+        footer.append(makeElement('span', 'product-price', formatPrice(product.price, data.currency)));
+        const button = makeElement('button', 'button add-to-basket-btn', 'Add to basket');
+        button.type = 'button';
+        button.dataset.productId = product.id;
+        footer.append(button);
+    } else {
+        footer.append(makeElement('span', 'product-enquiry', 'Enquiries welcome'));
+        const enquiry = makeElement('a', 'button button-outline', 'Enquire');
+        enquiry.href = `${pagePrefix}contact.html?artwork=${encodeURIComponent(product.name)}`;
+        footer.append(enquiry);
+    }
+}
+
+function renderStandaloneProduct(product, data) {
+    const card = makeElement('article', 'product-card');
+    card.dataset.productId = product.id;
+    const imagePath = safeImagePath(product.image);
+    if (imagePath) {
+        const image = document.createElement('img');
+        image.src = imagePath;
+        image.alt = product.imageAlt || product.name;
+        image.loading = 'lazy';
+        card.append(image);
+    }
+    const details = makeElement('div', 'product-details');
+    details.append(makeElement('h3', '', product.name));
+    if (product.description) details.append(makeElement('p', '', product.description));
+    details.append(makeElement('p', 'product-type', product.type === 'digital' ? 'Digital item' : 'Physical item'));
+    const footer = makeElement('div', 'product-footer');
+    renderProductFooter(footer, product, data);
+    details.append(footer);
+    card.append(details);
+    return card;
+}
+
+function renderPhotograph(photo, offers, data) {
+    const card = makeElement('article', 'product-card photograph-card');
+    card.dataset.photographId = photo.id;
+    const preview = makeElement('figure', 'product-mockup');
+    const surface = makeElement('div', 'product-mockup-surface');
+    const imagePath = safeImagePath(photo.image);
+    if (imagePath) {
+        const image = document.createElement('img');
+        image.className = 'product-mockup-image';
+        image.src = imagePath;
+        image.alt = photo.imageAlt || photo.name;
+        image.loading = 'lazy';
+        surface.append(image);
+    }
+    const caption = makeElement('figcaption', 'product-mockup-caption');
+    preview.append(surface, caption);
+    const details = makeElement('div', 'product-details');
+    details.append(makeElement('h3', '', photo.name));
+    if (photo.description) details.append(makeElement('p', '', photo.description));
+    const choices = makeElement('div', 'product-choices');
+    const select = makeElement('select', 'product-variant-select');
+    select.id = `photo-${photo.id}-format`;
+    const label = makeElement('label', 'product-variant-label', 'Choose format & size');
+    label.htmlFor = select.id;
+    offers.forEach(offer => {
+        const format = window.MvrkCatalog.formatLabels[offer.format];
+        const name = `${format}${offer.option ? ` \u00b7 ${offer.option}` : ''}`;
+        const amount = offer.purchasable !== false && Number(offer.price) > 0
+            ? formatPrice(offer.price, data.currency) : 'Enquire';
+        const option = makeElement('option', '', `${name} \u2014 ${amount}`);
+        option.value = offer.id;
+        select.append(option);
+    });
+    select.value = offers[0].id;
+    const footer = makeElement('div', 'product-footer');
+    const updateSelection = () => {
+        const selected = offers.find(offer => offer.id === select.value) || offers[0];
+        preview.dataset.format = selected.format;
+        caption.textContent = `${window.MvrkCatalog.formatLabels[selected.format]} preview${selected.option ? ` \u00b7 ${selected.option}` : ''}`;
+        renderProductFooter(footer, selected, data);
+    };
+    select.addEventListener('change', updateSelection);
+    updateSelection();
+    choices.append(label, select);
+    details.append(choices, footer);
+    card.append(preview, details);
+    return card;
+}
+
+function renderArtwork(data, booksData = {}) {
     const intro = renderPageIntro(data);
     if (data.testMode === true) {
         const notice = makeElement('p', 'shop-test-notice', 'Test collection — sample products and prices. PayPal checkout requires a sandbox account.');
         notice.setAttribute('role', 'note');
         intro.append(notice);
     }
-    const productList = makeElement('section', 'product-grid');
+    const productList = makeElement('div', 'artwork-collections');
     productList.id = 'product-list';
     productList.setAttribute('aria-label', 'Available artwork');
     const activeProducts = window.siteProducts.filter(product => product.available !== false);
@@ -415,42 +502,44 @@ function renderArtwork(data) {
         return;
     }
 
-    activeProducts.forEach(product => {
-        const card = makeElement('article', 'product-card');
-        card.dataset.productId = product.id;
-        const imagePath = safeImagePath(product.image);
-        if (imagePath) {
-            const image = document.createElement('img');
-            image.src = imagePath;
-            image.alt = product.imageAlt || product.name;
-            image.loading = 'lazy';
-            card.append(image);
-        }
-        const details = makeElement('div', 'product-details');
-        details.append(makeElement('h2', '', product.name));
-        if (product.description) details.append(makeElement('p', '', product.description));
-        details.append(makeElement(
-            'p',
-            'product-type',
-            product.type === 'digital' ? 'Digital item' : 'Physical item'
-        ));
-        const footer = makeElement('div', 'product-footer');
-        if (product.purchasable !== false && Number(product.price) > 0) {
-            footer.append(makeElement('span', 'product-price', formatPrice(product.price, data.currency)));
-            const addButton = makeElement('button', 'button add-to-basket-btn', 'Add to basket');
-            addButton.type = 'button';
-            addButton.dataset.productId = product.id;
-            footer.append(addButton);
-        } else {
-            footer.append(makeElement('span', 'product-enquiry', 'Enquiries welcome'));
-            const enquiry = makeElement('a', 'button button-outline', 'Enquire');
-            enquiry.href = `${pagePrefix}contact.html?artwork=${encodeURIComponent(product.name)}`;
-            footer.append(enquiry);
-        }
-        details.append(footer);
-        card.append(details);
-        productList.append(card);
+    const sections = [];
+    function addCollection(id, title, description, cards) {
+        if (!cards.length) return;
+        const section = makeElement('section', 'artwork-collection');
+        section.id = id;
+        section.setAttribute('aria-labelledby', `${id}-heading`);
+        const heading = makeElement('h2', 'collection-heading', title);
+        heading.id = `${id}-heading`;
+        const header = makeElement('header', 'collection-intro');
+        header.append(heading);
+        if (description) header.append(makeElement('p', '', description));
+        const grid = makeElement('div', 'product-grid');
+        grid.append(...cards);
+        section.append(header, grid);
+        productList.append(section);
+        sections.push({ id, title });
+    }
+    const photographs = (Array.isArray(data.photographs) ? data.photographs : []).flatMap(photo => {
+        if (!photo || photo.available === false) return [];
+        const offers = activeProducts.filter(product => product.group === 'photographs' && product.photographId === photo.id);
+        return offers.length ? [renderPhotograph(photo, offers, data)] : [];
     });
+    addCollection('photographs', data.photographsTitle || 'Photographs & artwork', data.photographsIntro, photographs);
+    addCollection('books', booksData.title || 'Books', booksData.intro,
+        activeProducts.filter(product => product.group === 'books').map(product => renderStandaloneProduct(product, data)));
+    addCollection('more-artwork', 'More artwork', '',
+        activeProducts.filter(product => product.group !== 'photographs' && product.group !== 'books')
+            .map(product => renderStandaloneProduct(product, data)));
+    if (sections.length > 1) {
+        const navigation = makeElement('nav', 'collection-navigation');
+        navigation.setAttribute('aria-label', 'Shop collections');
+        sections.forEach(section => {
+            const link = makeElement('a', '', section.title);
+            link.href = `#${section.id}`;
+            navigation.append(link);
+        });
+        intro.append(navigation);
+    }
     const checkout = makeElement('section', 'shop-checkout');
     const checkoutButton = makeElement('button', 'button button-outline', 'View basket & checkout');
     checkoutButton.type = 'button';
@@ -550,11 +639,15 @@ async function loadPaymentSettings() {
 
 async function initializeSite() {
     const contentPath = page === 'artwork' ? null : `content/${page}.json`;
-    const [settingsResult, shopResult, contentResult, paymentsResult] = await Promise.allSettled([
+    const [settingsResult, shopResult, contentResult, paymentsResult, booksResult] = await Promise.allSettled([
         loadJson('content/site.json'),
         loadJson('content/shop.json'),
         contentPath ? loadJson(contentPath) : Promise.resolve(null),
-        loadPaymentSettings()
+        loadPaymentSettings(),
+        loadJson('content/books.json').catch(error => {
+            if (error.status === 404) return { books: [] };
+            throw error;
+        })
     ]);
     const settings = settingsResult.status === 'fulfilled' && settingsResult.value &&
         typeof settingsResult.value === 'object' && !Array.isArray(settingsResult.value)
@@ -570,8 +663,10 @@ async function initializeSite() {
     }
     renderNavigation();
     renderFooter();
+    const booksData = booksResult.status === 'fulfilled' && booksResult.value &&
+        typeof booksResult.value === 'object' && !Array.isArray(booksResult.value) ? booksResult.value : null;
     let config;
-    if (shopResult.status === 'fulfilled' && shopResult.value &&
+    if (booksData && window.MvrkCatalog && shopResult.status === 'fulfilled' && shopResult.value &&
         typeof shopResult.value === 'object' && !Array.isArray(shopResult.value)) {
         config = shopResult.value;
         if (paymentsResult.status === 'fulfilled') applyPaymentSettings(config, paymentsResult.value);
@@ -580,26 +675,7 @@ async function initializeSite() {
             config.paypalEnvironment = 'sandbox';
         }
         window.siteConfig = config;
-        const productIds = new Set();
-        window.siteProducts = Array.isArray(config.products)
-            ? config.products.filter(product => {
-                const valid = product &&
-                    typeof product.id === 'string' &&
-                    /^[A-Za-z0-9._-]{1,80}$/.test(product.id) &&
-                    !productIds.has(product.id) &&
-                    typeof product.name === 'string' && product.name.trim() !== '' &&
-                    (product.purchasable === false || (
-                        /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(product.price)) &&
-                        Number.isSafeInteger(Math.round(Number(product.price) * 100)) &&
-                        Number(product.price) > 0
-                    ));
-                if (!valid) {
-                    console.error('Ignoring an invalid or duplicate product in the shop settings.');
-                    return false;
-                }
-                productIds.add(product.id);
-                return true;
-            }) : [];
+        window.siteProducts = window.MvrkCatalog.expandCatalog(config, booksData);
         window.siteReady = true;
         window.dispatchEvent(new CustomEvent('site:ready'));
     } else {
@@ -608,7 +684,7 @@ async function initializeSite() {
     try {
         if (page === 'artwork') {
             if (!config) throw new Error('The artwork catalog could not be loaded.');
-            renderArtwork(config);
+            renderArtwork(config, booksData);
             if (config.title) document.title = `${siteName} | ${config.title}`;
         } else {
             if (contentResult.status === 'rejected') throw contentResult.reason;

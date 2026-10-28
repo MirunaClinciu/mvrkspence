@@ -3,6 +3,10 @@ import { afterEach, beforeEach, test } from 'node:test';
 import createOrder from '../netlify/functions/paypal-create-order.mjs';
 import captureOrder from '../netlify/functions/paypal-capture-order.mjs';
 import shop from '../content/shop.json' with { type: 'json' };
+import books from '../content/books.json' with { type: 'json' };
+import catalog from '../stuff/catalog.js';
+
+const products = catalog.expandCatalog(shop, books);
 
 const originalFetch = globalThis.fetch;
 const originalContext = globalThis.netlifyBlobsContext;
@@ -64,7 +68,7 @@ function request(path, data) {
 }
 
 test('deployed modern payment entrypoints read real Blobs with strong runtime context', async () => {
-    const product = shop.products.find(item => item.available !== false && item.purchasable !== false && item.price > 0);
+    const product = products.find(item => item.available !== false && item.purchasable !== false && item.price > 0);
     const created = await createOrder(request('paypal-create-order', { items: [{ id: product.id, quantity: 1 }] }));
     assert.ok(created instanceof Response);
     assert.equal(created.status, 200);
@@ -96,7 +100,7 @@ test('modern endpoints keep method and malformed-body validation before any sett
 
 test('modern checkout still fails closed when secure Blobs context is unavailable', async () => {
     delete globalThis.netlifyBlobsContext;
-    const product = shop.products.find(item => item.available !== false && item.purchasable !== false && item.price > 0);
+    const product = products.find(item => item.available !== false && item.purchasable !== false && item.price > 0);
     const result = await createOrder(request('paypal-create-order', { items: [{ id: product.id, quantity: 1 }] }));
     assert.equal(result.status, 502);
     assert.match((await result.json()).error, /settings are temporarily unavailable/);

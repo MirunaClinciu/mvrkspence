@@ -23,7 +23,7 @@ Keep `mvrkspence.com` pointed at its existing site until you decide to make
 this deployment public.
 
 The simple website manager is at `/manage/`. It provides sign-in and direct
-editing options for home pictures, Concept and journal, artwork products,
+editing options for home pictures, Concept and journal, photographs and their product formats, separate books,
 contact details, website setup and PayPal payments. PayPal setup is explained at
 `/manage/paypal.html`. The editing guide at `/admin/guide.html`
 explains each step; no coding experience is needed for content changes.
@@ -57,7 +57,7 @@ checks the app details with PayPal and stores them on the server. Secrets never
 enter the CMS content, GitHub repository or a browser storage field.
 
 The site layout and styling are still maintained in the website source code.
-Home, Concept, and Shop have visual previews inside the editor. These help check
+Home, Concept, Shop and Books have visual previews inside the editor. These help check
 text and uploaded images before publishing; preview buttons do not take payments.
 The shop supports a fixed optional shipping fee per order containing physical
 items; configure it in **Shop & payments**. Inventory is not tracked, orders
@@ -82,17 +82,32 @@ content file can still be read in its JSON; keep private drafts in the CMS
 editorial workflow until ready to publish.
 There are no prewritten journal entries.
 
-Open **Shop & payments > Shop settings & products** to add, remove or reorder
-Artwork listings. Use **Add Product**, choose a unique permanent ID, add its name,
-description and image, then choose physical or digital. For an enquiry listing,
-leave **Enable PayPal checkout** off. To sell it, enter the actual price above zero
-in the selected shop currency and switch checkout on. Use **Show on Artwork page**
-to hide a listing without deleting it; remove the list entry to delete it. New
-listings start as enquiries to prevent publishing an unintended selling price.
-The private test shop includes four editable examples in GBP: a book (GBP 35), an
-art print (GBP 25), framed artwork (GBP 60) and an art T-shirt (GBP 28), plus a
-sample GBP 4.95 shipping fee per physical order. These are placeholders for testing.
-Replace names, photos, descriptions, sizes and prices in the editor.
+Open **Shop & payments > Photographs & shop settings** and use **Add Photograph**
+under **Photographs & artwork**. Give the photograph a unique reference, title and
+description, then upload its image once. Under **Formats & sizes**, use **Add Format**
+to offer an art print, T-shirt, framed print or canvas. Every format/size needs its
+own unique stable reference (for example `river-print-a3` or `river-tshirt-m`), size
+or option label and price. The photograph is reused automatically for all formats.
+For several T-shirt sizes, add one entry per size. Leave **Enable checkout for this
+format** off for enquiries, or enter a price above zero and switch it on to sell.
+Use **Offer this format** to hide one variant, or **Show this photograph on Artwork**
+to hide the photograph and all its variants. The website's visual previews illustrate
+image placement; physical printing, production and dispatch are arranged manually.
+There is no automatic connection to a print-on-demand supplier.
+
+Books are edited separately in **Shop & payments > Books**, stored in
+`content/books.json`, and displayed in their own Artwork page section. Use **Add Book**,
+upload its cover and enter the edition description, unique book reference and price.
+Books share the shop's currency and shipping settings. Leave **Enable PayPal checkout**
+off for enquiries; use **Show this book** to hide a sold-out book. Each editor entry
+is saved and published separately. Existing standalone products remain supported
+under **Other / existing products** in the shop editor.
+
+The sample shop includes one photograph with editable art print (GBP 25), framed
+print (GBP 60), T-shirt (GBP 28) and canvas (GBP 70) variants, a separate book (GBP 35),
+and a sample GBP 4.95 shipping fee per physical order. Existing sample product IDs
+are preserved. These are placeholders for testing; replace images, descriptions,
+sizes and prices before selling.
 **Test shop with sample products** prevents live PayPal processing while these
 example prices are in use. Keep it on until the real catalogue is ready.
 
@@ -103,7 +118,7 @@ Client IDs, Secrets and payment mode at `/manage/paypal.html`.
 
 ## PayPal checkout
 
-Checkout uses the PayPal Orders API through Netlify Functions. The server uses prices and availability from `content/shop.json` bundled during
+Checkout uses the PayPal Orders API through Netlify Functions. The server uses prices and availability from `content/shop.json` and `content/books.json` bundled during
 each deployment and creates/captures
 orders using server-side credentials. It does not accept prices from a
 customer's browser.

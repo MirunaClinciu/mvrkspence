@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import bundledShop from '../content/shop.json' with { type: 'json' };
+import bundledBooks from '../content/books.json' with { type: 'json' };
 import bundledPayments from '../content/payments.json' with { type: 'json' };
+import catalog from '../stuff/catalog.js';
 const originalCatalog = structuredClone(bundledShop);
+const originalBooks = structuredClone(bundledBooks);
 const originalPayments = structuredClone(bundledPayments);
 import { afterEach, beforeEach, test } from 'node:test';
 import { createHandler as createOrderHandler } from '../netlify/functions/paypal-create-order.mjs';
@@ -413,15 +416,62 @@ test('invalid CMS payment environments stop before any PayPal request', async ()
 test('sample GBP products and flat shipping create the exact server total', async () => {
     const calls = mockPaypal();
     Object.assign(bundledShop, structuredClone(originalCatalog), { paypalClientId: 'sandbox-client-id' });
-    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: bundledShop.products.map(product => ({ id: product.id, quantity: 1 })) }) });
+    const products = catalog.expandCatalog(originalCatalog, originalBooks);
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: products.map(product => ({ id: product.id, quantity: 1 })) }) });
     assert.equal(response.statusCode, 200);
     const call = calls.find(call => call.url.endsWith('/v2/checkout/orders'));
     const order = JSON.parse(call.options.body).purchase_units[0];
     assert.equal(order.amount.currency_code, 'GBP');
-    assert.equal(order.amount.value, '152.95');
-    assert.equal(order.amount.breakdown.item_total.value, '148.00');
+    assert.equal(order.amount.value, '222.95');
+    assert.equal(order.amount.breakdown.item_total.value, '218.00');
     assert.equal(order.amount.breakdown.shipping.value, '4.95');
-    assert.equal(order.items.length, 4);
+    assert.equal(order.items.length, 5);
+});
+
+test('checkout combines the selected photograph format with separate books using server prices', async () => {
+    const calls = mockPaypal();
+    Object.assign(bundledShop, {
+        currency: 'GBP',
+        shipping: { enabled: true, amount: 4.95 },
+        photographs: [{
+            id: 'coast', name: 'Coastline', image: '/uploads/coast.jpg',
+            variants: [{ id: 'coast-tshirt-m', format: 'tshirt', option: 'M', price: 28, purchasable: true }]
+        }]
+    });
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [
+        { id: 'coast-tshirt-m', quantity: 2, price: 0.01, name: 'Wrong format' },
+        { id: 'holy-window', quantity: 1, price: 0.01 }
+    ] }) });
+    assert.equal(response.statusCode, 200);
+    const order = JSON.parse(calls.find(call => call.url.endsWith('/v2/checkout/orders')).options.body).purchase_units[0];
+    assert.equal(order.amount.value, '95.95');
+    assert.equal(order.amount.breakdown.item_total.value, '91.00');
+    assert.equal(order.amount.breakdown.shipping.value, '4.95');
+    assert.match(order.items[0].name, /T-shirt · M — Coastline/);
+    assert.equal(order.items[0].unit_amount.value, '28.00');
+    assert.equal(order.items[1].unit_amount.value, '35.00');
+    assert.ok(order.items.every(item => item.category === 'PHYSICAL_GOODS'));
+});
+
+test('hidden or ambiguous photograph offers are rejected before contacting PayPal', async () => {
+    const photo = overrides => ({
+        id: 'coast', name: 'Coastline', image: '/uploads/coast.jpg',
+        variants: [{ id: 'coast-print', format: 'print', price: 25, purchasable: true }],
+        ...overrides
+    });
+    const cases = [
+        { photographs: [photo({ available: false })], id: 'coast-print' },
+        { photographs: [photo({ variants: [{ id: 'coast-print', format: 'print', price: 25, purchasable: true, available: false }] })], id: 'coast-print' },
+        { photographs: [photo(), photo({ variants: [{ id: 'other', format: 'canvas', price: 70, purchasable: true }] })], id: 'coast-print' },
+        { photographs: [photo({ variants: [{ id: 'holy-window', format: 'print', price: 1, purchasable: true }] })], id: 'holy-window' }
+    ];
+    for (const item of cases) {
+        const calls = mockPaypal();
+        bundledShop.photographs = item.photographs;
+        const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: item.id, quantity: 1 }] }) });
+        assert.equal(response.statusCode, 400);
+        assert.equal(calls.some(call => call.url.includes('paypal.com')), false);
+    }
 });
 
 test('saved admin credentials take effect without a content deploy and stay outside public catalog data', async () => {

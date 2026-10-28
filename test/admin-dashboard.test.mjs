@@ -125,6 +125,7 @@ test('editing tasks link directly to the existing CMS file entries', () => {
         '/admin/#/collections/pages/entries/concept',
         '/admin/#/collections/pages/entries/contact',
         '/admin/#/collections/shop/entries/shop',
+        '/admin/#/collections/shop/entries/books',
         '/admin/#/collections/site/entries/site-settings',
         '/admin/#/collections/site/entries/coming-soon'
     ]) assert.ok(html.includes(`href="${path}"`), path);

@@ -1,7 +1,9 @@
 {
   "eyebrow": "Books, prints & wearable art",
   "title": "Artwork & Shop",
-  "intro": "A private test collection with sample products and prices in pounds. The administrator can replace every photo, description and price.",
+  "intro": "Explore photographs as art prints, framed prints, canvas and wearable art. Browse photography and art books in their own collection below.",
+  "photographsTitle": "Photographs & artwork",
+  "photographsIntro": "Choose a photograph, then choose a print, T-shirt, frame or canvas.",
   "emptyTitle": "New work coming soon",
   "emptyMessage": "Please get in touch if you would like to enquire about a piece.",
   "currency": "GBP",
@@ -9,51 +11,22 @@
     "enabled": true,
     "amount": 4.95
   },
-  "products": [
+  "photographs": [
     {
-      "id": "holy-window",
-      "name": "Holy Window - sample book",
-      "description": "Sample listing: an art and photography book. Example price and cover for testing; edit the final edition, description and price before selling.",
-      "purchasable": true,
-      "price": 35,
-      "type": "physical",
-      "image": "/stuff/img/Book1.png",
-      "imageAlt": "Holy Window cover used for the sample book listing",
-      "available": true
-    },
-    {
-      "id": "sample-art-print",
-      "name": "Studio art print - sample",
-      "description": "Sample listing: an unframed A3 art print. The image, size and price are placeholders that the administrator can change.",
-      "purchasable": true,
-      "price": 25,
-      "type": "physical",
+      "id": "studio-artwork",
+      "name": "Studio artwork - sample",
+      "description": "One sample image offered in four product formats. Replace it with your photograph, describe the work and set each real format, size and price before selling.",
       "image": "/stuff/img/sample-print.svg",
-      "imageAlt": "Placeholder art print with a red sun and dark mountains",
-      "available": true
-    },
-    {
-      "id": "sample-framed-art",
-      "name": "Framed artwork - sample",
-      "description": "Sample listing: a printed artwork in a black frame. Replace the sample artwork, dimensions and price with the actual product details.",
-      "purchasable": true,
-      "price": 60,
-      "type": "physical",
-      "image": "/stuff/img/sample-framed-art.svg",
-      "imageAlt": "Placeholder framed artwork with a red sun and dark mountains",
-      "available": true
-    },
-    {
-      "id": "sample-art-tshirt",
-      "name": "Art T-shirt - sample",
-      "description": "Sample listing: a natural-colour T-shirt with an art print, size M. Replace this example with each actual size and its own listing when ready.",
-      "purchasable": true,
-      "price": 28,
-      "type": "physical",
-      "image": "/stuff/img/sample-tshirt.svg",
-      "imageAlt": "Placeholder natural-colour T-shirt with a red and black art print",
-      "available": true
+      "imageAlt": "Placeholder artwork with a red sun and dark mountains",
+      "available": true,
+      "variants": [
+        { "id": "sample-art-print", "format": "print", "option": "A3", "price": 25, "purchasable": true, "available": true },
+        { "id": "sample-framed-art", "format": "framed", "option": "30 × 40 cm", "price": 60, "purchasable": true, "available": true },
+        { "id": "sample-art-tshirt", "format": "tshirt", "option": "M", "price": 28, "purchasable": true, "available": true },
+        { "id": "sample-canvas", "format": "canvas", "option": "40 × 60 cm", "price": 70, "purchasable": true, "available": true }
+      ]
     }
   ],
+  "products": [],
   "testMode": true
 }

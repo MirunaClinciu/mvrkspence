@@ -16,8 +16,12 @@ figcaption, time { font-size: .85rem; color: #676767; }
 .editor-feature { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 28px; margin-bottom: 32px; }
 .editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .editor-product { background: #fff; border: 1px solid #deddd8; }
-.editor-product img { aspect-ratio: 4/3; object-fit: cover; }
+.editor-product img { aspect-ratio: 4/3; object-fit: contain; background: #f1f0eb; }
 .editor-product-copy { padding: 20px; }
+.editor-formats { margin: 16px 0; padding: 0; list-style: none; }
+.editor-formats li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; padding: 12px 0; border-bottom: 1px solid #deddd8; }
+.editor-formats strong { font-size: .9rem; }
+.editor-format-note { color: #676767; font-size: .85rem; }
 .editor-button { display: block; width: fit-content; margin-top: 16px; padding: 10px 14px; background: #171717; color: #fff; font-size: .8rem; }
 .editor-post { margin: 40px 0 0; padding-top: 28px; border-top: 1px solid #deddd8; }
 .editor-post img { max-height: 440px; object-fit: contain; }

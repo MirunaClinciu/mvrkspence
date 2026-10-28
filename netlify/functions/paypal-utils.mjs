@@ -1,6 +1,8 @@
 import { readPaymentSettings } from '../lib/payment-settings.mjs';
 import bundledShop from '../../content/shop.json' with { type: 'json' };
+import bundledBooks from '../../content/books.json' with { type: 'json' };
 import bundledPayments from '../../content/payments.json' with { type: 'json' };
+import catalog from '../../stuff/catalog.js';
 
 const paypalHosts = {
     sandbox: 'https://api-m.sandbox.paypal.com',
@@ -38,6 +40,7 @@ export async function getShopConfig({ readSettings = readPaymentSettings } = {})
     // A bundled catalog also works when the deployment requires visitor authentication.
     const config = structuredClone(bundledShop);
     if (!config || typeof config !== 'object') throw new Error('The product catalog is invalid.');
+    config.products = catalog.expandCatalog(config, bundledBooks);
     const legacyEnvironment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
     let saved;
     try { saved = await readSettings(); }

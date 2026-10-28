@@ -188,13 +188,15 @@ collections:
     label: Shop & payments
     files:
       - name: shop
-        label: Shop settings & products
+        label: Photographs & shop settings
         file: content/shop.json
         format: json
         fields:
           - { name: eyebrow, label: Small heading, widget: string }
           - { name: title, label: Shop page heading, widget: string }
           - { name: intro, label: Shop introduction, widget: text }
+          - { name: photographsTitle, label: Photographs section heading, widget: string, required: false, default: Photographs & artwork }
+          - { name: photographsIntro, label: Photographs section introduction, widget: text, required: false, default: 'Choose a photograph, then choose a print, T-shirt, frame or canvas.' }
           - { name: emptyTitle, label: Empty shop heading, widget: string }
           - { name: emptyMessage, label: Empty shop message, widget: text }
           - { name: testMode, label: Test shop with sample products, widget: boolean, default: true, hint: "Keep on while testing sample prices. Payments are restricted to PayPal sandbox. Turn off only when real products and prices are ready." }
@@ -208,15 +210,55 @@ collections:
             fields:
               - { name: enabled, label: Charge a flat shipping fee for physical items, widget: boolean, default: false }
               - { name: amount, label: Shipping fee per order, widget: number, value_type: float, min: 0, step: 0.01 }
+          - name: photographs
+            label: Photographs & artwork
+            label_singular: Photograph
+            widget: list
+            required: false
+            default: []
+            collapsed: true
+            summary: '{{fields.name}}'
+            hint: 'Upload each photograph once, then add the prints, T-shirts, framed prints or canvas sizes you want to offer. Books are edited separately under Books.'
+            fields:
+              - { name: id, label: Photograph reference, widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use letters, numbers, hyphens, underscores or periods.'], hint: 'Choose a unique reference such as river-photo. Keep it unchanged after publishing.' }
+              - { name: name, label: Photograph title, widget: string }
+              - { name: description, label: About this photograph, widget: text }
+              - { name: image, label: Photograph (upload once from computer), widget: image }
+              - { name: imageAlt, label: Photograph description, widget: string, required: false }
+              - { name: available, label: Show this photograph on Artwork, widget: boolean, default: true, hint: 'Switch off to hide the photograph and all its formats from sale.' }
+              - name: variants
+                label: Formats & sizes
+                label_singular: Format
+                widget: list
+                required: false
+                default: []
+                collapsed: true
+                summary: '{{fields.format}} - {{fields.option}} - {{fields.price}}'
+                hint: 'Add one entry for each format and size. The photograph above is reused automatically. For T-shirt sizes M and L, add two entries with different references.'
+                fields:
+                  - { name: id, label: Format reference (unique), widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use 1-80 letters, numbers, hyphens, underscores or periods.'], hint: 'Give every format and size its own reference, such as river-print-a3 or river-tshirt-m. Do not reuse a reference from another photograph or book; keep it unchanged after publishing.' }
+                  - name: format
+                    label: Product format
+                    widget: select
+                    default: print
+                    options:
+                      - { label: Art print, value: print }
+                      - { label: T-shirt, value: tshirt }
+                      - { label: Framed print, value: framed }
+                      - { label: Canvas, value: canvas }
+                  - { name: option, label: Size or option, widget: string, required: false, hint: 'For example A3, 30 x 40 cm, or T-shirt size M. Describe materials and other details in the photograph description.' }
+                  - { name: price, label: Price for this format, widget: number, value_type: float, min: 0, step: 0.01, default: 0, required: false, hint: 'Enter the real price as a number in the shop currency, such as 25 for GBP 25.00.' }
+                  - { name: purchasable, label: Enable checkout for this format, widget: boolean, default: false, hint: 'Leave off to accept enquiries. Set a price above zero before switching checkout on.' }
+                  - { name: available, label: Offer this format, widget: boolean, default: true, hint: 'Switch off to hide this format or size and prevent checkout.' }
           - name: products
-            label: Products
+            label: Other / existing products
             label_singular: Product
             widget: list
             required: false
             default: []
             collapsed: true
             summary: '{{fields.name}} - {{fields.price}}'
-            hint: Add, remove, or reorder shop items. Unavailable products are hidden and cannot be purchased.
+            hint: 'Existing standalone listings are kept here. For a new photograph with several product formats, use Photographs & artwork above. Add books in the separate Books editor.'
             fields:
               - { name: id, label: Unique product ID, widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use 1-80 letters, numbers, hyphens, underscores, or periods.'], hint: "Use a unique ID and keep it unchanged after publishing. For a new piece, use a new ID." }
               - { name: name, label: Product name, widget: string }
@@ -233,3 +275,29 @@ collections:
               - { name: image, label: Product photo (upload from computer), widget: image }
               - { name: imageAlt, label: Product photo description, widget: string, required: false }
               - { name: available, label: Show on Artwork page, widget: boolean, default: true, hint: 'Switch off to hide a sold or withdrawn piece and prevent checkout.' }
+      - name: books
+        label: Books
+        file: content/books.json
+        format: json
+        fields:
+          - { name: title, label: Books section heading, widget: string }
+          - { name: intro, label: Books introduction, widget: text, required: false }
+          - name: books
+            label: Books
+            label_singular: Book
+            widget: list
+            required: false
+            default: []
+            collapsed: true
+            summary: '{{fields.name}} - {{fields.price}}'
+            hint: 'Add books here separately from photographs and their formats. Prices use the currency and shipping settings in Photographs & shop settings.'
+            fields:
+              - { name: id, label: Book reference (unique), widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use 1-80 letters, numbers, hyphens, underscores or periods.'], hint: 'Choose a reference such as holy-window-book. Do not reuse a format or product reference; keep it unchanged after publishing.' }
+              - { name: name, label: Book title, widget: string }
+              - { name: description, label: Book description, widget: text, hint: 'Describe the edition, binding, page count and dimensions where relevant.' }
+              - { name: image, label: Book cover (upload from computer), widget: image }
+              - { name: imageAlt, label: Book cover description, widget: string, required: false }
+              - { name: price, label: Price per book, widget: number, value_type: float, min: 0, step: 0.01, default: 0, required: false, hint: 'Enter the price as a number in the shop currency. Set a price above zero before enabling checkout.' }
+              - { name: purchasable, label: Enable PayPal checkout, widget: boolean, default: false, hint: 'Leave off to accept book enquiries instead of purchases.' }
+              - { name: type, label: Item type, widget: hidden, default: physical }
+              - { name: available, label: Show this book, widget: boolean, default: true, hint: 'Switch off to hide a sold-out or withdrawn book and prevent checkout.' }

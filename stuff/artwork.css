@@ -1,0 +1,273 @@
+/* Each photograph keeps its original image; the selected format changes its presentation. */
+body[data-page="artwork"] {
+  min-width: 0;
+}
+
+.artwork-collections {
+  display: grid;
+  gap: clamp(56px, 8vw, 96px);
+}
+
+.artwork-collection {
+  min-width: 0;
+  scroll-margin-top: calc(var(--nav-height) + 28px);
+}
+
+.artwork-collection + .artwork-collection {
+  padding-top: clamp(36px, 5vw, 60px);
+  border-top: 1px solid var(--line);
+}
+
+.collection-intro {
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+
+.collection-heading {
+  margin: 0 0 12px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+
+.collection-intro > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.collection-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.collection-navigation a {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.collection-navigation a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.artwork-collections .product-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.artwork-collections .product-details {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.artwork-collections .product-details h3 {
+  margin: 0 0 10px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.artwork-collections .product-details > p {
+  line-height: 1.75;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.product-choices {
+  min-width: 0;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.product-variant-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.product-variant-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 10px 8px;
+  border: 1px solid #b8b6ad;
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.product-variant-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.product-mockup {
+  --mockup-stage: #f0efea;
+  position: relative;
+  display: flex;
+  height: clamp(230px, 24vw, 300px);
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 22px 24px 44px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 35%, #faf9f6, var(--mockup-stage));
+}
+
+.product-mockup-surface {
+  position: relative;
+  width: 82%;
+  height: 100%;
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid #e6e3db;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 13%);
+}
+
+.product-mockup-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-mockup-caption {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  color: #5e5b53;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.product-mockup[data-format="framed"] .product-mockup-surface {
+  width: 86%;
+  height: 96%;
+  padding: 12px;
+  border: 9px solid #242424;
+  border-color: #373737 #171717 #111 #292929;
+  box-shadow: inset 0 0 0 1px #ddd9d0, 4px 6px 10px rgb(0 0 0 / 19%);
+}
+
+.product-mockup[data-format="canvas"] .product-mockup-surface {
+  width: 82%;
+  height: 90%;
+  padding: 0;
+  border: 1px solid #dedbd1;
+  box-shadow: 1px 1px 0 #e5e0d3, 3px 3px 0 #d7d1c3, 6px 6px 0 #c6c0b2,
+    10px 12px 16px rgb(0 0 0 / 16%);
+}
+
+.product-mockup[data-format="tshirt"] .product-mockup-surface {
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: linear-gradient(90deg, #dbd5c8, #f5f0e5 30%, #f1ebdf 70%, #d7d1c4);
+  box-shadow: none;
+  clip-path: polygon(25% 0, 39% 0, 43% 5%, 57% 5%, 61% 0, 75% 0,
+    100% 20%, 85% 40%, 75% 32%, 75% 100%, 25% 100%, 25% 32%, 15% 40%, 0 20%);
+}
+
+.product-mockup[data-format="tshirt"] .product-mockup-surface::before {
+  position: absolute;
+  top: -2px;
+  left: 40%;
+  width: 20%;
+  height: 13%;
+  border: 3px solid #cec6b5;
+  border-top: 0;
+  border-radius: 0 0 50% 50%;
+  background: #f5f3ee;
+  content: "";
+}
+
+.product-mockup[data-format="tshirt"] .product-mockup-surface::after {
+  position: absolute;
+  right: 28%;
+  bottom: 4%;
+  left: 28%;
+  height: 1px;
+  background: rgb(98 85 59 / 14%);
+  content: "";
+}
+
+.product-mockup[data-format="tshirt"] .product-mockup-image {
+  position: absolute;
+  top: 26%;
+  left: 30%;
+  width: 40%;
+  height: 40%;
+  object-fit: contain;
+}
+
+@media (min-width: 761px) {
+  .artwork-collections .product-grid > .product-card:only-child {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .artwork-collections .product-card:only-child > .product-mockup {
+    height: clamp(360px, 34vw, 420px);
+  }
+
+  .artwork-collections .product-card:only-child > img {
+    width: 100%;
+    height: clamp(360px, 34vw, 420px);
+    max-height: 420px;
+    aspect-ratio: auto;
+    object-fit: contain;
+  }
+
+  .artwork-collections .product-card:only-child > .product-details {
+    padding: clamp(28px, 4vw, 48px);
+  }
+}
+
+@media (max-width: 760px) {
+  .product-variant-select {
+    font-size: 1rem;
+  }
+
+  .product-mockup {
+    height: clamp(230px, 70vw, 420px);
+  }
+}

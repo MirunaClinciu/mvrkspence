@@ -1,0 +1,17 @@
+{
+  "title": "Books",
+  "intro": "Photography and art books, collected separately from prints and wearable artwork.",
+  "books": [
+    {
+      "id": "holy-window",
+      "name": "Holy Window - sample book",
+      "description": "Sample listing: an art and photography book. Example price and cover for testing; edit the final edition, description and price before selling.",
+      "purchasable": true,
+      "price": 35,
+      "type": "physical",
+      "image": "/stuff/img/Book1.png",
+      "imageAlt": "Holy Window cover used for the sample book listing",
+      "available": true
+    }
+  ]
+}

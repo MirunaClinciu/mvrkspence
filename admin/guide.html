@@ -54,9 +54,14 @@
           <a href="/admin/#/collections/pages/entries/concept">Edit Concept &amp; journal <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
-          <h3>Artwork &amp; products</h3>
-          <p>Use <strong>Add Product</strong> to add a piece, its photo and description. Leave checkout off for enquiries, or enter its real price and enable checkout to sell it.</p>
-          <a href="/admin/#/collections/shop/entries/shop">Edit artwork &amp; products <span aria-hidden="true">&rarr;</span></a>
+          <h3>Photographs &amp; shop settings</h3>
+          <p>Upload a photograph once, then offer it as an art print, T-shirt, framed print or canvas. Set a separate size and price for each format.</p>
+          <a href="/admin/#/collections/shop/entries/shop">Edit photographs &amp; formats <span aria-hidden="true">&rarr;</span></a>
+        </article>
+        <article>
+          <h3>Books</h3>
+          <p>Books have their own editor and website section. Add a cover, describe the edition and set the book price or accept enquiries.</p>
+          <a href="/admin/#/collections/shop/entries/books">Edit books <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
           <h3>Contact details</h3>
@@ -94,6 +99,33 @@
       <p>The Contact page uses these shared icons when <strong>Use the website social icons</strong> is on. For different icons on Contact, open <a href="/admin/#/collections/pages/entries/contact">Contact details</a>, switch it off and fill in <strong>Custom contact links</strong>. Choose an icon and enter a complete <strong>https://</strong> profile URL or email address for each link. The contact email and introductory text are edited on that same page.</p>
     </section>
 
+    <section aria-labelledby="artwork-title">
+      <p class="eyebrow">One photograph, several products</p>
+      <h2 id="artwork-title">Offer your photograph in different formats</h2>
+      <ol class="steps">
+        <li>Open <a href="/admin/#/collections/shop/entries/shop">Photographs &amp; shop settings</a>. Find <strong>Photographs &amp; artwork</strong> and choose <strong>Add Photograph</strong>.</li>
+        <li>Enter a <strong>Photograph reference</strong> such as <strong>river-photo</strong>, its title and description. Upload the photograph in <strong>Photograph (upload once from computer)</strong>. This one upload is reused for every format.</li>
+        <li>Under <strong>Formats &amp; sizes</strong>, choose <strong>Add Format</strong>. Select <strong>Art print</strong>, <strong>T-shirt</strong>, <strong>Framed print</strong> or <strong>Canvas</strong>.</li>
+        <li>Give this format a unique <strong>Format reference</strong>, such as <strong>river-print-a3</strong>. Enter its <strong>Size or option</strong>, such as A3, 30 x 40 cm or T-shirt size M, and its <strong>Price for this format</strong>. Add another format entry for each additional size.</li>
+        <li>Keep <strong>Offer this format</strong> on. Leave <strong>Enable checkout for this format</strong> off for enquiries, or enter a price above zero and switch it on to allow purchases. Keep <strong>Test shop with sample products</strong> on while practising with example prices.</li>
+        <li>Save, check the preview and publish. Visitors choose a format and size on the Artwork page before adding that exact product to the basket.</li>
+      </ol>
+      <p>The website uses your photograph to make a visual product preview when a format is selected. This illustrates image placement; you arrange actual printing, production and dispatch yourself. It does not send orders to a printing company automatically.</p>
+      <p>Switch <strong>Offer this format</strong> off to withdraw one size, or switch <strong>Show this photograph on Artwork</strong> off to hide the photograph and all its formats. Keep references unchanged after publishing so baskets and checkout continue to identify the right items.</p>
+    </section>
+
+    <section aria-labelledby="books-title">
+      <p class="eyebrow">A separate collection</p>
+      <h2 id="books-title">Add or update a book</h2>
+      <ol class="steps">
+        <li>Open <a href="/admin/#/collections/shop/entries/books">Books</a> from the dashboard and choose <strong>Add Book</strong>.</li>
+        <li>Choose a unique <strong>Book reference</strong>, enter the <strong>Book title</strong> and description, and upload the cover. Describe the edition, binding and dimensions where relevant.</li>
+        <li>Enter <strong>Price per book</strong> as a number. Books use the currency and flat shipping settings in <strong>Photographs &amp; shop settings</strong>.</li>
+        <li>Leave <strong>Enable PayPal checkout</strong> off for enquiries, or set a price above zero and switch it on for purchases. Keep <strong>Show this book</strong> on to display it.</li>
+        <li>Save, check the book preview and publish. Books appear in their own section on the Artwork page.</li>
+      </ol>
+    </section>
+
     <section aria-labelledby="photos-title">
       <p class="eyebrow">Photos &amp; lists</p>
       <h2 id="photos-title">Add, replace or remove</h2>
@@ -110,8 +142,8 @@
         <div>
           <h3>Manage photos, posts and products</h3>
           <p>Expand an entry to edit it. Use the list&rsquo;s add, remove and reorder controls to manage its contents.</p>
-          <p>For artwork, turn <strong>Show on Artwork page</strong> off to hide a piece without deleting it. For a journal post, turn <strong>Published on the website</strong> off to hide it from the page.</p>
-          <p>Keep a post or product&rsquo;s permanent ID unchanged after it has been published. Choose a different ID for each new entry.</p>
+          <p>Use <strong>Show this photograph on Artwork</strong>, <strong>Offer this format</strong> or <strong>Show this book</strong> to hide items without deleting them. Older standalone products remain under <strong>Other / existing products</strong> with their <strong>Show on Artwork page</strong> switch. For a journal post, turn <strong>Published on the website</strong> off to hide it from the page.</p>
+          <p>Keep references and permanent IDs unchanged after publishing. Give each photograph, product format, book and journal post its own reference.</p>
         </div>
       </div>
     </section>
@@ -138,7 +170,7 @@
       </details>
       <details>
         <summary>Can I add a piece without selling it yet?</summary>
-        <p>Yes. Leave <strong>Enable PayPal checkout</strong> off. The piece will show an enquiry link. To sell it, enter its real price and enable checkout after PayPal has been configured and tested.</p>
+        <p>Yes. For a photograph format, leave <strong>Enable checkout for this format</strong> off. For a book or older standalone product, leave <strong>Enable PayPal checkout</strong> off. The item shows an enquiry link. To sell it, enter its real price and enable checkout after PayPal has been configured and tested.</p>
       </details>
       <details>
         <summary>Where do I change PayPal?</summary>

@@ -25,6 +25,25 @@
         });
     }
 
+    function validatePrice(product, label, enquiryByDefault = false, checkoutLabel = 'Enable PayPal checkout') {
+        const canBuy = enquiryByDefault ? product.purchasable === true : product.purchasable !== false;
+        if (canBuy && !validMoney(product.price, true)) {
+            throw new Error(`${label}: enter a price above zero with no more than two decimal places, or switch off ${checkoutLabel}.`);
+        }
+        if (!canBuy && product.price !== undefined && product.price !== '' && !validMoney(product.price, false)) {
+            throw new Error(`${label}: the price must be zero or above, with no more than two decimal places.`);
+        }
+    }
+
+    function requireNameAndImage(item, label) {
+        if (typeof item.name !== 'string' || !item.name.trim()) {
+            throw new Error(`${label}: enter a name before saving.`);
+        }
+        if (typeof item.image !== 'string' || !item.image.trim()) {
+            throw new Error(`${item.name}: upload a photograph or cover image before saving.`);
+        }
+    }
+
     function validateEntry({ entry }) {
         const storedData = entry.get('data');
         const data = storedData && typeof storedData.toJS === 'function' ? storedData.toJS() : storedData;
@@ -32,30 +51,53 @@
         const collection = entry.get('collection');
         const slug = entry.get('slug');
         const shop = path === 'content/shop.json' || (collection === 'shop' && slug === 'shop');
+        const books = path === 'content/books.json' || (collection === 'shop' && slug === 'books');
         const payments = path === 'content/payments.json' || (collection === 'shop' && slug === 'payments');
         const concept = path === 'content/concept.json' || (collection === 'pages' && slug === 'concept');
         const contact = path === 'content/contact.json' || (collection === 'pages' && slug === 'contact');
-        if (!shop && !concept && !payments && !contact) return storedData;
+        if (!shop && !books && !concept && !payments && !contact) return storedData;
         if (!data || typeof data !== 'object') throw new Error('This page could not be read. Reload the editor and try again.');
 
         if (shop) {
             const products = data.products === undefined ? [] : data.products;
             uniqueIds(products, /^[A-Za-z0-9._-]{1,80}$/, 'Artwork');
             products.forEach((product, index) => {
-                const label = product.name || `Artwork item ${index + 1}`;
-                if (product.purchasable !== false && !validMoney(product.price, true)) {
-                    throw new Error(`${label}: enter a price above zero with no more than two decimal places, or switch off Enable PayPal checkout.`);
-                }
-                if (product.purchasable === false && product.price !== undefined && product.price !== '' && !validMoney(product.price, false)) {
-                    throw new Error(`${label}: the price must be zero or above, with no more than two decimal places.`);
-                }
+                validatePrice(product, product.name || `Artwork item ${index + 1}`);
             });
+            const photographs = data.photographs === undefined ? [] : data.photographs;
+            uniqueIds(photographs, /^[A-Za-z0-9._-]{1,80}$/, 'Photograph');
+            const allProducts = [...products];
+            photographs.forEach((photograph, index) => {
+                requireNameAndImage(photograph, `Photograph ${index + 1}`);
+                const variants = photograph.variants;
+                if (!Array.isArray(variants) || variants.length === 0) {
+                    throw new Error(`${photograph.name}: add at least one print, T-shirt, framed print or canvas format before saving.`);
+                }
+                uniqueIds(variants, /^[A-Za-z0-9._-]{1,80}$/, `${photograph.name}: format`);
+                variants.forEach(variant => {
+                    if (!['print', 'tshirt', 'framed', 'canvas'].includes(variant.format)) {
+                        throw new Error(`${photograph.name}: choose Art print, T-shirt, Framed print or Canvas for every format.`);
+                    }
+                    const label = `${photograph.name} (${variant.option || variant.format})`;
+                    validatePrice(variant, label, true, 'Enable checkout for this format');
+                    allProducts.push(variant);
+                });
+            });
+            uniqueIds(allProducts, /^[A-Za-z0-9._-]{1,80}$/, 'Product or format');
             if (data.shipping !== undefined) {
                 const shipping = data.shipping;
                 if (!shipping || typeof shipping !== 'object' || typeof shipping.enabled !== 'boolean' || typeof shipping.amount !== 'number' || !validMoney(shipping.amount, false)) {
                     throw new Error('Shipping: enter a fee of zero or above with no more than two decimal places, and choose whether shipping is charged.');
                 }
             }
+        }
+        if (books) {
+            const items = data.books === undefined ? [] : data.books;
+            uniqueIds(items, /^[A-Za-z0-9._-]{1,80}$/, 'Book');
+            items.forEach((book, index) => {
+                requireNameAndImage(book, `Book ${index + 1}`);
+                validatePrice(book, book.name);
+            });
         }
         if (concept) uniqueIds(data.posts === undefined ? [] : data.posts, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Journal post');
         if (contact && (typeof data.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))) {

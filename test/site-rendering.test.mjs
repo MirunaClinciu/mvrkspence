@@ -39,6 +39,7 @@ class Element {
 
 const source = readFileSync(new URL('../stuff/site.js', import.meta.url), 'utf8');
 const socialSource = readFileSync(new URL('../stuff/social-links.js', import.meta.url), 'utf8');
+const catalogSource = readFileSync(new URL('../stuff/catalog.js', import.meta.url), 'utf8');
 const renderers = source.slice(0, source.lastIndexOf('\nrenderNavigation();'));
 
 function fixture(page = 'home', prefix = '/preview/') {
@@ -65,6 +66,7 @@ function fixture(page = 'home', prefix = '/preview/') {
         console
     });
     runInContext(socialSource, context, { filename: 'stuff/social-links.js' });
+    runInContext(catalogSource, context, { filename: 'stuff/catalog.js' });
     runInContext(renderers, context, { filename: 'stuff/site.js' });
     return { context, roots, window };
 }
@@ -320,6 +322,57 @@ test('Artwork offers enquiries separately from purchasable works and hides unava
     assert.equal(byClass(roots['page-content'], 'shop-checkout')[0].hidden, true);
 });
 
+test('photograph format selection updates the preview, price and basket SKU while books stay separate', () => {
+    const { context, roots, window } = fixture('artwork');
+    const shop = JSON.parse(readFileSync(new URL('../content/shop.json', import.meta.url), 'utf8'));
+    const books = JSON.parse(readFileSync(new URL('../content/books.json', import.meta.url), 'utf8'));
+    window.siteProducts = window.MvrkCatalog.expandCatalog(shop, books);
+    context.renderArtwork(shop, books);
+    const cards = byClass(roots['page-content'], 'photograph-card');
+    assert.equal(cards.length, 1, 'one uploaded photograph has one product card');
+    const card = cards[0];
+    const select = byClass(card, 'product-variant-select')[0];
+    assert.equal(select.children.length, 4);
+    for (const [id, format, price] of [
+        ['sample-art-print', 'print', '25.00'], ['sample-framed-art', 'framed', '60.00'],
+        ['sample-art-tshirt', 'tshirt', '28.00'], ['sample-canvas', 'canvas', '70.00']
+    ]) {
+        select.value = id;
+        select.listeners.change();
+        assert.equal(byClass(card, 'product-mockup')[0].dataset.format, format);
+        assert.equal(byClass(card, 'add-to-basket-btn')[0].dataset.productId, id);
+        assert.ok(byClass(card, 'product-price')[0].textContent.includes(price));
+        assert.equal(byTag(card, 'img').length, 1);
+        assert.equal(byTag(card, 'img')[0].src, 'https://portfolio.example/stuff/img/sample-print.svg');
+    }
+    const bookSection = byClass(roots['page-content'], 'artwork-collection').find(section => section.id === 'books');
+    assert.ok(bookSection);
+    assert.equal(byClass(bookSection, 'add-to-basket-btn')[0].dataset.productId, 'holy-window');
+    assert.equal(byClass(bookSection, 'product-variant-select').length, 0);
+});
+
+test('photograph choices hide unavailable formats and retain enquiries for the selected size', () => {
+    const { context, roots, window } = fixture('artwork');
+    const shop = { currency: 'GBP', photographs: [{ id: 'photo', name: 'City & sky', image: '/uploads/city.jpg', variants: [
+        { id: 'photo-print-a3', format: 'print', option: 'A3', price: 25, purchasable: true },
+        { id: 'photo-shirt-xl', format: 'tshirt', option: 'XL', price: 0, purchasable: false },
+        { id: 'photo-canvas', format: 'canvas', price: 80, purchasable: true, available: false }
+    ] }] };
+    window.siteProducts = window.MvrkCatalog.expandCatalog(shop);
+    context.renderArtwork(shop);
+    const card = byClass(roots['page-content'], 'photograph-card')[0];
+    const select = byClass(card, 'product-variant-select')[0];
+    assert.equal(select.children.length, 2);
+    select.value = 'photo-shirt-xl';
+    select.listeners.change();
+    assert.equal(byClass(card, 'add-to-basket-btn').length, 0);
+    const enquiry = byClass(card, 'button-outline')[0];
+    const selectedWork = new URL(enquiry.href, 'https://portfolio.example').searchParams.get('artwork');
+    assert.ok(selectedWork.includes('T-shirt'));
+    assert.ok(selectedWork.includes('XL'));
+    assert.ok(selectedWork.includes('City & sky'));
+});
+
 test('Artwork enquiry carries the selected work into a safely encoded email subject', () => {
     const { context, roots, window } = fixture('contact');
     window.location.search = '?artwork=Book%20%26%20prints';
@@ -373,6 +426,7 @@ test('basket opening disables the background and closing restores the invoking c
 });
 
 function setContentResponses(context, responses) {
+    responses = { 'content/books.json': { books: [] }, ...responses };
     context.renderNavigation = () => {};
     context.renderFooter = () => {};
     context.console = { error() {} };
@@ -391,6 +445,21 @@ test('a missing shop catalog does not hide the homepage or enable checkout', asy
     assert.equal(byClass(roots['page-content'], 'home-image-link').length, home.cards.length);
     assert.equal(window.siteReady, false);
     assert.equal(window.siteConfig, null);
+});
+
+test('a failed books catalogue leaves the homepage usable and prevents incomplete checkout', async () => {
+    const { context, roots, window } = fixture();
+    const home = JSON.parse(readFileSync(new URL('../content/home.json', import.meta.url), 'utf8'));
+    setContentResponses(context, {
+        'content/site.json': { siteName: 'Mvrk Spence' },
+        'content/home.json': home,
+        'content/shop.json': { products: [{ id: 'print', name: 'Print', price: 25 }] },
+        'content/books.json': undefined
+    });
+    await context.initializeSite();
+    assert.equal(window.siteReady, false);
+    assert.equal(window.siteConfig, null);
+    assert.equal(byClass(roots['page-content'], 'home-image-link').length, home.cards.length);
 });
 
 test('Artwork presents a retry when its catalog cannot be loaded', async () => {
@@ -469,6 +538,7 @@ test('payment service failures never reuse stale bundled IDs while server settin
     const responses = {
         'content/site.json': { siteName: 'Mvrk Spence' },
         'content/shop.json': { products: [], paypalClientId: 'old-client' },
+        'content/books.json': { books: [] },
         'content/payments.json': { environment: 'sandbox', sandboxClientId: 'stale-client' }
     };
     context.renderNavigation = () => {};
