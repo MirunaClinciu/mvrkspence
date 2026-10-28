@@ -2,7 +2,13 @@
   "eyebrow": "Selected works",
   "title": "Artwork & Shop",
   "intro": "Browse available work. Add an item to your basket to begin checkout.",
+  "emptyTitle": "New work coming soon",
+  "emptyMessage": "Please get in touch if you would like to enquire about a piece.",
   "currency": "USD",
   "paypalClientId": "",
+  "shipping": {
+    "enabled": false,
+    "amount": 0
+  },
   "products": []
 }

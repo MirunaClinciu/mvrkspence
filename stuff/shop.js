@@ -1,6 +1,8 @@
 const basketStorageKey = 'mvrk-shopping-basket';
 const cartItemsContainer = document.getElementById('cart-items-container');
 const cartTotalAmount = document.getElementById('cart-total-amount');
+const cartShippingRow = document.getElementById('cart-shipping-row');
+const cartShippingAmount = document.getElementById('cart-shipping-amount');
 const cartStatus = document.getElementById('cart-status');
 const clearBasketButton = document.getElementById('clear-basket-btn');
 const paypalButtonsContainer = document.getElementById('paypal-buttons');
@@ -48,6 +50,15 @@ function getCurrentProduct(productId) {
     return (window.siteProducts || []).find(product => product.id === productId);
 }
 
+function hasValidShippingSettings() {
+    const shipping = window.siteConfig && window.siteConfig.shipping;
+    if (!shipping) return true;
+    return typeof shipping.enabled === 'boolean' &&
+        typeof shipping.amount === 'number' &&
+        /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(shipping.amount)) &&
+        Number.isSafeInteger(Math.round(shipping.amount * 100));
+}
+
 function reconcileBasket() {
     const basket = getBasket();
     if (!window.siteReady) return basket;
@@ -61,10 +72,12 @@ function reconcileBasket() {
         }
         if (
             basket[productId].name !== product.name ||
-            Number(basket[productId].price) !== Number(product.price)
+            Number(basket[productId].price) !== Number(product.price) ||
+            basket[productId].type !== (product.type === 'digital' ? 'digital' : 'physical')
         ) {
             basket[productId].name = product.name;
             basket[productId].price = Number(product.price);
+            basket[productId].type = product.type === 'digital' ? 'digital' : 'physical';
             changed = true;
         }
     });
@@ -91,6 +104,7 @@ function renderBasket() {
     const items = Object.entries(basket);
     paypalButtonsContainer.hidden = items.length === 0;
     let total = 0;
+    let containsPhysicalItem = false;
 
     if (items.length === 0) {
         cartItemsContainer.append(makeElement('p', 'basket-empty', 'Your basket is empty.'));
@@ -118,10 +132,25 @@ function renderBasket() {
             row.append(detail, controls);
             cartItemsContainer.append(row);
             total += Number(item.price) * item.quantity;
+            if (item.type !== 'digital') containsPhysicalItem = true;
         });
     }
 
-    cartTotalAmount.textContent = formatMoney(total);
+    const shipping = window.siteConfig && window.siteConfig.shipping;
+    const validShipping = hasValidShippingSettings();
+    if (!validShipping) showCartStatus('The shop shipping settings need to be corrected by the site owner.', true);
+    const shippingEnabled = Boolean(
+        validShipping &&
+        shipping &&
+        shipping.enabled === true &&
+        containsPhysicalItem &&
+        Number.isFinite(Number(shipping.amount)) &&
+        Number(shipping.amount) >= 0
+    );
+    const shippingTotal = shippingEnabled ? Number(shipping.amount) : 0;
+    cartShippingRow.hidden = !shippingEnabled || items.length === 0;
+    cartShippingAmount.textContent = formatMoney(shippingTotal);
+    cartTotalAmount.textContent = formatMoney(total + shippingTotal);
     clearBasketButton.disabled = items.length === 0;
     updateBasketCount();
 }
@@ -155,6 +184,10 @@ function addToBasket(productId) {
 
     const basket = getBasket();
     const quantity = basket[productId] ? basket[productId].quantity : 0;
+    if (quantity === 0 && Object.keys(basket).length >= 30) {
+        showCartStatus('Your basket can contain a maximum of 30 different products.', true);
+        return;
+    }
     if (quantity >= 10) {
         showCartStatus('A maximum of 10 of each item can be added to your basket.', true);
         return;
@@ -162,6 +195,7 @@ function addToBasket(productId) {
     basket[productId] = {
         name: product.name,
         price: Number(product.price),
+        type: product.type === 'digital' ? 'digital' : 'physical',
         quantity: quantity + 1
     };
     if (saveBasket(basket)) {
@@ -210,6 +244,10 @@ function renderPayPalButtons() {
     const rawClientId = window.siteConfig && window.siteConfig.paypalClientId;
     const clientId = typeof rawClientId === 'string' ? rawClientId.trim() : '';
     const currency = window.siteConfig && window.siteConfig.currency;
+    if (!hasValidShippingSettings()) {
+        showCartStatus('The shop shipping settings need to be corrected by the site owner.', true);
+        return;
+    }
     if (!clientId) {
         showCartStatus('PayPal checkout is not set up yet. Add the PayPal client ID in the site admin.');
         return;

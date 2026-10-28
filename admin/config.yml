@@ -8,8 +8,58 @@ public_folder: /uploads
 locale: en
 
 collections:
+  - name: site
+    label: Website setup
+    files:
+      - name: site-settings
+        label: Logo, navigation & footer
+        file: content/site.json
+        format: json
+        fields:
+          - { name: siteName, label: Website name, widget: string }
+          - { name: metaDescription, label: Search description, widget: text }
+          - { name: logo, label: Website logo, widget: image }
+          - { name: logoAlt, label: Logo description, widget: string }
+          - { name: favicon, label: Browser tab icon, widget: image }
+          - name: navigation
+            label: Navigation links
+            widget: list
+            hint: Add, remove, or reorder links in the site navigation.
+            fields:
+              - { name: label, label: Link text, widget: string }
+              - name: page
+                label: Website page
+                widget: select
+                options:
+                  - { label: Home, value: index.html }
+                  - { label: Concept, value: concept.html }
+                  - { label: Artwork & shop, value: artwork.html }
+                  - { label: Contact, value: contact.html }
+          - { name: footerText, label: Footer text, widget: string }
+          - name: footerLinks
+            label: Footer social links
+            widget: list
+            required: false
+            hint: Add or remove the links shown in the site footer.
+            fields:
+              - { name: label, label: Link name, widget: string }
+              - { name: url, label: Full URL, widget: string }
+          - { name: adminLinkLabel, label: Admin footer link text, widget: string, required: false }
+      - name: coming-soon
+        label: Coming soon page
+        file: content/coming-soon.json
+        format: json
+        fields:
+          - { name: logo, label: Logo photo, widget: image }
+          - { name: logoAlt, label: Logo description, widget: string }
+          - { name: favicon, label: Browser tab icon, widget: image }
+          - { name: message, label: Main message, widget: string }
+          - { name: previewLabel, label: Preview link text, widget: string }
+          - { name: previewLink, label: Preview link URL, widget: string }
+          - { name: footerText, label: Footer text, widget: string }
+
   - name: pages
-    label: Pages
+    label: Website pages
     files:
       - name: home
         label: Home page
@@ -17,33 +67,42 @@ collections:
         format: json
         fields:
           - { name: eyebrow, label: Small heading, widget: string }
-          - { name: title, label: Title, widget: string }
+          - { name: title, label: Main heading, widget: string }
           - { name: intro, label: Introduction, widget: text }
           - name: cards
-            label: Home page cards
+            label: Home page photo cards
             widget: list
+            hint: Add, remove, or reorder cards shown on the portfolio homepage.
             fields:
               - { name: title, label: Card title, widget: string }
-              - { name: image, label: Photo, widget: image }
+              - { name: image, label: Card photo (upload from computer), widget: image }
               - { name: alt, label: Image description, widget: string, required: false }
-              - { name: link, label: Link (page filename), widget: string, hint: "For example: artwork.html or concept.html" }
+              - name: link
+                label: Link to page
+                widget: select
+                options:
+                  - { label: Artwork & shop, value: artwork.html }
+                  - { label: Concept, value: concept.html }
+                  - { label: Contact, value: contact.html }
       - name: concept
         label: Concept page
         file: content/concept.json
         format: json
         fields:
           - { name: eyebrow, label: Small heading, widget: string }
-          - { name: title, label: Title, widget: string }
+          - { name: title, label: Main heading, widget: string }
           - { name: intro, label: Introduction, widget: text }
-          - { name: body, label: Main text, widget: text }
-          - { name: image, label: Main photo, widget: image, required: false }
-          - { name: imageAlt, label: Image description, widget: string, required: false }
+          - { name: bodyHeading, label: Main section heading, widget: string }
+          - { name: body, label: Main content, widget: text }
+          - { name: image, label: Main photo (upload from computer), widget: image, required: false }
+          - { name: imageAlt, label: Main photo description, widget: string, required: false }
           - name: gallery
-            label: Photo gallery
+            label: Concept photo gallery
             widget: list
             required: false
+            hint: Add, remove, or reorder gallery photos.
             fields:
-              - { name: image, label: Photo, widget: image }
+              - { name: image, label: Gallery photo (upload from computer), widget: image }
               - { name: alt, label: Image description, widget: string, required: false }
               - { name: caption, label: Caption, widget: string, required: false }
       - name: contact
@@ -52,39 +111,59 @@ collections:
         format: json
         fields:
           - { name: eyebrow, label: Small heading, widget: string }
-          - { name: title, label: Title, widget: string }
+          - { name: title, label: Main heading, widget: string }
           - { name: intro, label: Introduction, widget: text }
-          - { name: email, label: Contact email, widget: string }
-          - { name: details, label: Additional details, widget: text }
+          - { name: email, label: Contact email address, widget: string }
+          - { name: details, label: Additional contact information, widget: text }
           - name: socialLinks
-            label: Social links
+            label: Contact page social links
             widget: list
             required: false
             fields:
               - { name: label, label: Link name, widget: string }
-              - { name: url, label: URL, widget: string }
+              - { name: url, label: Full URL, widget: string }
+
+  - name: shop
+    label: Shop & payments
+    files:
       - name: shop
-        label: Artwork & shop
+        label: Shop settings & products
         file: content/shop.json
         format: json
         fields:
           - { name: eyebrow, label: Small heading, widget: string }
-          - { name: title, label: Page title, widget: string }
-          - { name: intro, label: Introduction, widget: text }
+          - { name: title, label: Shop page heading, widget: string }
+          - { name: intro, label: Shop introduction, widget: text }
+          - { name: emptyTitle, label: Empty shop heading, widget: string }
+          - { name: emptyMessage, label: Empty shop message, widget: text }
           - name: currency
-            label: Currency
+            label: Display and checkout currency
             widget: select
             options: [USD, GBP, EUR, CAD, AUD, NZD, CHF, SGD]
-          - { name: paypalClientId, label: PayPal client ID, widget: string, required: false, hint: "Change this any time to use a different PayPal app. Public client ID only; update the matching secret in Netlify environment variables. Never enter the secret here." }
+          - { name: paypalClientId, label: PayPal public client ID, widget: string, required: false, hint: "Safe to show on the site. Update the matching private PayPal client secret in Netlify environment variables when changing PayPal apps." }
+          - name: shipping
+            label: Shipping charge
+            widget: object
+            fields:
+              - { name: enabled, label: Charge a flat shipping fee for physical items, widget: boolean, default: false }
+              - { name: amount, label: Shipping fee per order, widget: number, value_type: float, min: 0 }
           - name: products
             label: Products
             widget: list
             required: false
+            hint: Add, remove, or reorder shop items. Unavailable products are hidden and cannot be purchased.
             fields:
-              - { name: id, label: Product ID, widget: string, hint: "Use a unique ID containing letters, numbers, hyphens or underscores." }
-              - { name: name, label: Name, widget: string }
-              - { name: description, label: Description, widget: text }
-              - { name: price, label: Price, widget: number, value_type: float, min: 0.01 }
-              - { name: image, label: Photo, widget: image }
-              - { name: imageAlt, label: Image description, widget: string, required: false }
-              - { name: available, label: Available to buy, widget: boolean, default: true }
+              - { name: id, label: Unique product ID, widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use 1-80 letters, numbers, hyphens, underscores, or periods.'], hint: "Use a unique ID with letters, numbers, hyphens, underscores, or periods." }
+              - { name: name, label: Product name, widget: string }
+              - { name: description, label: Product description, widget: text }
+              - { name: price, label: Price per item, widget: number, value_type: float, min: 0.01 }
+              - name: type
+                label: Item type
+                widget: select
+                options:
+                  - { label: Physical item (requires shipping), value: physical }
+                  - { label: Digital item (no shipping), value: digital }
+                default: physical
+              - { name: image, label: Product photo (upload from computer), widget: image }
+              - { name: imageAlt, label: Product photo description, widget: string, required: false }
+              - { name: available, label: Available for purchase, widget: boolean, default: true }

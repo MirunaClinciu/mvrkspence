@@ -1,0 +1,16 @@
+{
+  "siteName": "Mvrk Spence",
+  "metaDescription": "Photography, concepts and artwork by Mvrk Spence.",
+  "logo": "stuff/img/logo.png",
+  "logoAlt": "Mvrk Spence",
+  "favicon": "stuff/img/Iconlogo.png",
+  "navigation": [
+    { "label": "Home", "page": "index.html" },
+    { "label": "Concept", "page": "concept.html" },
+    { "label": "Artwork", "page": "artwork.html" },
+    { "label": "Contact", "page": "contact.html" }
+  ],
+  "footerText": "Mvrk Spence",
+  "footerLinks": [],
+  "adminLinkLabel": "Admin"
+}

@@ -14,6 +14,14 @@ function priceInCents(value) {
     return Number.isSafeInteger(cents) && cents > 0 ? cents : null;
 }
 
+function nonnegativePriceInCents(value) {
+    const text = String(value);
+    if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(text)) return null;
+    const [whole, fraction = ''] = text.split('.');
+    const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+    return Number.isSafeInteger(cents) ? cents : null;
+}
+
 function money(value) {
     return (value / 100).toFixed(2);
 }
@@ -33,6 +41,7 @@ export async function handler(event) {
         const catalog = Array.isArray(config.products) ? config.products : [];
         const requestedIds = new Set();
         const orderItems = [];
+        let containsPhysicalItem = false;
 
         for (const requested of request.items) {
             if (
@@ -63,11 +72,14 @@ export async function handler(event) {
             if (unitCents === null) {
                 return jsonResponse(400, { error: 'A basket item is unavailable. Refresh the shop and try again.' });
             }
+            const type = product.type === 'digital' ? 'digital' : 'physical';
+            if (type === 'physical') containsPhysicalItem = true;
 
             orderItems.push({
                 name: product.name.slice(0, 127),
                 unitCents,
-                quantity: requested.quantity
+                quantity: requested.quantity,
+                category: type === 'digital' ? 'DIGITAL_GOODS' : 'PHYSICAL_GOODS'
             });
         }
 
@@ -75,23 +87,42 @@ export async function handler(event) {
             (total, item) => total + item.unitCents * item.quantity,
             0
         );
-        if (!Number.isSafeInteger(itemTotalCents) || itemTotalCents <= 0) {
+        const shippingConfig = config.shipping && typeof config.shipping === 'object'
+            ? config.shipping
+            : { enabled: false, amount: 0 };
+        const configuredShippingCents = nonnegativePriceInCents(shippingConfig.amount ?? 0);
+        if (
+            typeof shippingConfig.enabled !== 'boolean' ||
+            configuredShippingCents === null
+        ) {
+            return jsonResponse(500, { error: 'Shop shipping settings are invalid.' });
+        }
+        const shippingCents = containsPhysicalItem && shippingConfig.enabled ? configuredShippingCents : 0;
+        const orderTotalCents = itemTotalCents + shippingCents;
+        if (!Number.isSafeInteger(itemTotalCents) || !Number.isSafeInteger(orderTotalCents) || itemTotalCents <= 0) {
             return jsonResponse(400, { error: 'The basket total is invalid.' });
         }
 
         const accessToken = await getPaypalAccessToken(config.paypalClientId);
+        const breakdown = {
+            item_total: {
+                currency_code: config.currency,
+                value: money(itemTotalCents)
+            }
+        };
+        if (shippingCents > 0) {
+            breakdown.shipping = {
+                currency_code: config.currency,
+                value: money(shippingCents)
+            };
+        }
         const result = await requestPaypal('/v2/checkout/orders', accessToken, {
             intent: 'CAPTURE',
             purchase_units: [{
                 amount: {
                     currency_code: config.currency,
-                    value: money(itemTotalCents),
-                    breakdown: {
-                        item_total: {
-                            currency_code: config.currency,
-                            value: money(itemTotalCents)
-                        }
-                    }
+                    value: money(orderTotalCents),
+                    breakdown
                 },
                 items: orderItems.map(item => ({
                     name: item.name,
@@ -100,14 +131,14 @@ export async function handler(event) {
                         currency_code: config.currency,
                         value: money(item.unitCents)
                     },
-                    category: 'PHYSICAL_GOODS'
+                    category: item.category
                 }))
             }],
             payment_source: {
                 paypal: {
                     experience_context: {
                         brand_name: 'Mvrk Spence',
-                        shipping_preference: 'GET_FROM_FILE',
+                        shipping_preference: containsPhysicalItem ? 'GET_FROM_FILE' : 'NO_SHIPPING',
                         user_action: 'PAY_NOW',
                         return_url: new URL('/preview/artwork.html?checkout=complete', siteUrl).href,
                         cancel_url: new URL('/preview/artwork.html?checkout=cancelled', siteUrl).href

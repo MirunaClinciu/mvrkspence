@@ -13,6 +13,7 @@ const siteFooter = document.getElementById('site-footer');
 const siteModalRoot = document.getElementById('site-modal-root');
 
 window.siteConfig = null;
+window.siteSettings = null;
 window.siteProducts = [];
 window.siteReady = false;
 
@@ -52,16 +53,36 @@ function safeLinkPath(path) {
 }
 
 function renderNavigation() {
+    const configuredNavigation = Array.isArray(window.siteSettings && window.siteSettings.navigation)
+        ? window.siteSettings.navigation
+            .filter(item => item && typeof item.label === 'string' && item.label.trim() && [
+                'index.html', 'concept.html', 'artwork.html', 'contact.html'
+            ].includes(item.page))
+            .map(item => ({
+                label: item.label.trim(),
+                href: item.page,
+                page: item.page === 'index.html' ? 'home' : item.page.replace('.html', '')
+            }))
+        : navigationItems;
+    const logoPath = safeImagePath(window.siteSettings && window.siteSettings.logo) || 'stuff/img/logo.png';
+    const logoAlt = window.siteSettings && typeof window.siteSettings.logoAlt === 'string'
+        ? window.siteSettings.logoAlt
+        : 'Mvrk Spence';
+    const faviconPath = safeImagePath(window.siteSettings && window.siteSettings.favicon);
+    if (faviconPath) {
+        const favicon = document.getElementById('site-favicon');
+        if (favicon) favicon.href = faviconPath;
+    }
     const nav = makeElement('nav', 'site-nav');
     nav.setAttribute('aria-label', 'Main navigation');
 
     const brand = document.createElement('a');
     brand.className = 'brand';
     brand.href = `${pagePrefix}index.html`;
-    brand.setAttribute('aria-label', 'Mvrk Spence home');
+    brand.setAttribute('aria-label', `${logoAlt} home`);
     const logo = document.createElement('img');
-    logo.src = 'stuff/img/logo.png';
-    logo.alt = 'Mvrk Spence';
+    logo.src = logoPath;
+    logo.alt = logoAlt;
     brand.append(logo);
 
     const toggle = makeElement('button', 'menu-toggle');
@@ -74,7 +95,7 @@ function renderNavigation() {
     const links = makeElement('div', 'nav-links');
     links.id = 'primary-navigation';
     const list = makeElement('ul');
-    navigationItems.forEach(item => {
+    configuredNavigation.forEach(item => {
         const listItem = document.createElement('li');
         const link = makeElement('a', item.page === page ? 'nav-link active' : 'nav-link', item.label);
         link.href = `${pagePrefix}${item.href}`;
@@ -119,6 +140,7 @@ function renderModal() {
         <p class="eyebrow">Your selection</p>
         <h2 id="cart-title">Shopping basket</h2>
         <div id="cart-items-container"></div>
+        <p class="cart-shipping" id="cart-shipping-row" hidden>Shipping <strong id="cart-shipping-amount"></strong></p>
         <p class="cart-total">Total <strong id="cart-total-amount">0.00</strong></p>
         <div id="paypal-buttons" class="paypal-buttons"></div>
         <p class="cart-status" id="cart-status" role="status" aria-live="polite"></p>
@@ -126,7 +148,9 @@ function renderModal() {
       </section>`;
     siteModalRoot.replaceChildren(overlay);
 
-    document.getElementById('desktop-basket-link').addEventListener('click', openShoppingBasket);
+    siteHeader.addEventListener('click', event => {
+        if (event.target.closest('#desktop-basket-link')) openShoppingBasket();
+    });
     document.getElementById('close-cart-modal').addEventListener('click', closeShoppingBasket);
     overlay.addEventListener('click', event => {
         if (event.target === overlay) closeShoppingBasket();
@@ -154,18 +178,46 @@ function closeShoppingBasket() {
 
 function renderFooter() {
     const footer = makeElement('div', 'footer-inner');
-    const copyright = makeElement('p', '', `© ${new Date().getFullYear()} Mvrk Spence`);
+    const footerText = window.siteSettings && typeof window.siteSettings.footerText === 'string'
+        ? window.siteSettings.footerText
+        : 'Mvrk Spence';
+    const copyright = makeElement('p', '', `© ${new Date().getFullYear()} ${footerText}`);
     const links = document.createElement('nav');
     links.setAttribute('aria-label', 'Footer');
-    navigationItems.forEach(item => {
+    const configuredNavigation = Array.isArray(window.siteSettings && window.siteSettings.navigation)
+        ? window.siteSettings.navigation
+        : navigationItems.map(item => ({ label: item.label, page: item.href }));
+    configuredNavigation.forEach(item => {
+        if (!item || typeof item.label !== 'string' || typeof item.page !== 'string') return;
         const link = makeElement('a', '', item.label);
-        link.href = `${pagePrefix}${item.href}`;
+        link.href = safeLinkPath(item.page);
         links.append(link);
     });
-    const admin = makeElement('a', 'admin-link', 'Admin');
+    const footerLinks = document.createElement('nav');
+    footerLinks.setAttribute('aria-label', 'Social links');
+    (Array.isArray(window.siteSettings && window.siteSettings.footerLinks)
+        ? window.siteSettings.footerLinks
+        : []).forEach(item => {
+        if (!item || typeof item.label !== 'string' || typeof item.url !== 'string') return;
+        try {
+            const url = new URL(item.url);
+            if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+            const link = makeElement('a', '', item.label);
+            link.href = url.href;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            footerLinks.append(link);
+        } catch (error) {
+            console.error('Invalid footer link in site settings.', error);
+        }
+    });
+    const adminLabel = window.siteSettings && typeof window.siteSettings.adminLinkLabel === 'string'
+        ? window.siteSettings.adminLinkLabel
+        : 'Admin';
+    const admin = makeElement('a', 'admin-link', adminLabel || 'Admin');
     admin.href = 'admin/';
     admin.setAttribute('aria-label', 'Open site administration');
-    footer.append(copyright, links, admin);
+    footer.append(copyright, links, footerLinks, admin);
     siteFooter.className = 'site-footer';
     siteFooter.replaceChildren(footer);
 }
@@ -208,7 +260,7 @@ function renderConcept(data) {
     const intro = renderPageIntro(data);
     const feature = makeElement('section', 'concept-feature');
     const copy = makeElement('div', 'concept-copy');
-    copy.append(makeElement('h2', '', 'The thinking behind the work'));
+    copy.append(makeElement('h2', '', data.bodyHeading || 'The thinking behind the work'));
     if (data.body) copy.append(makeElement('p', '', data.body));
     const imagePath = safeImagePath(data.image);
     if (imagePath) {
@@ -255,8 +307,8 @@ function renderArtwork(data) {
     if (activeProducts.length === 0) {
         const empty = makeElement('div', 'empty-state');
         empty.append(
-            makeElement('h2', '', 'New work coming soon'),
-            makeElement('p', '', 'Please get in touch if you would like to enquire about a piece.')
+            makeElement('h2', '', data.emptyTitle || 'New work coming soon'),
+            makeElement('p', '', data.emptyMessage || 'Please get in touch if you would like to enquire about a piece.')
         );
         const contact = makeElement('a', 'button button-outline', 'Contact');
         contact.href = `${pagePrefix}contact.html`;
@@ -278,6 +330,11 @@ function renderArtwork(data) {
         const details = makeElement('div', 'product-details');
         details.append(makeElement('h2', '', product.name));
         if (product.description) details.append(makeElement('p', '', product.description));
+        details.append(makeElement(
+            'p',
+            'product-type',
+            product.type === 'digital' ? 'Digital item' : 'Physical item'
+        ));
         const footer = makeElement('div', 'product-footer');
         footer.append(makeElement('span', 'product-price', formatPrice(product.price, data.currency)));
         const addButton = makeElement('button', 'button add-to-basket-btn', 'Add to basket');
@@ -345,8 +402,22 @@ renderFooter();
 
 (async function initializeSite() {
     try {
-        const config = await loadJson('content/shop.json');
+        const [settings, config] = await Promise.all([
+            loadJson('content/site.json'),
+            loadJson('content/shop.json')
+        ]);
+        window.siteSettings = settings;
         window.siteConfig = config;
+        const siteName = typeof settings.siteName === 'string' && settings.siteName.trim()
+            ? settings.siteName.trim()
+            : 'Mvrk Spence';
+        document.title = `${siteName} | ${document.body.dataset.page}`;
+        if (typeof settings.metaDescription === 'string') {
+            const description = document.getElementById('page-description');
+            if (description) description.content = settings.metaDescription;
+        }
+        renderNavigation();
+        renderFooter();
         const productIds = new Set();
         window.siteProducts = Array.isArray(config.products)
             ? config.products.filter(product => {
@@ -374,7 +445,7 @@ renderFooter();
         if (page === 'artwork') {
             renderArtwork(config);
             const title = document.querySelector('#page-content h1');
-            if (title && config.title) document.title = `Mvrk Spence | ${config.title}`;
+            if (title && config.title) document.title = `${siteName} | ${config.title}`;
             return;
         }
 
@@ -382,7 +453,7 @@ renderFooter();
         if (page === 'home') renderHome(data);
         else if (page === 'concept') renderConcept(data);
         else if (page === 'contact') renderContact(data);
-        if (data.title) document.title = `Mvrk Spence | ${data.title}`;
+        if (data.title) document.title = `${siteName} | ${data.title}`;
     } catch (error) {
         console.error('Unable to load website content.', error);
         pageContent.replaceChildren(

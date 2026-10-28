@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mvrk Spence — coming soon.">
+  <meta id="page-description" name="description" content="Mvrk Spence — coming soon.">
   <meta name="author" content="Mvrk Spence">
   <meta name="theme-color" content="#080808">
-  <title>Mvrk Spence | Coming soon</title>
-  <link rel="icon" href="stuff/img/Iconlogo.png" type="image/png">
+  <title id="page-title">Mvrk Spence | Coming soon</title>
+  <link id="site-favicon" rel="icon" href="stuff/img/Iconlogo.png" type="image/png">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -61,11 +61,11 @@
 </head>
 <body>
   <main>
-    <img src="stuff/img/logo.png" alt="Mvrk Spence">
-    <p>Coming soon</p>
-    <a href="/preview/">Preview the website</a>
+    <img id="coming-soon-logo" src="stuff/img/logo.png" alt="Mvrk Spence">
+    <p id="coming-soon-message">Coming soon</p>
+    <a id="coming-soon-link" href="/preview/">Preview the website</a>
   </main>
-  <footer>© <span id="year"></span> Mvrk Spence · <a href="/admin/">Admin</a></footer>
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <footer>© <span id="year"></span> <span id="coming-soon-footer">Mvrk Spence</span> · <a href="/admin/">Admin</a></footer>
+  <script src="stuff/coming-soon.js" defer></script>
 </body>
 </html>

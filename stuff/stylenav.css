@@ -558,6 +558,17 @@ h1,
   text-align: center;
 }
 
+.cart-shipping {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0 0;
+  color: var(--muted);
+}
+
+.cart-shipping[hidden] {
+  display: none;
+}
+
 .cart-total {
   display: flex;
   justify-content: space-between;

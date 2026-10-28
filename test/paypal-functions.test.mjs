@@ -13,6 +13,7 @@ const originalEnvironment = {
 const shop = {
     currency: 'USD',
     paypalClientId: 'sandbox-client-id',
+    shipping: { enabled: false, amount: 0 },
     products: [
         { id: 'print-1', name: 'Limited Print', price: 12.5, available: true },
         { id: 'sold-out', name: 'Sold Out', price: 50, available: false }
@@ -23,6 +24,11 @@ beforeEach(() => {
     process.env.URL = 'https://mvrkspence.example';
     process.env.PAYPAL_CLIENT_SECRET = 'test-secret';
     process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+    shop.shipping = { enabled: false, amount: 0 };
+    shop.products = [
+        { id: 'print-1', name: 'Limited Print', price: 12.5, available: true },
+        { id: 'sold-out', name: 'Sold Out', price: 50, available: false }
+    ];
 });
 
 afterEach(() => {
@@ -98,6 +104,67 @@ test('create order rejects invalid quantities', async () => {
     });
 
     assert.equal(response.statusCode, 400);
+});
+
+test('create order adds configured flat shipping for physical products', async () => {
+    shop.shipping = { enabled: true, amount: 4.5 };
+    const calls = mockPaypal();
+    const response = await createOrder({
+        httpMethod: 'POST',
+        body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] })
+    });
+
+    assert.equal(response.statusCode, 200);
+    const orderRequest = calls.find(call => call.url.endsWith('/v2/checkout/orders'));
+    const order = JSON.parse(orderRequest.options.body);
+    assert.equal(order.purchase_units[0].amount.value, '17.00');
+    assert.deepEqual(order.purchase_units[0].amount.breakdown.shipping, {
+        currency_code: 'USD',
+        value: '4.50'
+    });
+    assert.equal(
+        order.payment_source.paypal.experience_context.shipping_preference,
+        'GET_FROM_FILE'
+    );
+});
+
+test('create order omits shipping for digital products', async () => {
+    shop.shipping = { enabled: true, amount: 4.5 };
+    shop.products.push({
+        id: 'digital-1',
+        name: 'Digital artwork',
+        price: 8,
+        type: 'digital',
+        available: true
+    });
+    const calls = mockPaypal();
+    const response = await createOrder({
+        httpMethod: 'POST',
+        body: JSON.stringify({ items: [{ id: 'digital-1', quantity: 1 }] })
+    });
+
+    assert.equal(response.statusCode, 200);
+    const orderRequest = calls.find(call => call.url.endsWith('/v2/checkout/orders'));
+    const order = JSON.parse(orderRequest.options.body);
+    assert.equal(order.purchase_units[0].amount.value, '8.00');
+    assert.equal(order.purchase_units[0].amount.breakdown.shipping, undefined);
+    assert.equal(order.purchase_units[0].items[0].category, 'DIGITAL_GOODS');
+    assert.equal(
+        order.payment_source.paypal.experience_context.shipping_preference,
+        'NO_SHIPPING'
+    );
+});
+
+test('create order rejects malformed shipping settings before contacting PayPal', async () => {
+    shop.shipping = { enabled: true, amount: '4.555' };
+    const calls = mockPaypal();
+    const response = await createOrder({
+        httpMethod: 'POST',
+        body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] })
+    });
+
+    assert.equal(response.statusCode, 500);
+    assert.equal(calls.some(call => call.url.endsWith('/v2/checkout/orders')), false);
 });
 
 test('capture order reports the PayPal capture status', async () => {
