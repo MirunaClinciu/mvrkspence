@@ -749,6 +749,7 @@ html { scrollbar-gutter: stable; scroll-padding-top: calc(var(--nav-height) + 20
 .menu-toggle span { background: var(--accent); }
 .product-card > img { object-fit: contain; }
 .product-enquiry { color: var(--muted); font-size: .85rem; }
+.shop-test-notice { margin: 24px auto 0; padding: 14px 18px; border: 1px solid var(--line); background: #f7f6f2; color: #555; font-size: .85rem; line-height: 1.6; }
 .product-footer { flex-wrap: wrap; }
 .shop-checkout { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); text-align: center; }
 .shop-checkout p { color: var(--muted); }

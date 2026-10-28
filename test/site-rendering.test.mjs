@@ -15,6 +15,13 @@ class Element {
         this.hidden = false;
         this.ownText = '';
         this.listeners = {};
+        this.isConnected = true;
+        this.classList = {
+            contains: name => this.className.split(' ').includes(name),
+            add: name => { if (!this.classList.contains(name)) this.className = (this.className + ' ' + name).trim(); },
+            remove: name => { this.className = this.className.split(' ').filter(value => value !== name).join(' '); },
+            toggle: (name, enabled) => { if (enabled) this.classList.add(name); else this.classList.remove(name); }
+        };
     }
     set textContent(value) { this.ownText = String(value); this.children = []; }
     get textContent() { return this.ownText + this.children.map(child => child.textContent).join(''); }
@@ -26,6 +33,8 @@ class Element {
     setAttribute(name, value) { this.attributes[name] = String(value); }
     getAttribute(name) { return this.attributes[name]; }
     addEventListener(name, listener) { this.listeners[name] = listener; }
+    contains(element) { return element === this || this.children.some(child => child.contains(element)); }
+    focus() { if (this.ownerDocument) this.ownerDocument.activeElement = this; }
 }
 
 const source = readFileSync(new URL('../stuff/site.js', import.meta.url), 'utf8');
@@ -36,15 +45,20 @@ function fixture(page = 'home') {
         .map(id => [id, new Element('div')]));
     const body = new Element('body');
     body.dataset = { page, sitePrefix: '/preview/' };
-    const window = { location: { origin: 'https://portfolio.example', search: '' } };
+    const window = { location: { origin: 'https://portfolio.example', pathname: '/preview/index.html', search: '', hash: '' }, dispatchEvent() {} };
+    const document = {
+        body,
+        baseURI: 'https://portfolio.example/',
+        createElement: tag => { const element = new Element(tag); element.ownerDocument = document; return element; },
+        getElementById: id => roots[id],
+        querySelector: selector => descendants(body, child => selector === '.skip-link' && child.className === 'skip-link')[0] || null,
+        addEventListener() {}
+    };
+    body.ownerDocument = document;
     const context = createContext({
         window,
-        document: {
-            body,
-            baseURI: 'https://portfolio.example/',
-            createElement: tag => new Element(tag),
-            getElementById: id => roots[id]
-        },
+        document,
+        CustomEvent: class CustomEvent { constructor(type) { this.type = type; } },
         URL,
         URLSearchParams,
         console
@@ -161,4 +175,124 @@ test('Artwork enquiry carries the selected work into a safely encoded email subj
     context.renderContact({ title: 'Contact', email: 'artist@example.com' });
     assert.equal(byClass(roots['page-content'], 'contact-email')[0].href,
         'mailto:artist@example.com?subject=Artwork%20enquiry%3A%20Book%20%26%20prints');
+});
+
+test('Artwork clearly labels sandbox test collections and omits that label for normal catalogs', () => {
+    const { context, roots, window } = fixture('artwork');
+    window.siteProducts = [{ id: 'sample', name: 'Sample print', price: 25, purchasable: true }];
+    context.renderArtwork({ title: 'Artwork', currency: 'GBP', testMode: true });
+    const notice = byClass(roots['page-content'], 'shop-test-notice')[0];
+    assert.equal(notice.getAttribute('role'), 'note');
+    assert.match(notice.textContent, /sample products and prices/);
+    assert.match(notice.textContent, /sandbox account/);
+    context.renderArtwork({ title: 'Artwork', currency: 'GBP', testMode: false });
+    assert.equal(byClass(roots['page-content'], 'shop-test-notice').length, 0);
+});
+
+
+test('skip link stays on the current preview page when the HTML base points to the root', () => {
+    const { context, window } = fixture('contact');
+    window.location.pathname = '/preview/contact.html';
+    window.location.search = '?artwork=Book%20%26%20prints';
+    context.renderNavigation();
+    const skip = byClass(context.document.body, 'skip-link')[0];
+    assert.equal(skip.href, '/preview/contact.html?artwork=Book%20%26%20prints#page-content');
+});
+
+test('basket opening disables the background and closing restores the invoking control', () => {
+    const { context, roots } = fixture();
+    const trigger = context.document.createElement('button');
+    const close = context.document.createElement('button');
+    const overlay = context.document.createElement('div');
+    roots['shopping-cart-modal'] = overlay;
+    roots['close-cart-modal'] = close;
+    trigger.focus();
+    context.openShoppingBasket();
+    assert.equal(overlay.inert, false);
+    assert.equal(overlay.getAttribute('aria-hidden'), 'false');
+    assert.equal(context.document.activeElement, close);
+    assert.ok(['site-header', 'page-content', 'site-footer'].every(id => roots[id].inert));
+    context.closeShoppingBasket();
+    assert.equal(overlay.inert, true);
+    assert.equal(overlay.getAttribute('aria-hidden'), 'true');
+    assert.equal(context.document.activeElement, trigger);
+    assert.ok(['site-header', 'page-content', 'site-footer'].every(id => !roots[id].inert));
+});
+
+function setContentResponses(context, responses) {
+    context.renderNavigation = () => {};
+    context.renderFooter = () => {};
+    context.console = { error() {} };
+    context.fetch = async path => ({
+        ok: responses[path] !== undefined,
+        status: responses[path] === undefined ? 503 : 200,
+        json: async () => responses[path]
+    });
+}
+
+test('a missing shop catalog does not hide the homepage or enable checkout', async () => {
+    const { context, roots, window } = fixture();
+    const home = JSON.parse(readFileSync(new URL('../content/home.json', import.meta.url), 'utf8'));
+    setContentResponses(context, { 'content/site.json': { siteName: 'Mvrk Spence' }, 'content/home.json': home });
+    await context.initializeSite();
+    assert.equal(byClass(roots['page-content'], 'home-image-link').length, home.cards.length);
+    assert.equal(window.siteReady, false);
+    assert.equal(window.siteConfig, null);
+});
+
+test('Artwork presents a retry when its catalog cannot be loaded', async () => {
+    const { context, roots, window } = fixture('artwork');
+    setContentResponses(context, { 'content/site.json': { siteName: 'Mvrk Spence' } });
+    await context.initializeSite();
+    assert.match(roots['page-content'].textContent, /could not be loaded/);
+    assert.equal(byTag(roots['page-content'], 'button')[0].textContent, 'Try again');
+    assert.equal(window.siteReady, false);
+});
+
+test('missing site settings fall back to the default brand while the Contact page remains usable', async () => {
+    const { context, roots } = fixture('contact');
+    setContentResponses(context, {
+        'content/shop.json': { products: [] },
+        'content/contact.json': { title: 'Contact', email: 'artist@example.com' }
+    });
+    await context.initializeSite();
+    assert.equal(context.document.title, 'Mvrk Spence | Contact');
+    assert.equal(byClass(roots['page-content'], 'contact-email')[0].href, 'mailto:artist@example.com');
+});
+
+test('payment settings load with the catalog and select the matching public client ID', async () => {
+    const { context, window } = fixture('artwork');
+    setContentResponses(context, {
+        'content/site.json': { siteName: 'Mvrk Spence' },
+        'content/shop.json': { products: [], paypalClientId: 'legacy-sandbox', testMode: false },
+        'content/payments.json': { environment: 'live', sandboxClientId: 'sandbox-public', liveClientId: 'live-public' }
+    });
+    await context.initializeSite();
+    assert.equal(window.siteConfig.paypalEnvironment, 'live');
+    assert.equal(window.siteConfig.paypalClientId, 'live-public');
+});
+
+test('sample catalogs disable live checkout in the browser even with a live public ID', () => {
+    const { context } = fixture();
+    const config = { testMode: true, paypalClientId: 'legacy-sandbox' };
+    context.applyPaymentSettings(config, { environment: 'live', liveClientId: 'live-public' });
+    assert.equal(config.paypalEnvironment, 'live');
+    assert.equal(config.paypalClientId, '');
+});
+
+test('payment mode switches cannot reuse the other public client ID', () => {
+    const { context } = fixture();
+    const config = { testMode: false, paypalClientId: 'legacy-sandbox' };
+    context.applyPaymentSettings(config, { environment: 'live', liveClientId: '', sandboxClientId: 'sandbox-public' });
+    assert.equal(config.paypalClientId, '');
+    context.applyPaymentSettings(config, { environment: 'production', liveClientId: 'live-public' });
+    assert.equal(config.paypalClientId, '');
+});
+
+test('a missing new payment file keeps the legacy sandbox setup usable', () => {
+    const { context } = fixture();
+    const config = { paypalClientId: 'legacy-sandbox' };
+    context.applyPaymentSettings(config, null);
+    assert.equal(config.paypalEnvironment, 'sandbox');
+    assert.equal(config.paypalClientId, 'legacy-sandbox');
 });

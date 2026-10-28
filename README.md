@@ -24,7 +24,8 @@ this deployment public.
 
 The simple website manager is at `/manage/`. It provides sign-in and direct
 editing options for home pictures, Concept and journal, artwork products,
-contact details and website setup. The editing guide at `/admin/guide.html`
+contact details, website setup and PayPal payments. PayPal setup is explained at
+`/manage/paypal.html`. The editing guide at `/admin/guide.html`
 explains each step; no coding experience is needed for content changes.
 The full editor remains available at `/admin/`.
 
@@ -49,11 +50,11 @@ To enable the editor:
 
 The editor controls the coming-soon page, shared site name/description/logo,
 browser icon, navigation, footer, all page copy and images, contact/social
-links, journal posts, and shop settings/products. To change the PayPal app, edit **PayPal
-public client ID** in **Shop & payments**. This value is safe to edit in the
-CMS because PayPal client IDs are public identifiers. The matching secret
-must remain in Netlify environment variables and must be updated there when
-switching PayPal apps or environments; never paste the secret into the CMS.
+links, journal posts, and shop settings/products. In **Shop & payments > PayPal
+payment settings**, the administrator can save separate public Client IDs for
+test and live payments and choose the active payment mode. These public IDs are
+safe to store in the CMS. Matching secrets stay in Netlify's secure environment
+settings, linked from the PayPal setup page; never paste secrets into the CMS.
 
 The site layout and styling are still maintained in the website source code.
 Home, Concept, and Shop have visual previews inside the editor. These help check
@@ -88,29 +89,44 @@ leave **Enable PayPal checkout** off. To sell it, enter the actual price above z
 in the selected shop currency and switch checkout on. Use **Show on Artwork page**
 to hide a listing without deleting it; remove the list entry to delete it. New
 listings start as enquiries to prevent publishing an unintended selling price.
-The initial artwork listings use existing portfolio images and accept enquiries
-until the administrator enters prices and enables checkout.
+The private test shop includes four editable examples in GBP: a book (GBP 35), an
+art print (GBP 25), framed artwork (GBP 60) and an art T-shirt (GBP 28), plus a
+sample GBP 4.95 shipping fee per physical order. These are placeholders for testing.
+Replace names, photos, descriptions, sizes and prices in the editor.
+**Test shop with sample products** prevents live PayPal processing while these
+example prices are in use. Keep it on until the real catalogue is ready.
 
 Publishing content and taking payments are separate: the CMS can publish artwork
 before PayPal is configured. For checkout, complete the sandbox setup below and
 test a payment before entering live credentials. The administrator controls the
-public client ID in the CMS; the private secret stays in Netlify.
+public Client IDs and test/live mode in the CMS; private secrets stay in Netlify.
 
 ## PayPal checkout
 
-Checkout uses the PayPal Orders API through Netlify Functions. The server reads
-current prices and availability from `content/shop.json` and creates/captures
+Checkout uses the PayPal Orders API through Netlify Functions. The server uses prices and availability from `content/shop.json` bundled during
+each deployment and creates/captures
 orders using server-side credentials. It does not accept prices from a
 customer's browser.
 
-1. Create a PayPal app in the PayPal Developer Dashboard.
-2. Add its **sandbox** client ID to **Shop & payments** in the CMS.
-3. In Netlify site environment variables, set `PAYPAL_CLIENT_SECRET` to the
-   matching sandbox secret and `PAYPAL_ENVIRONMENT` to `sandbox`.
-4. Test a complete checkout with PayPal sandbox buyer and seller accounts.
-5. Before accepting real payments, change the CMS client ID to the live ID,
-   set the matching live `PAYPAL_CLIENT_SECRET`, and change
-   `PAYPAL_ENVIRONMENT` to `live`.
+1. Open `/manage/paypal.html` for the plain-language setup instructions and links.
+2. Create or open a **sandbox** app in the PayPal Developer Dashboard. In
+   **Shop & payments > PayPal payment settings**, choose **Test payments** and
+   copy its Client ID into **Test PayPal public client ID**.
+3. In Netlify's secure environment variables, store its matching secret as
+   `PAYPAL_CLIENT_SECRET_SANDBOX`, available to the production deployment and
+   functions. After adding or changing a secret, start a new deploy using
+   **Deploys > Trigger deploy**, or save and publish the payment settings after
+   the secret has been added. Environment changes require a fresh deployment.
+4. Test a complete checkout using a separate PayPal sandbox buyer account.
+5. Before accepting real payments, replace every sample product and price,
+   add the live Client ID in **Live PayPal public client ID**, and store its
+   matching secret as `PAYPAL_CLIENT_SECRET_LIVE` in Netlify. Turn **Test shop
+   with sample products** off, choose **Real payments**, and publish/redeploy.
+
+The active mode and public Client IDs are stored in `content/payments.json`.
+Payment functions select the matching secret and PayPal API host for that mode.
+Older configurations using `PAYPAL_CLIENT_SECRET` and `PAYPAL_ENVIRONMENT` remain
+supported only when the legacy environment matches the selected mode.
 
 Never put a PayPal client secret in the CMS, a JSON file, or browser code. The
 PayPal buttons appear after a client ID is configured; checkout will report a

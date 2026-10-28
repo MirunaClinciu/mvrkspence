@@ -1,4 +1,5 @@
 import bundledShop from '../../content/shop.json' with { type: 'json' };
+import bundledPayments from '../../content/payments.json' with { type: 'json' };
 
 const paypalHosts = {
     sandbox: 'https://api-m.sandbox.paypal.com',
@@ -36,8 +37,20 @@ export async function getShopConfig() {
     // A bundled catalog also works when the deployment requires visitor authentication.
     const config = structuredClone(bundledShop);
     if (!config || typeof config !== 'object') throw new Error('The product catalog is invalid.');
+    const legacyEnvironment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
+    const environment = bundledPayments.environment ?? legacyEnvironment;
+    getPaypalHost(environment);
+    const publicId = environment === 'live' ? bundledPayments.liveClientId : bundledPayments.sandboxClientId;
+    config.paypalEnvironment = environment;
+    config.paypalClientId = typeof publicId === 'string' && publicId.trim()
+        ? publicId.trim()
+        : environment === legacyEnvironment && typeof config.paypalClientId === 'string'
+            ? config.paypalClientId.trim() : '';
+    if (config.testMode === true && environment !== 'sandbox') {
+        throw new Error('The sample catalogue can only use PayPal sandbox. Choose Test payments in the admin PayPal settings while testing.');
+    }
     if (typeof config.paypalClientId !== 'string' || !config.paypalClientId.trim()) {
-        throw new Error('PayPal client ID is missing from the shop settings.');
+        throw new Error(`The ${environment} PayPal client ID is missing. Add it in the admin PayPal settings.`);
     }
     config.paypalClientId = config.paypalClientId.trim();
     if (typeof config.currency !== 'string' || !supportedCurrencies.has(config.currency)) {
@@ -46,19 +59,24 @@ export async function getShopConfig() {
     return { config, siteUrl };
 }
 
-export function getPaypalHost() {
-    const environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
+export function getPaypalHost(environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox') {
+    if (environment !== 'sandbox' && environment !== 'live') {
+        throw new Error('The PayPal payment environment must be "sandbox" or "live".');
+    }
     const host = paypalHosts[environment];
-    if (!host) throw new Error('PAYPAL_ENVIRONMENT must be "sandbox" or "live".');
     return host;
 }
 
-export async function getPaypalAccessToken(clientId) {
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-    if (!clientSecret) throw new Error('PAYPAL_CLIENT_SECRET is not set in the Netlify environment.');
+export async function getPaypalAccessToken(clientId, environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox') {
+    const host = getPaypalHost(environment);
+    const secretName = environment === 'live' ? 'PAYPAL_CLIENT_SECRET_LIVE' : 'PAYPAL_CLIENT_SECRET_SANDBOX';
+    const legacyEnvironment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
+    const clientSecret = process.env[secretName]?.trim() ||
+        (legacyEnvironment === environment ? process.env.PAYPAL_CLIENT_SECRET?.trim() : '');
+    if (!clientSecret) throw new Error(`${secretName} is not set in Netlify. Add the matching private secret using the secure settings link in the admin.`);
 
     const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-    const response = await fetch(`${getPaypalHost()}/v1/oauth2/token`, {
+    const response = await fetch(`${host}/v1/oauth2/token`, {
         method: 'POST',
         headers: {
             Authorization: `Basic ${credentials}`,
@@ -92,8 +110,8 @@ export function readRequestBody(event) {
     return body;
 }
 
-export async function requestPaypal(path, accessToken, body, requestId = crypto.randomUUID()) {
-    const response = await fetch(`${getPaypalHost()}${path}`, {
+export async function requestPaypal(path, accessToken, body, requestId = crypto.randomUUID(), environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox') {
+    const response = await fetch(`${getPaypalHost(environment)}${path}`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${accessToken}`,

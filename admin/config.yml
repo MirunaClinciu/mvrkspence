@@ -159,6 +159,21 @@ collections:
   - name: shop
     label: Shop & payments
     files:
+      - name: payments
+        label: PayPal payment settings
+        file: content/payments.json
+        format: json
+        fields:
+          - name: environment
+            label: Payment mode
+            widget: select
+            default: sandbox
+            hint: 'Choose Test payments while setting up. Use Real payments only after replacing sample products and testing checkout.'
+            options:
+              - { label: Test payments (PayPal sandbox), value: sandbox }
+              - { label: Real payments (PayPal live), value: live }
+          - { name: sandboxClientId, label: Test PayPal public client ID, widget: string, required: false, hint: 'Copy Client ID from your PayPal sandbox app. The matching secret goes in the secure Netlify settings linked from PayPal setup.' }
+          - { name: liveClientId, label: Live PayPal public client ID, widget: string, required: false, hint: 'Copy Client ID from your PayPal live app. Enter the public Client ID only, never the secret or your PayPal password.' }
       - name: shop
         label: Shop settings & products
         file: content/shop.json
@@ -169,11 +184,11 @@ collections:
           - { name: intro, label: Shop introduction, widget: text }
           - { name: emptyTitle, label: Empty shop heading, widget: string }
           - { name: emptyMessage, label: Empty shop message, widget: text }
+          - { name: testMode, label: Test shop with sample products, widget: boolean, default: true, hint: "Keep on while testing sample prices. Payments are restricted to PayPal sandbox. Turn off only when real products and prices are ready." }
           - name: currency
             label: Display and checkout currency
             widget: select
             options: [USD, GBP, EUR, CAD, AUD, NZD, CHF, SGD]
-          - { name: paypalClientId, label: PayPal public client ID, widget: string, required: false, hint: "Safe to show on the site. Update the matching private PayPal client secret in Netlify environment variables when changing PayPal apps." }
           - name: shipping
             label: Shipping charge
             widget: object

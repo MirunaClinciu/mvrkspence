@@ -115,7 +115,7 @@ function renderNavigation() {
     siteHeader.replaceChildren(nav);
     if (!document.querySelector('.skip-link')) {
         const skip = makeElement('a', 'skip-link', 'Skip to content');
-        skip.href = '#page-content';
+        skip.href = `${window.location.pathname}${window.location.search}#page-content`;
         document.body.prepend(skip);
     }
     const closeMenu = () => {
@@ -398,6 +398,11 @@ function renderConceptPosts(posts) {
 
 function renderArtwork(data) {
     const intro = renderPageIntro(data);
+    if (data.testMode === true) {
+        const notice = makeElement('p', 'shop-test-notice', 'Test collection — sample products and prices. PayPal checkout requires a sandbox account.');
+        notice.setAttribute('role', 'note');
+        intro.append(notice);
+    }
     const productList = makeElement('section', 'product-grid');
     productList.id = 'product-list';
     productList.setAttribute('aria-label', 'Available artwork');
@@ -514,38 +519,42 @@ async function loadJson(path) {
     return response.json();
 }
 
-renderNavigation();
-renderModal();
-renderFooter();
-
-(async function initializeSite() {
-    try {
-        const [settings, config] = await Promise.all([
-            loadJson('content/site.json'),
-            loadJson('content/shop.json')
-        ]);
-        window.siteSettings = settings;
+async function initializeSite() {
+    const contentPath = page === 'artwork' ? null : `content/${page}.json`;
+    const [settingsResult, shopResult, contentResult, paymentsResult] = await Promise.allSettled([
+        loadJson('content/site.json'),
+        loadJson('content/shop.json'),
+        contentPath ? loadJson(contentPath) : Promise.resolve(null),
+        loadJson('content/payments.json')
+    ]);
+    const settings = settingsResult.status === 'fulfilled' && settingsResult.value &&
+        typeof settingsResult.value === 'object' && !Array.isArray(settingsResult.value)
+        ? settingsResult.value : {};
+    if (settingsResult.status === 'rejected') console.error('Unable to load site settings.', settingsResult.reason);
+    window.siteSettings = settings;
+    const siteName = typeof settings.siteName === 'string' && settings.siteName.trim()
+        ? settings.siteName.trim() : 'Mvrk Spence';
+    document.title = `${siteName} | ${{ home: 'Home', concept: 'Concept', artwork: 'Artwork & Shop', contact: 'Contact' }[page] || 'Portfolio'}`;
+    if (typeof settings.metaDescription === 'string') {
+        const description = document.getElementById('page-description');
+        if (description) description.content = settings.metaDescription;
+    }
+    renderNavigation();
+    renderFooter();
+    let config;
+    if (shopResult.status === 'fulfilled' && shopResult.value &&
+        typeof shopResult.value === 'object' && !Array.isArray(shopResult.value)) {
+        config = shopResult.value;
+        applyPaymentSettings(config, paymentsResult.status === 'fulfilled' ? paymentsResult.value : null);
         window.siteConfig = config;
-        const siteName = typeof settings.siteName === 'string' && settings.siteName.trim()
-            ? settings.siteName.trim()
-            : 'Mvrk Spence';
-        document.title = `${siteName} | ${{ home: 'Home', concept: 'Concept', artwork: 'Artwork & Shop', contact: 'Contact' }[page] || 'Portfolio'}`;
-        if (typeof settings.metaDescription === 'string') {
-            const description = document.getElementById('page-description');
-            if (description) description.content = settings.metaDescription;
-        }
-        renderNavigation();
-        renderFooter();
         const productIds = new Set();
         window.siteProducts = Array.isArray(config.products)
             ? config.products.filter(product => {
-                const valid =
-                    product &&
+                const valid = product &&
                     typeof product.id === 'string' &&
                     /^[A-Za-z0-9._-]{1,80}$/.test(product.id) &&
                     !productIds.has(product.id) &&
-                    typeof product.name === 'string' &&
-                    product.name.trim() !== '' &&
+                    typeof product.name === 'string' && product.name.trim() !== '' &&
                     (product.purchasable === false || (
                         /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(product.price)) &&
                         Number.isSafeInteger(Math.round(Number(product.price) * 100)) &&
@@ -557,23 +566,26 @@ renderFooter();
                 }
                 productIds.add(product.id);
                 return true;
-            })
-            : [];
+            }) : [];
         window.siteReady = true;
         window.dispatchEvent(new CustomEvent('site:ready'));
-
+    } else {
+        console.error('Unable to load shop settings.', shopResult.reason || 'Invalid catalog');
+    }
+    try {
         if (page === 'artwork') {
+            if (!config) throw new Error('The artwork catalog could not be loaded.');
             renderArtwork(config);
-            const title = document.querySelector('#page-content h1');
-            if (title && config.title) document.title = `${siteName} | ${config.title}`;
-            return;
+            if (config.title) document.title = `${siteName} | ${config.title}`;
+        } else {
+            if (contentResult.status === 'rejected') throw contentResult.reason;
+            const data = contentResult.value;
+            if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid page content.');
+            if (page === 'home') renderHome(data);
+            else if (page === 'concept') renderConcept(data);
+            else if (page === 'contact') renderContact(data);
+            if (data.title) document.title = `${siteName} | ${data.title}`;
         }
-
-        const data = await loadJson(`content/${page}.json`);
-        if (page === 'home') renderHome(data);
-        else if (page === 'concept') renderConcept(data);
-        else if (page === 'contact') renderContact(data);
-        if (data.title) document.title = `${siteName} | ${data.title}`;
         scrollToPageAnchor();
     } catch (error) {
         console.error('Unable to load website content.', error);
@@ -585,7 +597,29 @@ renderFooter();
         retry.addEventListener('click', () => window.location.reload());
         pageContent.firstChild.append(retry);
     }
-})();
+}
+
+function applyPaymentSettings(config, payments) {
+    const legacyEnvironment = config.paypalEnvironment === 'live' ? 'live' : 'sandbox';
+    if (!payments || typeof payments !== 'object' || Array.isArray(payments)) {
+        config.paypalEnvironment = legacyEnvironment;
+        if (config.testMode === true && legacyEnvironment === 'live') config.paypalClientId = '';
+        return;
+    }
+    const environment = payments.environment;
+    if (environment !== 'sandbox' && environment !== 'live') {
+        config.paypalEnvironment = 'sandbox';
+        config.paypalClientId = '';
+        return;
+    }
+    const publicId = environment === 'live' ? payments.liveClientId : payments.sandboxClientId;
+    config.paypalEnvironment = environment;
+    config.paypalClientId = typeof publicId === 'string' && publicId.trim()
+        ? publicId.trim()
+        : environment === legacyEnvironment && typeof config.paypalClientId === 'string'
+            ? config.paypalClientId.trim() : '';
+    if (config.testMode === true && environment === 'live') config.paypalClientId = '';
+}
 
 function scrollToPageAnchor() {
     let id;
@@ -599,3 +633,8 @@ function scrollToPageAnchor() {
         requestAnimationFrame(() => target.scrollIntoView({ block: 'start', behavior: 'instant' }));
     }
 }
+
+renderNavigation();
+renderModal();
+renderFooter();
+initializeSite();

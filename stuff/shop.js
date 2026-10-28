@@ -260,12 +260,18 @@ function renderPayPalButtons() {
     const rawClientId = window.siteConfig && window.siteConfig.paypalClientId;
     const clientId = typeof rawClientId === 'string' ? rawClientId.trim() : '';
     const currency = window.siteConfig && window.siteConfig.currency;
+    if (window.siteConfig && window.siteConfig.testMode === true && window.siteConfig.paypalEnvironment === 'live') {
+        showCartStatus('This is a sample catalogue. Choose Test payments in the admin PayPal settings before testing checkout.', true);
+        return;
+    }
     if (!hasValidShippingSettings()) {
         showCartStatus('The shop shipping settings need to be corrected by the site owner.', true);
         return;
     }
     if (!clientId) {
-        showCartStatus('Online checkout is not available yet. Please use the Contact page to enquire about your selection.');
+        showCartStatus(window.siteConfig && window.siteConfig.testMode === true
+            ? 'Your test basket is ready. PayPal sandbox is not connected yet, so no payment can be taken.'
+            : 'Online checkout is not available yet. Please use the Contact page to enquire about your selection.');
         return;
     }
     if (!/^[A-Z]{3}$/.test(currency || '')) {

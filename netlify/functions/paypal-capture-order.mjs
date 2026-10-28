@@ -18,12 +18,13 @@ export async function handler(event) {
         }
 
         const { config } = await getShopConfig();
-        const accessToken = await getPaypalAccessToken(config.paypalClientId);
+        const accessToken = await getPaypalAccessToken(config.paypalClientId, config.paypalEnvironment);
         const result = await requestPaypal(
             `/v2/checkout/orders/${encodeURIComponent(request.orderId)}/capture`,
             accessToken,
             {},
-            `capture-${request.orderId}`
+            `capture-${request.orderId}`,
+            config.paypalEnvironment
         );
 
         if (result.status !== 'COMPLETED') {

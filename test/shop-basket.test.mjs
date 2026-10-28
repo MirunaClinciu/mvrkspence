@@ -54,3 +54,12 @@ test('HTML error responses show a useful checkout failure instead of a JSON pars
     context.fetch = async () => new Response('<html>Unavailable</html>', { status: 503 });
     await assert.rejects(vm.runInContext("postJson('/payment', {})", context), /payment service/);
 });
+
+test('sample catalogs cannot load live PayPal buttons even when given a live client ID', () => {
+    const { context } = createShop(JSON.stringify({ print: { name: 'Print', price: 25, quantity: 1, type: 'physical' } }));
+    context.window.siteReady = true;
+    context.window.siteProducts = [{ id: 'print', name: 'Print', price: 25, type: 'physical' }];
+    context.window.siteConfig = { testMode: true, paypalEnvironment: 'live', paypalClientId: 'live-public', currency: 'GBP' };
+    vm.runInContext('renderPayPalButtons()', context);
+    assert.match(context.document.getElementById('cart-status').textContent, /sample catalogue.*Test payments/);
+});

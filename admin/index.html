@@ -22,7 +22,10 @@
       window.netlifyIdentity.on('init', user => {
         if (!user) {
           window.netlifyIdentity.on('login', () => {
-            window.location.href = '/admin/';
+            const editorHash = window.location.hash;
+            window.location.href = editorHash.startsWith('#/collections/') || editorHash === '#/workflow'
+              ? `/admin/${editorHash}`
+              : '/admin/';
           });
         }
       });
@@ -42,6 +45,7 @@
       editorStatus.append(document.createTextNode(' '), retry);
     }
   </script>
+  <script src="/admin/validation.js"></script>
   <script src="/admin/preview.js"></script>
 </body>
 </html>

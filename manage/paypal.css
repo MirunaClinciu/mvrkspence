@@ -1,0 +1,16 @@
+.primary-action { display: inline-flex; align-items: center; margin-top: 8px; text-decoration: none; }
+.setup-steps { counter-reset: setup; list-style: none; margin: 44px 0 0; padding: 0; }
+.setup-steps > li { counter-increment: setup; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 22px; padding: 30px 0; border-top: 1px solid var(--line); }
+.setup-steps > li::before { content: counter(setup, decimal-leading-zero); color: var(--accent); font-size: .85rem; font-weight: 700; letter-spacing: .08em; padding-top: 3px; }
+.step-copy { max-width: 800px; }
+.step-copy p, .live-setup p { color: var(--muted); }
+.step-link { display: inline-block; padding: 8px 0; color: var(--accent); font-size: .9rem; font-weight: 700; text-underline-offset: 4px; }
+.secret-names { margin: 24px 0; padding: 20px; border: 1px solid var(--line); background: #fff; }
+.secret-names > div + div { margin-top: 16px; }
+.secret-names dt { font-size: .85rem; color: var(--muted); }
+.secret-names dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.secret-names code { font-size: .9rem; }
+.step-actions { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.step-actions a { padding: 5px 0; text-underline-offset: 4px; }
+.live-setup { max-width: 800px; margin-top: 48px; }
+@media (max-width: 560px) { .setup-steps > li { grid-template-columns: 28px minmax(0, 1fr); gap: 12px; } .secret-names { padding: 16px; } }

@@ -1,37 +1,59 @@
 {
-  "eyebrow": "Selected works",
+  "eyebrow": "Books, prints & wearable art",
   "title": "Artwork & Shop",
-  "intro": "Explore the book and artwork collection. Get in touch about a piece, or add work with a listed price to your basket.",
+  "intro": "A private test collection with sample products and prices in pounds. The administrator can replace every photo, description and price.",
   "emptyTitle": "New work coming soon",
   "emptyMessage": "Please get in touch if you would like to enquire about a piece.",
-  "currency": "USD",
-  "paypalClientId": "",
+  "currency": "GBP",
   "shipping": {
-    "enabled": false,
-    "amount": 0
+    "enabled": true,
+    "amount": 4.95
   },
   "products": [
     {
       "id": "holy-window",
-      "name": "Holy Window",
-      "description": "The book project by Mvrk Spence. Get in touch to ask about the book and availability.",
-      "purchasable": false,
-      "price": 0,
+      "name": "Holy Window - sample book",
+      "description": "Sample listing: an art and photography book. Example price and cover for testing; edit the final edition, description and price before selling.",
+      "purchasable": true,
+      "price": 35,
       "type": "physical",
       "image": "stuff/img/Book1.png",
-      "imageAlt": "Holy Window book cover by Mvrk Spence",
+      "imageAlt": "Holy Window cover used for the sample book listing",
       "available": true
     },
     {
-      "id": "artwork-collection",
-      "name": "Artwork collection",
-      "description": "Enquire about artwork, available pieces and editions directly with Mvrk Spence.",
-      "purchasable": false,
-      "price": 0,
+      "id": "sample-art-print",
+      "name": "Studio art print - sample",
+      "description": "Sample listing: an unframed A3 art print. The image, size and price are placeholders that the administrator can change.",
+      "purchasable": true,
+      "price": 25,
       "type": "physical",
-      "image": "stuff/img/Artwork.png",
-      "imageAlt": "Artwork collection by Mvrk Spence",
+      "image": "stuff/img/sample-print.svg",
+      "imageAlt": "Placeholder art print with a red sun and dark mountains",
+      "available": true
+    },
+    {
+      "id": "sample-framed-art",
+      "name": "Framed artwork - sample",
+      "description": "Sample listing: a printed artwork in a black frame. Replace the sample artwork, dimensions and price with the actual product details.",
+      "purchasable": true,
+      "price": 60,
+      "type": "physical",
+      "image": "stuff/img/sample-framed-art.svg",
+      "imageAlt": "Placeholder framed artwork with a red sun and dark mountains",
+      "available": true
+    },
+    {
+      "id": "sample-art-tshirt",
+      "name": "Art T-shirt - sample",
+      "description": "Sample listing: a natural-colour T-shirt with an art print, size M. Replace this example with each actual size and its own listing when ready.",
+      "purchasable": true,
+      "price": 28,
+      "type": "physical",
+      "image": "stuff/img/sample-tshirt.svg",
+      "imageAlt": "Placeholder natural-colour T-shirt with a red and black art print",
       "available": true
     }
-  ]
+  ],
+  "testMode": true
 }

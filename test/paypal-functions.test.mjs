@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import bundledShop from '../content/shop.json' with { type: 'json' };
+import bundledPayments from '../content/payments.json' with { type: 'json' };
 const originalCatalog = structuredClone(bundledShop);
+const originalPayments = structuredClone(bundledPayments);
 import { afterEach, beforeEach, test } from 'node:test';
 import { handler as createOrder } from '../netlify/functions/paypal-create-order.mjs';
 import { handler as captureOrder } from '../netlify/functions/paypal-capture-order.mjs';
@@ -9,6 +11,8 @@ const originalFetch = globalThis.fetch;
 const originalEnvironment = {
     URL: process.env.URL,
     PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
+    PAYPAL_CLIENT_SECRET_SANDBOX: process.env.PAYPAL_CLIENT_SECRET_SANDBOX,
+    PAYPAL_CLIENT_SECRET_LIVE: process.env.PAYPAL_CLIENT_SECRET_LIVE,
     PAYPAL_ENVIRONMENT: process.env.PAYPAL_ENVIRONMENT
 };
 
@@ -26,6 +30,9 @@ beforeEach(() => {
     process.env.URL = 'https://mvrkspence.example';
     process.env.PAYPAL_CLIENT_SECRET = 'test-secret';
     process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+    delete process.env.PAYPAL_CLIENT_SECRET_SANDBOX;
+    delete process.env.PAYPAL_CLIENT_SECRET_LIVE;
+    Object.assign(bundledPayments, { environment: 'sandbox', sandboxClientId: '', liveClientId: '' });
     shop.shipping = { enabled: false, amount: 0 };
     Object.assign(bundledShop, shop);
     shop.products = [
@@ -37,6 +44,8 @@ beforeEach(() => {
 afterEach(() => {
     for (const key of Object.keys(bundledShop)) delete bundledShop[key];
     Object.assign(bundledShop, originalCatalog);
+    for (const key of Object.keys(bundledPayments)) delete bundledPayments[key];
+    Object.assign(bundledPayments, originalPayments);
     globalThis.fetch = originalFetch;
     for (const [name, value] of Object.entries(originalEnvironment)) {
         if (value === undefined) delete process.env[name];
@@ -255,4 +264,89 @@ test('non-object JSON returns a client error before any payment request', async 
         }
     }
     assert.equal(calls.length, 0);
+});
+
+test('sample catalogue cannot process live payments', async () => {
+    const calls = mockPaypal();
+    bundledShop.testMode = true;
+    process.env.PAYPAL_ENVIRONMENT = 'live';
+    bundledPayments.environment = 'live';
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 502);
+    assert.match(JSON.parse(response.body).error, /sample catalogue.*sandbox/i);
+    assert.equal(calls.some(call => call.url.includes('paypal.com')), false);
+});
+
+test('CMS-selected live mode uses its client ID and scoped secret for create and capture', async () => {
+    const calls = mockPaypal();
+    bundledShop.testMode = false;
+    Object.assign(bundledPayments, { environment: 'live', sandboxClientId: 'sandbox-public', liveClientId: 'live-public' });
+    process.env.PAYPAL_CLIENT_SECRET_LIVE = 'live-test-secret';
+    // An old environment variable must not override the mode selected in the CMS.
+    process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 200);
+    assert.equal((await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) })).statusCode, 200);
+    assert.ok(calls.length > 0);
+    assert.ok(calls.every(call => call.url.startsWith('https://api-m.paypal.com/')));
+    const auth = calls.find(call => call.url.endsWith('/v1/oauth2/token'));
+    assert.equal(Buffer.from(auth.options.headers.Authorization.slice(6), 'base64').toString(), 'live-public:live-test-secret');
+});
+
+test('a live mode switch never reuses the sandbox legacy secret', async () => {
+    const calls = mockPaypal();
+    bundledShop.testMode = false;
+    Object.assign(bundledPayments, { environment: 'live', liveClientId: 'live-public' });
+    process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 502);
+    assert.match(JSON.parse(response.body).error, /PAYPAL_CLIENT_SECRET_LIVE/);
+    assert.equal(calls.length, 0);
+});
+
+test('blank live client ID does not fall back to a sandbox legacy client ID', async () => {
+    const calls = mockPaypal();
+    bundledShop.testMode = false;
+    bundledPayments.environment = 'live';
+    process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 502);
+    assert.match(JSON.parse(response.body).error, /live PayPal client ID is missing/);
+    assert.equal(calls.length, 0);
+});
+
+test('sandbox client ID and scoped secret override legacy settings in sandbox mode', async () => {
+    const calls = mockPaypal();
+    bundledPayments.sandboxClientId = 'new-sandbox-public';
+    process.env.PAYPAL_CLIENT_SECRET_SANDBOX = 'new-sandbox-secret';
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 200);
+    assert.ok(calls.every(call => call.url.startsWith('https://api-m.sandbox.paypal.com/')));
+    const auth = calls.find(call => call.url.endsWith('/v1/oauth2/token'));
+    assert.equal(Buffer.from(auth.options.headers.Authorization.slice(6), 'base64').toString(), 'new-sandbox-public:new-sandbox-secret');
+});
+
+test('invalid CMS payment environments stop before any PayPal request', async () => {
+    const calls = mockPaypal();
+    for (const environment of ['production', 'constructor', '__proto__']) {
+        bundledPayments.environment = environment;
+        const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+        assert.equal(response.statusCode, 502);
+        assert.match(JSON.parse(response.body).error, /payment environment/);
+    }
+    assert.equal(calls.length, 0);
+});
+
+test('sample GBP products and flat shipping create the exact server total', async () => {
+    const calls = mockPaypal();
+    Object.assign(bundledShop, structuredClone(originalCatalog), { paypalClientId: 'sandbox-client-id' });
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: bundledShop.products.map(product => ({ id: product.id, quantity: 1 })) }) });
+    assert.equal(response.statusCode, 200);
+    const call = calls.find(call => call.url.endsWith('/v2/checkout/orders'));
+    const order = JSON.parse(call.options.body).purchase_units[0];
+    assert.equal(order.amount.currency_code, 'GBP');
+    assert.equal(order.amount.value, '152.95');
+    assert.equal(order.amount.breakdown.item_total.value, '148.00');
+    assert.equal(order.amount.breakdown.shipping.value, '4.95');
+    assert.equal(order.items.length, 4);
 });

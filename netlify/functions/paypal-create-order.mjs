@@ -104,7 +104,7 @@ export async function handler(event) {
             return jsonResponse(400, { error: 'The basket total is invalid.' });
         }
 
-        const accessToken = await getPaypalAccessToken(config.paypalClientId);
+        const accessToken = await getPaypalAccessToken(config.paypalClientId, config.paypalEnvironment);
         const breakdown = {
             item_total: {
                 currency_code: config.currency,
@@ -146,7 +146,7 @@ export async function handler(event) {
                     }
                 }
             }
-        });
+        }, undefined, config.paypalEnvironment);
 
         if (typeof result.id !== 'string' || !result.id.trim() || !['CREATED', 'PAYER_ACTION_REQUIRED'].includes(result.status)) {
             console.error('PayPal returned an unexpected create-order response.');

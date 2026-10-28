@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#080808">
+  <title>Mvrk Spence | PayPal setup</title>
+  <link rel="icon" href="/stuff/img/Iconlogo.png" type="image/png">
+  <link rel="stylesheet" href="/manage/dashboard.css">
+  <link rel="stylesheet" href="/manage/paypal.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="/manage/" aria-label="Website dashboard"><img src="/stuff/img/logo.png" alt="Mvrk Spence"></a>
+    <a class="preview-link" href="/manage/">Back to dashboard</a>
+  </header>
+  <main>
+    <section class="welcome" aria-labelledby="paypal-title">
+      <p class="eyebrow">Shop &amp; payments</p>
+      <h1 id="paypal-title">Connect PayPal.</h1>
+      <p class="intro">Add your payment details, try a test purchase, then switch to real payments when your shop is ready.</p>
+      <a class="button primary-action" href="/admin/#/collections/shop/entries/payments">Open PayPal payment settings</a>
+    </section>
+
+    <ol class="setup-steps">
+      <li>
+        <div class="step-copy">
+          <h2>Get your PayPal app details</h2>
+          <p>Sign in to the PayPal Developer Dashboard with your PayPal Business account. Open or create a <strong>Sandbox</strong> app for testing. PayPal shows two details: <strong>Client ID</strong> and <strong>Secret</strong>.</p>
+          <a class="step-link" href="https://developer.paypal.com/dashboard/applications/sandbox" target="_blank" rel="noopener noreferrer">Open PayPal sandbox apps <span aria-hidden="true">&nearr;</span></a>
+        </div>
+      </li>
+      <li>
+        <div class="step-copy">
+          <h2>Add the public Client ID</h2>
+          <p>Open <strong>PayPal payment settings</strong> in your editor. Choose <strong>Test payments</strong> and paste the sandbox Client ID into <strong>Test PayPal public client ID</strong>. Save your changes, then publish them.</p>
+          <p>You can also save a live Client ID for later. The <strong>Payment mode</strong> choice decides which one the shop uses.</p>
+          <a class="step-link" href="/admin/#/collections/shop/entries/payments">Edit PayPal payment settings <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </li>
+      <li>
+        <div class="step-copy">
+          <h2>Add the secret in secure settings</h2>
+          <p>Open Netlify&rsquo;s secure environment settings below. Choose <strong>Add a variable</strong>, use the test name shown here, and paste your sandbox app&rsquo;s Secret as its value. Apply it to the production deployment and functions.</p>
+          <dl class="secret-names">
+            <div><dt>For test payments</dt><dd><code>PAYPAL_CLIENT_SECRET_SANDBOX</code></dd></div>
+            <div><dt>For real payments later</dt><dd><code>PAYPAL_CLIENT_SECRET_LIVE</code></dd></div>
+          </dl>
+          <p class="small-copy">Keep the Secret in Netlify. The editor fields are for public Client IDs; do not paste a Secret or PayPal password there.</p>
+          <p>After adding or changing a Secret, open <strong>Deploys &gt; Trigger deploy</strong> in Netlify. You can also save and publish the PayPal payment settings after adding the Secret. The website needs a fresh deployment to use the new value.</p>
+          <a class="step-link" href="https://app.netlify.com/projects/stellar-tanuki-2253d7/configuration/env" target="_blank" rel="noopener noreferrer">Open secure Netlify payment settings <span aria-hidden="true">&nearr;</span></a>
+        </div>
+      </li>
+    </ol>
+
+    <section class="publishing-note" aria-labelledby="test-title">
+      <h2 id="test-title">Try a test purchase</h2>
+      <p>Allow the website update to finish. Add a sample product to the basket, open PayPal and pay using a separate <strong>sandbox buyer</strong> account. Sandbox payments use test money.</p>
+      <p>Keep <strong>Test shop with sample products</strong> on while using the example catalogue. The website will reject live payments while that switch is on.</p>
+      <div class="step-actions"><a href="/preview/artwork.html">Open the test shop</a><a href="/admin/#/collections/shop/entries/shop">Edit products, pounds &amp; shipping</a></div>
+    </section>
+
+    <section class="live-setup" aria-labelledby="live-title">
+      <p class="eyebrow">When you are ready</p>
+      <h2 id="live-title">Switch to real payments</h2>
+      <p>Replace all sample products and prices with your real details. Get your live app&rsquo;s Client ID and Secret from PayPal, save the Client ID in the editor and the matching Secret in Netlify using the live name above. Turn off <strong>Test shop with sample products</strong>, choose <strong>Real payments</strong> in PayPal payment settings, and publish your changes after the Secret is saved so a new deployment starts.</p>
+      <p>Keep the shop private until you have checked checkout and fulfillment for the products you intend to sell.</p>
+      <a class="step-link" href="https://developer.paypal.com/dashboard/applications/live" target="_blank" rel="noopener noreferrer">Open PayPal live apps <span aria-hidden="true">&nearr;</span></a>
+    </section>
+  </main>
+  <footer><span>Mvrk Spence &middot; PayPal setup</span><a href="/admin/guide.html">Help with website editing</a></footer>
+</body>
+</html>

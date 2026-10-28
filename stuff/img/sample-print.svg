@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="640" viewBox="0 0 800 640">
+  <rect width="800" height="640" fill="#eceae4"/>
+  <rect x="220" y="62" width="360" height="490" fill="#fff" stroke="#d5d2c9"/>
+  <rect x="248" y="90" width="304" height="382" fill="#dedbd3"/>
+  <circle cx="400" cy="235" r="96" fill="#bc2f31"/>
+  <path d="M248 390 352 252 435 358 484 296 552 390V472H248Z" fill="#171717"/>
+  <text x="400" y="514" fill="#555" font-family="Arial,sans-serif" font-size="13" letter-spacing="3" text-anchor="middle">SAMPLE PRINT</text>
+  <text x="400" y="600" fill="#666" font-family="Arial,sans-serif" font-size="15" text-anchor="middle">Placeholder artwork for testing</text>
+</svg>
