@@ -20,7 +20,7 @@
     <section class="welcome" aria-labelledby="paypal-title">
       <p class="eyebrow">Shop &amp; payments</p>
       <h1 id="paypal-title">Connect PayPal.</h1>
-      <p class="intro">Enter your PayPal Client ID and Secret here. Save them once, then manage test and real payments from this page.</p>
+      <p class="intro">Connect your PayPal merchant app using its Client ID and Secret. The basket uses this connection for PayPal and eligible debit or credit card payments, including Visa.</p>
     </section>
 
     <noscript><p class="notice">Enable JavaScript to sign in and connect PayPal.</p></noscript>
@@ -45,11 +45,19 @@
           <option value="sandbox">Test payments — PayPal sandbox</option>
           <option value="live">Real payments — PayPal live</option>
         </select>
-        <p class="field-help">Start with test payments. Keep sample products in test mode.</p>
+        <p class="field-help">For the current sample shop, choose Test payments and connect a Sandbox app. Keep sample products in test mode.</p>
 
         <fieldset>
           <legend>Test payment details</legend>
           <p class="field-help">Copy these two details from the same Sandbox app in your PayPal Developer Dashboard.</p>
+          <details>
+            <summary>Where do I find these details?</summary>
+            <ol class="field-help">
+              <li>Open the PayPal sandbox apps link below and sign in.</li>
+              <li>In <strong>Apps &amp; Credentials</strong>, choose <strong>Sandbox</strong>. Open an existing app, or choose <strong>Create App</strong> and name it Mvrk Spence.</li>
+              <li>Copy its <strong>Client ID</strong> and <strong>Secret</strong> into the matching fields below, then choose <strong>Save and connect PayPal</strong>.</li>
+            </ol>
+          </details>
           <label class="field-label" for="sandbox-client-id">Test Client ID</label>
           <input id="sandbox-client-id" name="sandboxClientId" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="500">
           <label class="field-label" for="sandbox-secret">Test Secret</label>
@@ -76,9 +84,10 @@
     </section>
 
     <section class="publishing-note" aria-labelledby="test-title">
-      <h2 id="test-title">Try the basket</h2>
-      <p>After saving, reopen the shop and add a product to the basket. Use a separate PayPal sandbox buyer account for a test purchase. Sandbox payments use test money.</p>
-      <p>Eligible debit and credit card options, including Visa, are supplied by PayPal. Which options appear depends on the PayPal account and buyer.</p>
+      <h2 id="test-title">Test Visa, debit or credit cards</h2>
+      <p>First save the Client ID and matching Secret from your Sandbox app above. Without this connection, the basket cannot start card payments.</p>
+      <p>Reopen the shop, add a product to the basket and choose <strong>Debit or credit card</strong> when available. Use <a href="https://developer.paypal.com/credit-card-number-generator" target="_blank" rel="noopener noreferrer">PayPal-generated test card details</a> for sandbox purchases. Never enter a real card for a test payment. For the PayPal option, use a separate sandbox buyer account.</p>
+      <p>PayPal decides which payment options are eligible for each buyer. Connecting the app does not guarantee that a card option appears for every visitor. See <a href="https://developer.paypal.com/docs/checkout/standard/customize/standalone-buttons/" target="_blank" rel="noopener noreferrer">PayPal&rsquo;s payment-button eligibility guidance</a>.</p>
       <div class="step-actions"><a href="/preview/artwork.html">Open the test shop</a><a href="/admin/#/collections/shop/entries/shop">Edit products, pounds &amp; shipping</a></div>
     </section>
     <section class="live-setup" aria-labelledby="live-title">

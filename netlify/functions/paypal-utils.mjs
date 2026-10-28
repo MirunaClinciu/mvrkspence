@@ -137,6 +137,8 @@ export async function requestPaypal(path, accessToken, body, requestId = crypto.
         headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
+            // The default minimal response omits capture payment statuses.
+            Prefer: 'return=representation',
             'PayPal-Request-Id': requestId
         },
         body: JSON.stringify(body),

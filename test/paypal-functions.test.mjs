@@ -57,7 +57,15 @@ afterEach(() => {
     }
 });
 
-function mockPaypal(createResult = { id: 'ORDER-123', status: 'CREATED' }) {
+function completedCapture() {
+    return {
+        id: 'ORDER-123',
+        status: 'COMPLETED',
+        purchase_units: [{ payments: { captures: [{ id: 'CAPTURE-123', status: 'COMPLETED' }] } }]
+    };
+}
+
+function mockPaypal(createResult = { id: 'ORDER-123', status: 'CREATED' }, captureResult = completedCapture()) {
     Object.assign(bundledShop, shop);
     const calls = [];
     globalThis.fetch = async (input, options = {}) => {
@@ -71,7 +79,7 @@ function mockPaypal(createResult = { id: 'ORDER-123', status: 'CREATED' }) {
             return new Response(JSON.stringify({ access_token: 'test-access-token' }), { status: 200 });
         }
         if (url.endsWith('/v2/checkout/orders/ORDER-123/capture')) {
-            return new Response(JSON.stringify({ id: 'ORDER-123', status: 'COMPLETED' }), { status: 200 });
+            return new Response(JSON.stringify(captureResult), { status: 200 });
         }
         if (url.endsWith('/v2/checkout/orders')) {
             return new Response(JSON.stringify(createResult), { status: 201 });
@@ -201,6 +209,67 @@ test('capture order reports the PayPal capture status', async () => {
         calls.some(call => call.url.endsWith('/v2/checkout/orders/ORDER-123/capture')),
         true
     );
+    const captureRequest = calls.find(call => call.url.endsWith('/v2/checkout/orders/ORDER-123/capture'));
+    assert.equal(captureRequest.options.headers.Prefer, 'return=representation', 'request actual capture details rather than PayPal\'s default minimal response');
+});
+
+test('a completed order cannot report success when its actual card capture is declined or pending', async () => {
+    for (const status of ['DECLINED', 'PENDING', 'FAILED', 'REFUNDED', 'PARTIALLY_REFUNDED']) {
+        const result = completedCapture();
+        result.purchase_units[0].payments.captures[0].status = status;
+        mockPaypal(undefined, result);
+        const response = await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) });
+        assert.equal(response.statusCode, 409, status);
+        assert.equal(JSON.parse(response.body).status, status);
+        assert.ok(JSON.parse(response.body).error);
+    }
+});
+
+test('capture rejects missing or malformed confirmations instead of claiming a payment succeeded', async () => {
+    const malformed = [
+        null,
+        { id: 'ORDER-123', status: 'COMPLETED' },
+        { ...completedCapture(), id: 'ANOTHER-ORDER' },
+        { ...completedCapture(), purchase_units: [] },
+        { ...completedCapture(), purchase_units: [null] },
+        { ...completedCapture(), purchase_units: [{ payments: { captures: [] } }] },
+        { ...completedCapture(), purchase_units: [{ payments: { captures: [null] } }] },
+        { ...completedCapture(), purchase_units: [{ payments: { captures: [{ status: 'COMPLETED' }] } }] },
+        { ...completedCapture(), purchase_units: [{ payments: { captures: [{ id: 'CAPTURE-123' }] } }] }
+    ];
+    for (const result of malformed) {
+        mockPaypal(undefined, result);
+        const response = await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) });
+        assert.equal(response.statusCode, 502);
+        assert.ok(JSON.parse(response.body).error);
+        assert.notEqual(JSON.parse(response.body).status, 'COMPLETED');
+    }
+});
+
+test('every purchase unit and capture must be completed before confirming the order', async () => {
+    for (const extra of [
+        { payments: { captures: [{ id: 'CAPTURE-OTHER', status: 'PENDING' }] } },
+        { payments: { captures: [] } }
+    ]) {
+        const result = completedCapture();
+        result.purchase_units.push(extra);
+        mockPaypal(undefined, result);
+        const response = await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) });
+        assert.notEqual(response.statusCode, 200);
+        assert.notEqual(JSON.parse(response.body).status, 'COMPLETED');
+    }
+    const result = completedCapture();
+    result.purchase_units[0].payments.captures.push({ id: 'CAPTURE-OTHER', status: 'PENDING' });
+    mockPaypal(undefined, result);
+    assert.equal((await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) })).statusCode, 409);
+});
+
+test('an unfinished order cannot succeed solely because one capture is completed', async () => {
+    const result = { ...completedCapture(), status: 'APPROVED' };
+    mockPaypal(undefined, result);
+    const response = await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) });
+    assert.equal(response.statusCode, 409);
+    assert.equal(JSON.parse(response.body).status, 'APPROVED');
 });
 
 test('payment functions reject non-POST requests', async () => {

@@ -158,7 +158,17 @@ function renderModal() {
         <div id="cart-items-container"></div>
         <p class="cart-shipping" id="cart-shipping-row" hidden>Shipping <strong id="cart-shipping-amount"></strong></p>
         <p class="cart-total">Total <strong id="cart-total-amount">0.00</strong></p>
-        <div id="paypal-buttons" class="paypal-buttons"></div>
+        <div id="checkout-payment-methods" hidden>
+          <section class="payment-method" aria-labelledby="card-payment-heading">
+            <h3 id="card-payment-heading">Debit or credit card</h3>
+            <p id="card-payment-status" class="payment-method-note" role="status"></p>
+            <div id="card-buttons" class="paypal-buttons"></div>
+          </section>
+          <section id="paypal-payment-method" class="payment-method" aria-labelledby="paypal-payment-heading">
+            <h3 id="paypal-payment-heading">PayPal</h3>
+            <div id="paypal-buttons" class="paypal-buttons"></div>
+          </section>
+        </div>
         <p class="cart-status" id="cart-status" role="status" aria-live="polite"></p>
         <button class="text-button" id="clear-basket-btn" type="button">Clear basket</button>
       </section>`;

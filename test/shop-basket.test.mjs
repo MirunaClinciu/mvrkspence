@@ -65,18 +65,14 @@ test('sample catalogs cannot load live PayPal buttons even when given a live cli
     assert.match(context.document.getElementById('cart-status').textContent, /sample catalogue.*Test payments/);
 });
 
-test('configured checkout requests eligible card options and uses server create/capture callbacks', async () => {
+test('configured checkout renders separate card and PayPal options and uses server create/capture callbacks', async () => {
     for (const environment of ['sandbox', 'live']) {
         const { context, scripts, saved } = createShop(JSON.stringify({ print: { name: 'Print', price: 25, quantity: 2, type: 'physical' } }));
         context.window.siteReady = true;
         context.window.siteProducts = [{ id: 'print', name: 'Print', price: 25, type: 'physical' }];
         context.window.siteConfig = { testMode: environment === 'sandbox', paypalEnvironment: environment, paypalClientId: `${environment}-public`, currency: 'GBP' };
-        let callbacks;
-        let renderedContainer;
-        context.window.paypal = { Buttons(options) {
-            callbacks = options;
-            return { isEligible: () => true, render(container) { renderedContainer = container; return Promise.resolve(); } };
-        } };
+        const callbacks = new Map();
+        const rendered = new Map();
         const requests = [];
         context.fetch = async (path, options) => {
             requests.push({ path, data: JSON.parse(options.body) });
@@ -88,27 +84,103 @@ test('configured checkout requests eligible card options and uses server create/
         assert.equal(url.searchParams.get('enable-funding'), 'card');
         assert.equal(url.searchParams.get('client-id'), `${environment}-public`);
         assert.equal(url.searchParams.get('currency'), 'GBP');
-        scripts[0].onload();
-        await Promise.resolve();
-        assert.equal(renderedContainer, context.document.getElementById('paypal-buttons'));
-        assert.equal(await callbacks.createOrder(), 'ORDER-123');
+        assert.equal(url.searchParams.get('components'), 'buttons,funding-eligibility');
+        context.window.paypal = { FUNDING: { CARD: 'card', PAYPAL: 'paypal' }, Buttons(options) {
+            callbacks.set(options.fundingSource, options);
+            return { isEligible: () => true, render(container) {
+                assert.equal(context.document.getElementById('checkout-payment-methods').hidden, false, 'SDK receives a visible container');
+                rendered.set(options.fundingSource, container);
+                return Promise.resolve();
+            } };
+        } };
+        await scripts[0].onload();
+        assert.equal(rendered.get('card'), context.document.getElementById('card-buttons'));
+        assert.equal(rendered.get('paypal'), context.document.getElementById('paypal-buttons'));
+        assert.equal(context.document.getElementById('checkout-payment-methods').hidden, false);
+        assert.equal(await callbacks.get('card').createOrder(), 'ORDER-123');
         assert.deepEqual(requests[0], { path: '/.netlify/functions/paypal-create-order', data: { items: [{ id: 'print', quantity: 2 }] } });
-        await callbacks.onApprove({ orderID: 'ORDER-123' });
+        await callbacks.get('card').onApprove({ orderID: 'ORDER-123' });
         assert.deepEqual(requests[1], { path: '/.netlify/functions/paypal-capture-order', data: { orderId: 'ORDER-123' } });
         assert.deepEqual(saved(), {});
         assert.match(context.document.getElementById('cart-status').textContent, /Payment complete/);
     }
 });
 
-test('SDK initialization failures leave checkout retryable instead of permanently loading', () => {
+test('SDK initialization failures leave checkout retryable without loading duplicate SDKs', async () => {
     const { context, scripts } = createShop(JSON.stringify({ print: { name: 'Print', price: 25, quantity: 1 } }));
     context.window.siteReady = true;
     context.window.siteProducts = [{ id: 'print', name: 'Print', price: 25 }];
     context.window.siteConfig = { paypalClientId: 'sandbox-public', paypalEnvironment: 'sandbox', currency: 'GBP' };
-    context.window.paypal = { Buttons() { throw new Error('SDK initialization failed'); } };
-    vm.runInContext('renderPayPalButtons()', context);
-    scripts[0].onload();
+    let attempts = 0;
+    context.window.paypal = { FUNDING: { CARD: 'card', PAYPAL: 'paypal' }, Buttons() { attempts += 1; throw new Error('SDK initialization failed'); } };
+    await vm.runInContext('renderPayPalButtons()', context);
     assert.match(context.document.getElementById('cart-status').textContent, /Close and reopen your basket/);
+    await vm.runInContext('renderPayPalButtons()', context);
+    assert.equal(attempts, 4, 'a reopened basket retries both payment methods');
+    assert.equal(scripts.length, 0, 'an available SDK is reused');
+});
+
+function configuredShop() {
+    const shop = createShop(JSON.stringify({ print: { name: 'Print', price: 25, quantity: 1 } }));
+    shop.context.window.siteReady = true;
+    shop.context.window.siteProducts = [{ id: 'print', name: 'Print', price: 25 }];
+    shop.context.window.siteConfig = { paypalClientId: 'sandbox-public', paypalEnvironment: 'sandbox', currency: 'GBP', testMode: true };
+    return shop;
+}
+
+test('card ineligibility explains the fallback while keeping PayPal usable', async () => {
+    const { context, saved } = configuredShop();
+    context.window.paypal = { FUNDING: { CARD: 'card', PAYPAL: 'paypal' }, Buttons(options) {
+        return { isEligible: () => options.fundingSource === 'paypal', render: async () => {} };
+    } };
+    await vm.runInContext('renderPayPalButtons()', context);
+    assert.equal(context.document.getElementById('card-buttons').hidden, true);
+    assert.equal(context.document.getElementById('paypal-payment-method').hidden, false);
+    assert.match(context.document.getElementById('card-payment-status').textContent, /Direct card payments are not available/);
+    assert.equal(saved().print.quantity, 1);
+});
+
+test('a failed card render can retry without duplicating a working PayPal button', async () => {
+    const { context } = configuredShop();
+    const renders = { card: 0, paypal: 0 };
+    context.window.paypal = { FUNDING: { CARD: 'card', PAYPAL: 'paypal' }, Buttons(options) {
+        return { isEligible: () => true, async render() {
+            renders[options.fundingSource] += 1;
+            if (options.fundingSource === 'card' && renders.card === 1) throw new Error('Card unavailable');
+        } };
+    } };
+    await vm.runInContext('renderPayPalButtons()', context);
+    assert.equal(context.document.getElementById('paypal-payment-method').hidden, false);
+    await vm.runInContext('renderPayPalButtons()', context);
+    assert.deepEqual(renders, { card: 2, paypal: 1 });
+    assert.equal(context.document.getElementById('card-buttons').hidden, false);
+});
+
+test('missing merchant credentials never load or pretend to enable card payments', () => {
+    const { context, scripts } = configuredShop();
+    context.window.siteConfig.paypalClientId = '';
     vm.runInContext('renderPayPalButtons()', context);
-    assert.equal(scripts.length, 2, 'a reopened basket can attempt loading checkout again');
+    assert.equal(scripts.length, 0);
+    assert.equal(context.document.getElementById('checkout-payment-methods').hidden, true);
+    assert.match(context.document.getElementById('cart-status').textContent, /not connected yet/);
+});
+
+test('cancelled and unconfirmed card payments keep the basket', async () => {
+    const { context, saved } = configuredShop();
+    let card;
+    context.window.paypal = { FUNDING: { CARD: 'card', PAYPAL: 'paypal' }, Buttons(options) {
+        if (options.fundingSource === 'card') card = options;
+        return { isEligible: () => true, render: async () => {} };
+    } };
+    await vm.runInContext('renderPayPalButtons()', context);
+    card.onCancel();
+    assert.equal(saved().print.quantity, 1);
+    for (const status of ['PENDING', 'DECLINED']) {
+        context.fetch = async () => new Response(JSON.stringify({ status }));
+        await assert.rejects(card.onApprove({ orderID: 'ORDER-123' }), /has not confirmed/);
+        assert.equal(saved().print.quantity, 1);
+    }
+    context.fetch = async () => new Response(JSON.stringify({ error: 'Payment declined', status: 'COMPLETED' }), { status: 409 });
+    await assert.rejects(card.onApprove({ orderID: 'ORDER-123' }), /Payment declined/);
+    assert.equal(saved().print.quantity, 1);
 });

@@ -561,6 +561,10 @@ h1 {
   min-height: 45px;
 }
 
+.payment-method + .payment-method { margin-top: 24px; }
+.payment-method h3 { margin: 0 0 8px; font-size: 1rem; }
+.payment-method-note { margin: 0 0 12px; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+
 .cart-status {
   min-height: 24px;
   margin: 12px 0;

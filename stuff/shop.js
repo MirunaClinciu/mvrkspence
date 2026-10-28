@@ -6,9 +6,14 @@ const cartShippingAmount = document.getElementById('cart-shipping-amount');
 const cartStatus = document.getElementById('cart-status');
 const clearBasketButton = document.getElementById('clear-basket-btn');
 const paypalButtonsContainer = document.getElementById('paypal-buttons');
+const cardButtonsContainer = document.getElementById('card-buttons');
+const paymentMethodsContainer = document.getElementById('checkout-payment-methods');
+const cardPaymentStatus = document.getElementById('card-payment-status');
+const paypalPaymentMethod = document.getElementById('paypal-payment-method');
 
 let paypalButtonsLoading = false;
 let paypalButtonsRendered = false;
+const renderedPaymentMethods = new Set();
 
 function getBasket() {
     try {
@@ -115,6 +120,7 @@ function renderBasket() {
     cartItemsContainer.replaceChildren();
     const items = Object.entries(basket);
     paypalButtonsContainer.hidden = items.length === 0;
+    paymentMethodsContainer.hidden = items.length === 0 || renderedPaymentMethods.size === 0;
     let total = 0;
     let containsPhysicalItem = false;
 
@@ -280,17 +286,15 @@ function renderPayPalButtons() {
     }
 
     paypalButtonsLoading = true;
-    const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}&intent=capture&enable-funding=card`;
-    script.async = true;
-    script.onload = () => {
-        if (!window.paypal || typeof window.paypal.Buttons !== 'function') {
+    showCartStatus('Loading secure card and PayPal checkout…');
+    const initializeButtons = async () => {
+        if (!window.paypal || typeof window.paypal.Buttons !== 'function' || !window.paypal.FUNDING) {
             paypalButtonsLoading = false;
             showCartStatus('PayPal could not be loaded. Please try again later.', true);
             return;
         }
         try {
-            const buttons = window.paypal.Buttons({
+            const callbacks = {
                 createOrder: async () => {
                     const items = getCheckoutItems();
                     if (!items.length) throw new Error('Your basket is empty.');
@@ -318,19 +322,46 @@ function renderPayPalButtons() {
                     console.error('PayPal checkout failed.', error);
                     showCartStatus(error && error.message || 'PayPal checkout failed. Please try again.', true);
                 }
-            });
-            if (buttons.isEligible()) {
-                buttons.render(paypalButtonsContainer).then(() => {
-                    paypalButtonsRendered = true;
-                    paypalButtonsLoading = false;
-                }).catch(error => {
-                    paypalButtonsLoading = false;
-                    console.error('PayPal buttons could not be rendered.', error);
-                    showCartStatus('PayPal checkout could not be started. Please try again later.', true);
-                });
+            };
+            const methods = [
+                { source: window.paypal.FUNDING.CARD, container: cardButtonsContainer },
+                { source: window.paypal.FUNDING.PAYPAL, container: paypalButtonsContainer }
+            ];
+            paymentMethodsContainer.hidden = false;
+            cardButtonsContainer.hidden = false;
+            paypalPaymentMethod.hidden = false;
+            const results = await Promise.allSettled(methods.map(async ({ source, container }) => {
+                if (renderedPaymentMethods.has(source)) return true;
+                const buttons = window.paypal.Buttons({ ...callbacks, fundingSource: source });
+                if (!buttons.isEligible()) return false;
+                container.replaceChildren();
+                await buttons.render(container);
+                renderedPaymentMethods.add(source);
+                return true;
+            }));
+            const ready = results.map(result => result.status === 'fulfilled' && result.value === true);
+            const hasFailure = results.some(result => result.status === 'rejected');
+            cardButtonsContainer.hidden = !ready[0];
+            paypalPaymentMethod.hidden = !ready[1];
+            cardPaymentStatus.textContent = ready[0]
+                ? 'Pay with Visa debit or another eligible card. Securely processed by PayPal.'
+                : results[0].status === 'rejected'
+                    ? 'Card checkout could not be loaded. Close and reopen your basket to try again.'
+                    : 'Direct card payments are not available for this checkout. You can use PayPal below.';
+            paypalButtonsRendered = ready.some(Boolean) && !hasFailure;
+            paypalButtonsLoading = false;
+            const empty = Object.keys(reconcileBasket()).length === 0;
+            paymentMethodsContainer.hidden = empty || !ready.some(Boolean);
+            if (empty) {
+                showCartStatus('Your basket is empty.');
+            } else if (hasFailure) {
+                showCartStatus('A payment option could not be loaded. Close and reopen your basket to try again.', true);
+            } else if (ready.some(Boolean)) {
+                showCartStatus(window.siteConfig.testMode === true
+                    ? 'Test checkout is ready. Use PayPal sandbox test details only.'
+                    : 'Choose a payment option to complete your order.');
             } else {
-                paypalButtonsLoading = false;
-                showCartStatus('PayPal checkout is not available for this browser or account.', true);
+                showCartStatus('Card and PayPal payments are not available for this checkout. Please contact us about your selection.', true);
             }
         } catch (error) {
             paypalButtonsLoading = false;
@@ -338,6 +369,13 @@ function renderPayPalButtons() {
             showCartStatus('PayPal checkout could not be started. Close and reopen your basket to try again.', true);
         }
     };
+    if (window.paypal && typeof window.paypal.Buttons === 'function' && window.paypal.FUNDING) {
+        return initializeButtons();
+    }
+    const script = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}&intent=capture&components=buttons,funding-eligibility&enable-funding=card`;
+    script.async = true;
+    script.onload = initializeButtons;
     script.onerror = () => {
         paypalButtonsLoading = false;
         showCartStatus('Could not connect to PayPal. Check your connection and try again.', true);
