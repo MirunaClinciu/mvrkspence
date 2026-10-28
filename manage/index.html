@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#080808">
+  <title>Mvrk Spence | Manage your website</title>
+  <link rel="icon" href="/stuff/img/Iconlogo.png" type="image/png">
+  <link rel="stylesheet" href="/manage/dashboard.css">
+  <script src="/manage/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="/manage/" aria-label="Mvrk Spence website dashboard"><img src="/stuff/img/logo.png" alt="Mvrk Spence"></a>
+    <a class="preview-link" href="/preview/" target="_blank" rel="noopener">View website <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="main-content">
+    <section class="welcome" aria-labelledby="welcome-title">
+      <p class="eyebrow">Website dashboard</p>
+      <h1 id="welcome-title">Make it yours.</h1>
+      <p class="intro">Update photos, write a story or add artwork. Everything is edited using simple forms.</p>
+    </section>
+    <noscript><p class="notice">Enable JavaScript to sign in and edit the website.</p></noscript>
+    <p id="account-status" class="account-status" role="status" aria-live="polite">Connecting to sign-in…</p>
+    <section id="sign-in-panel" class="sign-in-panel" aria-labelledby="sign-in-title">
+      <h2 id="sign-in-title">Sign in to get started</h2>
+      <p>Use the email address from your administrator invitation and the password you chose.</p>
+      <div class="actions">
+        <button id="sign-in" class="button" type="button" disabled>Sign in</button>
+        <button id="reset-password" class="text-button" type="button" disabled>Forgot your password?</button>
+        <button id="retry-connection" class="text-button" type="button" hidden>Try again</button>
+      </div>
+      <p class="small-copy">First time here? Open your invitation email to choose a password. If you haven’t received an invitation, contact the website owner.</p>
+    </section>
+    <section id="editor-dashboard" class="editor-dashboard" aria-labelledby="tasks-title" hidden inert>
+      <div class="dashboard-heading">
+        <h2 id="tasks-title">What would you like to change?</h2>
+        <button id="sign-out" class="text-button" type="button">Sign out</button>
+      </div>
+      <div class="task-grid">
+        <a class="task-card" href="/admin/#/collections/pages/entries/home"><span class="task-number" aria-hidden="true">01</span><h3>Homepage pictures</h3><p>Upload, replace or reorder the large homepage photos.</p><span class="task-action">Edit pictures <span aria-hidden="true">→</span></span></a>
+        <a class="task-card" href="/admin/#/collections/pages/entries/concept"><span class="task-number" aria-hidden="true">02</span><h3>Concept &amp; journal</h3><p>Change the Concept page, add photos or write a new post.</p><span class="task-action">Edit stories <span aria-hidden="true">→</span></span></a>
+        <a class="task-card" href="/admin/#/collections/shop/entries/shop"><span class="task-number" aria-hidden="true">03</span><h3>Artwork &amp; shop</h3><p>Add artwork, upload product photos and set prices or enquiries.</p><span class="task-action">Manage artwork <span aria-hidden="true">→</span></span></a>
+        <a class="task-card" href="/admin/#/collections/pages/entries/contact"><span class="task-number" aria-hidden="true">04</span><h3>Contact details</h3><p>Update your email, contact message and social links.</p><span class="task-action">Edit contact details <span aria-hidden="true">→</span></span></a>
+        <a class="task-card" href="/admin/#/collections/site/entries/site-settings"><span class="task-number" aria-hidden="true">05</span><h3>Logo &amp; website details</h3><p>Change the logo, menu names, browser icon and footer.</p><span class="task-action">Edit website details <span aria-hidden="true">→</span></span></a>
+        <a class="task-card" href="/admin/#/collections/site/entries/coming-soon"><span class="task-number" aria-hidden="true">06</span><h3>Coming-soon page</h3><p>Update the message and logo shown at the main address.</p><span class="task-action">Edit welcome page <span aria-hidden="true">→</span></span></a>
+      </div>
+      <aside class="publishing-note" aria-labelledby="publish-title"><h3 id="publish-title">Ready to share your changes?</h3><p>In the editor, save your changes as a draft, check the preview, then choose <strong>Publish</strong>. Your website updates after publishing finishes.</p><a href="/admin/guide.html">Read the simple editing guide</a></aside>
+      <p class="all-options"><a href="/admin/">Open all editor options</a></p>
+    </section>
+  </main>
+  <footer><span>Mvrk Spence · Website editor</span><a href="/admin/guide.html">Help with editing</a></footer>
+</body>
+</html>

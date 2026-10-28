@@ -22,6 +22,12 @@ the site private and add anyone who needs to open it as a Netlify team member.
 Keep `mvrkspence.com` pointed at its existing site until you decide to make
 this deployment public.
 
+The simple website manager is at `/manage/`. It provides sign-in and direct
+editing options for home pictures, Concept and journal, artwork products,
+contact details and website setup. The editing guide at `/admin/guide.html`
+explains each step; no coding experience is needed for content changes.
+The full editor remains available at `/admin/`.
+
 To enable the editor:
 
 1. Enable Netlify Identity for the deployed site, set registration to **Invite

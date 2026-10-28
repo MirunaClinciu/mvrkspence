@@ -251,7 +251,7 @@ function renderFooter() {
         ? window.siteSettings.adminLinkLabel
         : 'Admin';
     const admin = makeElement('a', 'admin-link', adminLabel || 'Admin');
-    admin.href = '/admin/';
+    admin.href = '/manage/';
     admin.setAttribute('aria-label', 'Open site administration');
     if (footerLinks.children.length) footer.append(footerLinks);
     footer.append(copyright, admin);
