@@ -1,20 +1,19 @@
 import {
     getPaypalAccessToken,
-    initializePaymentStore,
     getShopConfig,
     jsonResponse,
     readRequestBody,
     requestPaypal
 } from './paypal-utils.mjs';
+import { paymentFunction } from '../lib/payment-function.mjs';
 
-export function createHandler({ initialize = initializePaymentStore, loadConfig = getShopConfig } = {}) {
+export function createHandler({ loadConfig = getShopConfig } = {}) {
 return async function handler(event) {
     if (event.httpMethod !== 'POST') {
         return jsonResponse(405, { error: 'Use POST to capture a PayPal order.' });
     }
 
     try {
-        initialize(event);
         const request = readRequestBody(event);
         if (typeof request.orderId !== 'string' || !/^[A-Za-z0-9-]{6,100}$/.test(request.orderId)) {
             return jsonResponse(400, { error: 'The PayPal order ID is invalid.' });
@@ -66,4 +65,4 @@ return async function handler(event) {
 };
 }
 
-export const handler = createHandler();
+export default paymentFunction(createHandler());

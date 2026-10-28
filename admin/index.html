@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mvrk Spence | Site Admin</title>
   <meta name="robots" content="noindex, nofollow">
+  <script id="legacy-payment-route">
+    (function () {
+      function redirectLegacyPayments() {
+        if (window.location.hash.replace(/\/$/, '') === '#/collections/shop/entries/payments') {
+          window.location.replace('/manage/paypal.html');
+        }
+      }
+      redirectLegacyPayments();
+      window.addEventListener('hashchange', redirectLegacyPayments);
+    }());
+  </script>
   <link rel="icon" href="/stuff/img/Iconlogo.png" type="image/png">
   <link rel="stylesheet" href="/admin/editor-navigation.css">
 </head>

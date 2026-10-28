@@ -1,11 +1,11 @@
 import {
     getPaypalAccessToken,
-    initializePaymentStore,
     getShopConfig,
     jsonResponse,
     readRequestBody,
     requestPaypal
 } from './paypal-utils.mjs';
+import { paymentFunction } from '../lib/payment-function.mjs';
 
 function priceInCents(value) {
     const text = String(value);
@@ -27,14 +27,13 @@ function money(value) {
     return (value / 100).toFixed(2);
 }
 
-export function createHandler({ initialize = initializePaymentStore, loadConfig = getShopConfig } = {}) {
+export function createHandler({ loadConfig = getShopConfig } = {}) {
 return async function handler(event) {
     if (event.httpMethod !== 'POST') {
         return jsonResponse(405, { error: 'Use POST to create a PayPal order.' });
     }
 
     try {
-        initialize(event);
         const request = readRequestBody(event);
         if (!Array.isArray(request.items) || request.items.length === 0 || request.items.length > 30) {
             return jsonResponse(400, { error: 'Choose between 1 and 30 products.' });
@@ -163,4 +162,4 @@ return async function handler(event) {
 };
 }
 
-export const handler = createHandler();
+export default paymentFunction(createHandler());

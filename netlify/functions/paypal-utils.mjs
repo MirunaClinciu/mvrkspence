@@ -1,4 +1,3 @@
-import { connectLambda } from '@netlify/blobs';
 import { readPaymentSettings } from '../lib/payment-settings.mjs';
 import bundledShop from '../../content/shop.json' with { type: 'json' };
 import bundledPayments from '../../content/payments.json' with { type: 'json' };
@@ -32,12 +31,6 @@ export function getSiteUrl() {
         throw new Error('The published site URL must use HTTPS.');
     }
     return url;
-}
-
-export function initializePaymentStore(event) {
-    // Netlify supplies the scoped Blobs token on legacy Lambda events.
-    // Modern Functions use the runtime context automatically.
-    if (event.blobs) connectLambda(event);
 }
 
 export async function getShopConfig({ readSettings = readPaymentSettings } = {}) {
