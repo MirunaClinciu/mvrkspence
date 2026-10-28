@@ -66,16 +66,13 @@ collections:
         file: content/home.json
         format: json
         fields:
-          - { name: eyebrow, label: Small heading, widget: string }
-          - { name: title, label: Main heading, widget: string }
-          - { name: intro, label: Introduction, widget: text }
           - name: cards
-            label: Home page photo cards
+            label: Homepage image links
             widget: list
-            hint: Add, remove, or reorder cards shown on the portfolio homepage.
+            hint: Add, remove, or reorder the full-width photos on the original portfolio homepage.
             fields:
-              - { name: title, label: Card title, widget: string }
-              - { name: image, label: Card photo (upload from computer), widget: image }
+              - { name: title, label: Accessible image-link name, widget: string }
+              - { name: image, label: Full-width photo (upload from computer), widget: image }
               - { name: alt, label: Image description, widget: string, required: false }
               - name: link
                 label: Link to page

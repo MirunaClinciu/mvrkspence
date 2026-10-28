@@ -11,6 +11,8 @@ The root URL displays a coming-soon page. The original portfolio homepage and
 the full site are available at
 `https://stellar-tanuki-2253d7.netlify.app/preview/`; its Home, Concept,
 Artwork & Shop, and Contact pages are all under `/preview/`.
+The portfolio homepage keeps the original image-led layout: full-width Book,
+Artwork, and Concept images stacked below the dark navigation.
 
 The Netlify project is intended to remain private for now. With production
 visibility set to **Private**, visitors outside the Netlify team cannot open

@@ -231,29 +231,23 @@ function renderPageIntro(data) {
 }
 
 function renderHome(data) {
-    const intro = makeElement('section', 'home-intro');
-    intro.append(makeElement('p', 'eyebrow', data.eyebrow || 'Photography · Concepts · Artwork'));
-    intro.append(makeElement('h1', '', data.title || 'Mvrk Spence'));
-    if (data.intro) intro.append(makeElement('p', 'intro-copy', data.intro));
-
-    const cards = makeElement('section', 'home-cards');
-    cards.setAttribute('aria-label', 'Explore the work');
+    const imageLinks = makeElement('section', 'home-image-links');
+    imageLinks.setAttribute('aria-label', 'Explore the portfolio');
     (Array.isArray(data.cards) ? data.cards : []).forEach(card => {
-        if (!card || typeof card.title !== 'string') return;
-        const link = makeElement('a', 'home-card');
-        link.href = safeLinkPath(card.link);
+        if (!card || typeof card.title !== 'string' || typeof card.image !== 'string') return;
         const imagePath = safeImagePath(card.image);
-        if (imagePath) {
-            const image = document.createElement('img');
-            image.src = imagePath;
-            image.alt = typeof card.alt === 'string' ? card.alt : card.title;
-            image.loading = 'lazy';
-            link.append(image);
-        }
-        link.append(makeElement('span', 'home-card-title', card.title));
-        cards.append(link);
+        if (!imagePath) return;
+        const link = makeElement('a', 'home-image-link');
+        link.href = safeLinkPath(card.link);
+        link.setAttribute('aria-label', card.title);
+        const image = document.createElement('img');
+        image.src = imagePath;
+        image.alt = typeof card.alt === 'string' ? card.alt : card.title;
+        image.loading = 'lazy';
+        link.append(image);
+        imageLinks.append(link);
     });
-    pageContent.replaceChildren(intro, cards);
+    pageContent.replaceChildren(imageLinks);
 }
 
 function renderConcept(data) {

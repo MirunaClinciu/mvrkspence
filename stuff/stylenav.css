@@ -139,11 +139,6 @@ main {
   min-height: calc(100vh - var(--nav-height) - 100px);
 }
 
-.home-intro {
-  padding: clamp(64px, 9vw, 124px) 20px 48px;
-  text-align: center;
-}
-
 .eyebrow {
   margin: 0 0 12px;
   color: var(--accent);
@@ -176,50 +171,21 @@ h1,
   font-size: clamp(1rem, 1.5vw, 1.18rem);
 }
 
-.home-cards {
+.home-image-links {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2px;
-  padding: 0 2px 2px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.home-card {
-  position: relative;
+.home-image-link {
   display: block;
-  min-height: 240px;
-  aspect-ratio: 1.1;
-  overflow: hidden;
-  background: #dedbd4;
-  color: #fff;
+  width: 100%;
   text-decoration: none;
 }
 
-.home-card::after {
-  position: absolute;
-  inset: 30% 0 0;
-  background: linear-gradient(transparent, rgb(0 0 0 / 65%));
-  content: '';
-}
-
-.home-card img {
+.home-image-link img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 450ms ease;
-}
-
-.home-card:hover img {
-  transform: scale(1.035);
-}
-
-.home-card-title {
-  position: absolute;
-  z-index: 1;
-  bottom: clamp(20px, 4vw, 48px);
-  left: clamp(20px, 4vw, 48px);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  height: auto;
 }
 
 .content-page {
@@ -683,20 +649,6 @@ h1,
 
   .basket-link {
     margin-top: 7px;
-  }
-
-  .home-intro {
-    padding: 62px 20px 34px;
-  }
-
-  .home-cards {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-
-  .home-card {
-    min-height: 260px;
-    aspect-ratio: 1.35;
   }
 
   .content-page {
