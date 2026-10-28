@@ -281,7 +281,7 @@ function renderPayPalButtons() {
 
     paypalButtonsLoading = true;
     const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}&intent=capture`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}&intent=capture&enable-funding=card`;
     script.async = true;
     script.onload = () => {
         if (!window.paypal || typeof window.paypal.Buttons !== 'function') {
@@ -289,47 +289,53 @@ function renderPayPalButtons() {
             showCartStatus('PayPal could not be loaded. Please try again later.', true);
             return;
         }
-        const buttons = window.paypal.Buttons({
-            createOrder: async () => {
-                const items = getCheckoutItems();
-                if (!items.length) throw new Error('Your basket is empty.');
-                const result = await postJson('/.netlify/functions/paypal-create-order', { items });
-                if (!result.id) throw new Error('PayPal did not return an order ID.');
-                return result.id;
-            },
-            onApprove: async data => {
-                showCartStatus('Confirming your payment with PayPal…');
-                const result = await postJson('/.netlify/functions/paypal-capture-order', {
-                    orderId: data.orderID
-                });
-                if (result.status !== 'COMPLETED') {
-                    throw new Error('PayPal has not confirmed this payment. Your basket has been kept.');
+        try {
+            const buttons = window.paypal.Buttons({
+                createOrder: async () => {
+                    const items = getCheckoutItems();
+                    if (!items.length) throw new Error('Your basket is empty.');
+                    const result = await postJson('/.netlify/functions/paypal-create-order', { items });
+                    if (!result.id) throw new Error('PayPal did not return an order ID.');
+                    return result.id;
+                },
+                onApprove: async data => {
+                    showCartStatus('Confirming your payment with PayPal…');
+                    const result = await postJson('/.netlify/functions/paypal-capture-order', {
+                        orderId: data.orderID
+                    });
+                    if (result.status !== 'COMPLETED') {
+                        throw new Error('PayPal has not confirmed this payment. Your basket has been kept.');
+                    }
+                    if (saveBasket({})) {
+                        renderBasket();
+                        showCartStatus('Payment complete. Thank you for your order.');
+                    } else {
+                        showCartStatus('Payment complete. Please clear the saved basket before placing another order.');
+                    }
+                },
+                onCancel: () => showCartStatus('Checkout was cancelled. Your basket is still saved.'),
+                onError: error => {
+                    console.error('PayPal checkout failed.', error);
+                    showCartStatus(error && error.message || 'PayPal checkout failed. Please try again.', true);
                 }
-                if (saveBasket({})) {
-                    renderBasket();
-                    showCartStatus('Payment complete. Thank you for your order.');
-                } else {
-                    showCartStatus('Payment complete. Please clear the saved basket before placing another order.');
-                }
-            },
-            onCancel: () => showCartStatus('Checkout was cancelled. Your basket is still saved.'),
-            onError: error => {
-                console.error('PayPal checkout failed.', error);
-                showCartStatus(error.message || 'PayPal checkout failed. Please try again.', true);
-            }
-        });
-        if (buttons.isEligible()) {
-            buttons.render(paypalButtonsContainer).then(() => {
-                paypalButtonsRendered = true;
-                paypalButtonsLoading = false;
-            }).catch(error => {
-                paypalButtonsLoading = false;
-                console.error('PayPal buttons could not be rendered.', error);
-                showCartStatus('PayPal checkout could not be started. Please try again later.', true);
             });
-        } else {
+            if (buttons.isEligible()) {
+                buttons.render(paypalButtonsContainer).then(() => {
+                    paypalButtonsRendered = true;
+                    paypalButtonsLoading = false;
+                }).catch(error => {
+                    paypalButtonsLoading = false;
+                    console.error('PayPal buttons could not be rendered.', error);
+                    showCartStatus('PayPal checkout could not be started. Please try again later.', true);
+                });
+            } else {
+                paypalButtonsLoading = false;
+                showCartStatus('PayPal checkout is not available for this browser or account.', true);
+            }
+        } catch (error) {
             paypalButtonsLoading = false;
-            showCartStatus('PayPal checkout is not available for this browser or account.', true);
+            console.error('PayPal buttons could not be initialized.', error);
+            showCartStatus('PayPal checkout could not be started. Close and reopen your basket to try again.', true);
         }
     };
     script.onerror = () => {

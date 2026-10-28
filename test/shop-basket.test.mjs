@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 function createShop(saved = '{}') {
     const elements = new Map();
+    const scripts = [];
     const element = () => ({
         classList: { toggle() {}, contains() { return false; } }, dataset: {},
         append() {}, replaceChildren() {}, setAttribute() {}, addEventListener() {}
@@ -14,14 +15,14 @@ function createShop(saved = '{}') {
         window: { siteProducts: [], siteReady: false, addEventListener() {} },
         document: {
             getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); },
-            createElement: element, addEventListener() {}, head: { append() {} }
+            createElement: element, addEventListener() {}, head: { append(script) { scripts.push(script); } }
         },
         localStorage: {
             getItem() { return saved; }, setItem(key, value) { saved = value; }, removeItem() { saved = '{}'; }
         }
     });
     vm.runInContext(readFileSync(new URL('../stuff/shop.js', import.meta.url), 'utf8'), context);
-    return { context, saved: () => JSON.parse(saved) };
+    return { context, scripts, saved: () => JSON.parse(saved) };
 }
 
 test('damaged saved line items do not crash the basket on page load', () => {
@@ -62,4 +63,52 @@ test('sample catalogs cannot load live PayPal buttons even when given a live cli
     context.window.siteConfig = { testMode: true, paypalEnvironment: 'live', paypalClientId: 'live-public', currency: 'GBP' };
     vm.runInContext('renderPayPalButtons()', context);
     assert.match(context.document.getElementById('cart-status').textContent, /sample catalogue.*Test payments/);
+});
+
+test('configured checkout requests eligible card options and uses server create/capture callbacks', async () => {
+    for (const environment of ['sandbox', 'live']) {
+        const { context, scripts, saved } = createShop(JSON.stringify({ print: { name: 'Print', price: 25, quantity: 2, type: 'physical' } }));
+        context.window.siteReady = true;
+        context.window.siteProducts = [{ id: 'print', name: 'Print', price: 25, type: 'physical' }];
+        context.window.siteConfig = { testMode: environment === 'sandbox', paypalEnvironment: environment, paypalClientId: `${environment}-public`, currency: 'GBP' };
+        let callbacks;
+        let renderedContainer;
+        context.window.paypal = { Buttons(options) {
+            callbacks = options;
+            return { isEligible: () => true, render(container) { renderedContainer = container; return Promise.resolve(); } };
+        } };
+        const requests = [];
+        context.fetch = async (path, options) => {
+            requests.push({ path, data: JSON.parse(options.body) });
+            return new Response(JSON.stringify(path.endsWith('paypal-create-order') ? { id: 'ORDER-123' } : { status: 'COMPLETED' }));
+        };
+        vm.runInContext('renderPayPalButtons()', context);
+        assert.equal(scripts.length, 1);
+        const url = new URL(scripts[0].src);
+        assert.equal(url.searchParams.get('enable-funding'), 'card');
+        assert.equal(url.searchParams.get('client-id'), `${environment}-public`);
+        assert.equal(url.searchParams.get('currency'), 'GBP');
+        scripts[0].onload();
+        await Promise.resolve();
+        assert.equal(renderedContainer, context.document.getElementById('paypal-buttons'));
+        assert.equal(await callbacks.createOrder(), 'ORDER-123');
+        assert.deepEqual(requests[0], { path: '/.netlify/functions/paypal-create-order', data: { items: [{ id: 'print', quantity: 2 }] } });
+        await callbacks.onApprove({ orderID: 'ORDER-123' });
+        assert.deepEqual(requests[1], { path: '/.netlify/functions/paypal-capture-order', data: { orderId: 'ORDER-123' } });
+        assert.deepEqual(saved(), {});
+        assert.match(context.document.getElementById('cart-status').textContent, /Payment complete/);
+    }
+});
+
+test('SDK initialization failures leave checkout retryable instead of permanently loading', () => {
+    const { context, scripts } = createShop(JSON.stringify({ print: { name: 'Print', price: 25, quantity: 1 } }));
+    context.window.siteReady = true;
+    context.window.siteProducts = [{ id: 'print', name: 'Print', price: 25 }];
+    context.window.siteConfig = { paypalClientId: 'sandbox-public', paypalEnvironment: 'sandbox', currency: 'GBP' };
+    context.window.paypal = { Buttons() { throw new Error('SDK initialization failed'); } };
+    vm.runInContext('renderPayPalButtons()', context);
+    scripts[0].onload();
+    assert.match(context.document.getElementById('cart-status').textContent, /Close and reopen your basket/);
+    vm.runInContext('renderPayPalButtons()', context);
+    assert.equal(scripts.length, 2, 'a reopened basket can attempt loading checkout again');
 });
