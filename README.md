@@ -7,17 +7,30 @@ Netlify. If the repository is connected, commits to `main` trigger a deploy.
 The included `netlify.toml` sets the publish directory and PayPal function
 directory.
 
-The root URL displays a coming-soon page. The full site is available at
-`https://<your-site-domain>/preview/`; its Home, Concept, Artwork & Shop, and
-Contact pages are all under `/preview/`.
+The root URL displays a coming-soon page. The original portfolio homepage and
+the full site are available at
+`https://stellar-tanuki-2253d7.netlify.app/preview/`; its Home, Concept,
+Artwork & Shop, and Contact pages are all under `/preview/`.
+
+The Netlify project is intended to remain private for now. With production
+visibility set to **Private**, visitors outside the Netlify team cannot open
+the deployed pages. Add the people who need to review the site as project/team
+members in Netlify. Keep `mvrkspence.com` pointed at its existing site until
+you decide to make this deployment public.
 
 To enable the editor:
 
 1. Enable Netlify Identity for the deployed site, set registration to **Invite
    only**, and enable Git Gateway.
-2. Invite the site administrator through Netlify Identity.
-3. Open `https://<your-site-domain>/admin/` and sign in.
-4. Edit pages and products in the CMS. Photos selected from the computer are
+2. Invite the site administrator using their email address. They accept the
+   invite and create their own password; do not put account passwords in the
+   repository or share them with editors.
+3. Open `https://stellar-tanuki-2253d7.netlify.app/admin/` and sign in using
+   the invited email and password.
+4. In the CMS, add or remove Home page cards, Concept page gallery photos,
+   social links, and shop products using the list controls. Edit page text,
+   photo descriptions, product availability and prices in the same editor.
+   Photos selected from the computer are
    uploaded to `uploads/`; publishing changes commits them to the repository
    and triggers a new site deploy.
 
