@@ -1,0 +1,90 @@
+backend:
+  name: git-gateway
+  branch: main
+
+publish_mode: editorial_workflow
+media_folder: uploads
+public_folder: /uploads
+locale: en
+
+collections:
+  - name: pages
+    label: Pages
+    files:
+      - name: home
+        label: Home page
+        file: content/home.json
+        format: json
+        fields:
+          - { name: eyebrow, label: Small heading, widget: string }
+          - { name: title, label: Title, widget: string }
+          - { name: intro, label: Introduction, widget: text }
+          - name: cards
+            label: Home page cards
+            widget: list
+            fields:
+              - { name: title, label: Card title, widget: string }
+              - { name: image, label: Photo, widget: image }
+              - { name: alt, label: Image description, widget: string, required: false }
+              - { name: link, label: Link (page filename), widget: string, hint: "For example: artwork.html or concept.html" }
+      - name: concept
+        label: Concept page
+        file: content/concept.json
+        format: json
+        fields:
+          - { name: eyebrow, label: Small heading, widget: string }
+          - { name: title, label: Title, widget: string }
+          - { name: intro, label: Introduction, widget: text }
+          - { name: body, label: Main text, widget: text }
+          - { name: image, label: Main photo, widget: image, required: false }
+          - { name: imageAlt, label: Image description, widget: string, required: false }
+          - name: gallery
+            label: Photo gallery
+            widget: list
+            required: false
+            fields:
+              - { name: image, label: Photo, widget: image }
+              - { name: alt, label: Image description, widget: string, required: false }
+              - { name: caption, label: Caption, widget: string, required: false }
+      - name: contact
+        label: Contact page
+        file: content/contact.json
+        format: json
+        fields:
+          - { name: eyebrow, label: Small heading, widget: string }
+          - { name: title, label: Title, widget: string }
+          - { name: intro, label: Introduction, widget: text }
+          - { name: email, label: Contact email, widget: string }
+          - { name: details, label: Additional details, widget: text }
+          - name: socialLinks
+            label: Social links
+            widget: list
+            required: false
+            fields:
+              - { name: label, label: Link name, widget: string }
+              - { name: url, label: URL, widget: string }
+      - name: shop
+        label: Artwork & shop
+        file: content/shop.json
+        format: json
+        fields:
+          - { name: eyebrow, label: Small heading, widget: string }
+          - { name: title, label: Page title, widget: string }
+          - { name: intro, label: Introduction, widget: text }
+          - name: currency
+            label: Currency
+            widget: select
+            options: [USD, GBP, EUR, CAD, AUD, NZD, CHF, SGD]
+          - { name: paypalClientId, label: PayPal client ID, widget: string, required: false, hint: "Public client ID only. Never enter your PayPal client secret here." }
+          - name: products
+            label: Products
+            widget: list
+            required: false
+            fields:
+              - { name: id, label: Product ID, widget: string, hint: "Use a unique ID containing letters, numbers, hyphens or underscores." }
+              - { name: name, label: Name, widget: string }
+              - { name: description, label: Description, widget: text }
+              - { name: price, label: Price, widget: number, value_type: float, min: 0.01 }
+              - { name: image, label: Photo, widget: image }
+              - { name: imageAlt, label: Image description, widget: string, required: false }
+              - { name: available, label: Available to buy, widget: boolean, default: true }
