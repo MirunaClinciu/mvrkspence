@@ -2,10 +2,10 @@
 
 ## Publishing and site admin
 
-The site is static and is designed to deploy from the `main` branch of
-`MirunaClinciu/mvrkspence` on Netlify. In Netlify, import that GitHub repository
-as a new site. The included `netlify.toml` sets the publish directory and
-PayPal function directory.
+The site deploys from the `main` branch of `MirunaClinciu/mvrkspence` on
+Netlify. If the repository is connected, commits to `main` trigger a deploy.
+The included `netlify.toml` sets the publish directory and PayPal function
+directory.
 
 To enable the editor:
 
@@ -18,9 +18,13 @@ To enable the editor:
    and triggers a new site deploy.
 
 The admin edits page text, home page cards, contact/social links, product
-details and product photos. To preview changes locally, serve this folder over
-HTTP rather than opening the HTML files directly; the site loads its editable
-content from JSON files.
+details and product photos. To change the PayPal app, open **Artwork & shop**
+and edit **PayPal client ID**. This value is safe to edit in the CMS because
+PayPal client IDs are public identifiers. The matching secret must remain in
+Netlify environment variables and must be updated there when switching PayPal
+apps or environments; never paste the secret into the CMS. To preview changes
+locally, serve this folder over HTTP rather than opening the HTML files
+directly; the site loads its editable content from JSON files.
 
 ## PayPal checkout
 
