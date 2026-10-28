@@ -109,8 +109,8 @@ export async function handler(event) {
                         brand_name: 'Mvrk Spence',
                         shipping_preference: 'GET_FROM_FILE',
                         user_action: 'PAY_NOW',
-                        return_url: new URL('/artwork.html?checkout=complete', siteUrl).href,
-                        cancel_url: new URL('/artwork.html?checkout=cancelled', siteUrl).href
+                        return_url: new URL('/preview/artwork.html?checkout=complete', siteUrl).href,
+                        cancel_url: new URL('/preview/artwork.html?checkout=cancelled', siteUrl).href
                     }
                 }
             }

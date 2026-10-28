@@ -6,6 +6,7 @@ const navigationItems = [
 ];
 
 const page = document.body.dataset.page;
+const pagePrefix = document.body.dataset.sitePrefix || '/';
 const pageContent = document.getElementById('page-content');
 const siteHeader = document.getElementById('site-header');
 const siteFooter = document.getElementById('site-footer');
@@ -25,7 +26,7 @@ function makeElement(tag, className, text) {
 function safeImagePath(path) {
     if (typeof path !== 'string' || !path.trim()) return '';
     try {
-        const url = new URL(path, window.location.href);
+        const url = new URL(path, document.baseURI);
         if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
         if (url.origin !== window.location.origin) return '';
         return url.href;
@@ -36,15 +37,17 @@ function safeImagePath(path) {
 }
 
 function safeLinkPath(path) {
-    if (typeof path !== 'string' || !path.trim()) return 'index.html';
+    const homePage = `${pagePrefix}index.html`;
+    if (typeof path !== 'string' || !path.trim()) return homePage;
     try {
-        const url = new URL(path, window.location.href);
-        if (url.protocol !== 'https:' && url.protocol !== 'http:') return 'index.html';
-        if (url.origin !== window.location.origin) return 'index.html';
-        return url.href;
+        const url = new URL(path, document.baseURI);
+        if (url.protocol !== 'https:' && url.protocol !== 'http:') return homePage;
+        if (url.origin !== window.location.origin) return homePage;
+        const pagePath = url.pathname.replace(/^\/+/, '');
+        return `${pagePrefix}${pagePath}${url.search}${url.hash}`;
     } catch (error) {
         console.error('Invalid link in site content.', error);
-        return 'index.html';
+        return homePage;
     }
 }
 
@@ -54,7 +57,7 @@ function renderNavigation() {
 
     const brand = document.createElement('a');
     brand.className = 'brand';
-    brand.href = 'index.html';
+    brand.href = `${pagePrefix}index.html`;
     brand.setAttribute('aria-label', 'Mvrk Spence home');
     const logo = document.createElement('img');
     logo.src = 'stuff/img/logo.png';
@@ -74,7 +77,7 @@ function renderNavigation() {
     navigationItems.forEach(item => {
         const listItem = document.createElement('li');
         const link = makeElement('a', item.page === page ? 'nav-link active' : 'nav-link', item.label);
-        link.href = item.href;
+        link.href = `${pagePrefix}${item.href}`;
         if (item.page === page) link.setAttribute('aria-current', 'page');
         listItem.append(link);
         list.append(listItem);
@@ -156,7 +159,7 @@ function renderFooter() {
     links.setAttribute('aria-label', 'Footer');
     navigationItems.forEach(item => {
         const link = makeElement('a', '', item.label);
-        link.href = item.href;
+        link.href = `${pagePrefix}${item.href}`;
         links.append(link);
     });
     const admin = makeElement('a', 'admin-link', 'Admin');
@@ -256,7 +259,7 @@ function renderArtwork(data) {
             makeElement('p', '', 'Please get in touch if you would like to enquire about a piece.')
         );
         const contact = makeElement('a', 'button button-outline', 'Contact');
-        contact.href = 'contact.html';
+        contact.href = `${pagePrefix}contact.html`;
         pageContent.replaceChildren(intro, empty, contact);
         return;
     }

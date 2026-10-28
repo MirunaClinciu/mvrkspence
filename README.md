@@ -7,6 +7,10 @@ Netlify. If the repository is connected, commits to `main` trigger a deploy.
 The included `netlify.toml` sets the publish directory and PayPal function
 directory.
 
+The root URL displays a coming-soon page. The full site is available at
+`https://<your-site-domain>/preview/`; its Home, Concept, Artwork & Shop, and
+Contact pages are all under `/preview/`.
+
 To enable the editor:
 
 1. Enable Netlify Identity for the deployed site, set registration to **Invite
@@ -50,7 +54,7 @@ the buyer's shipping address.
 
 ## Repository setup
 
-The local website files need to be pushed to the GitHub repository before
-Netlify can deploy them. Netlify Identity/Git Gateway, PayPal credentials and
-the Netlify site itself must be configured in their respective dashboards;
-those account-specific settings cannot be created from the static site files.
+The website source is in the `MirunaClinciu/mvrkspence` GitHub repository.
+Netlify Identity/Git Gateway, PayPal credentials and the Netlify site itself
+must be configured in their respective dashboards; those account-specific
+settings cannot be created from the static site files.

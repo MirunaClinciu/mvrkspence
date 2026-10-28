@@ -3,20 +3,69 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Photography, concepts and artwork by Mvrk Spence.">
+  <meta name="description" content="Mvrk Spence — coming soon.">
   <meta name="author" content="Mvrk Spence">
-  <title>Mvrk Spence | Home</title>
+  <meta name="theme-color" content="#080808">
+  <title>Mvrk Spence | Coming soon</title>
   <link rel="icon" href="stuff/img/Iconlogo.png" type="image/png">
-  <link rel="stylesheet" href="stuff/stylenav.css">
-  <script src="stuff/site.js" defer></script>
-  <script src="stuff/shop.js" defer></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      display: grid;
+      min-width: 320px;
+      min-height: 100vh;
+      place-items: center;
+      margin: 0;
+      padding: 32px 20px;
+      background: #080808;
+      color: #fff;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      text-align: center;
+    }
+    main { width: min(100%, 520px); }
+    img {
+      display: block;
+      width: min(100%, 340px);
+      max-height: 190px;
+      object-fit: contain;
+      margin: 0 auto 42px;
+    }
+    p {
+      margin: 0 0 32px;
+      color: #bc2f31;
+      font-size: clamp(1.05rem, 3vw, 1.35rem);
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    a {
+      display: inline-block;
+      padding: 12px 20px;
+      border: 1px solid #777;
+      color: #ddd;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: border-color 160ms ease, color 160ms ease;
+    }
+    a:hover, a:focus-visible { border-color: #bc2f31; color: #fff; }
+    footer {
+      position: fixed;
+      right: 20px;
+      bottom: 18px;
+      left: 20px;
+      color: #737373;
+      font-size: 0.75rem;
+    }
+    footer a { padding: 0; border: 0; color: #999; font-size: inherit; }
+  </style>
 </head>
-<body data-page="home">
-  <header id="site-header"></header>
-  <main id="page-content" class="home-page" tabindex="-1">
-    <p class="loading-message">Loading the portfolio…</p>
+<body>
+  <main>
+    <img src="stuff/img/logo.png" alt="Mvrk Spence">
+    <p>Coming soon</p>
+    <a href="/preview/">Preview the website</a>
   </main>
-  <footer id="site-footer"></footer>
-  <div id="site-modal-root"></div>
+  <footer>© <span id="year"></span> Mvrk Spence · <a href="/admin/">Admin</a></footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
