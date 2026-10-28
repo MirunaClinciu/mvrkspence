@@ -7,7 +7,12 @@
         email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>'
     };
 
-    function createLink(item) {
+    const referenceIcons = {
+        instagram: '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="currentColor"/><g fill="none" stroke="#fff" stroke-width="1.6"><rect x="6" y="6" width="12" height="12" rx="3"/><circle cx="12" cy="12" r="3"/></g><circle cx="16.2" cy="7.8" r="0.9" fill="#fff"/></svg>',
+        email: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="currentColor"/><path d="m2.8 6 9.2 7 9.2-7" fill="none" stroke="#fff" stroke-width="1.4"/></svg>'
+    };
+
+    function createLink(item, options = {}) {
         if (!item || typeof item.label !== 'string' || !item.label.trim() || typeof item.url !== 'string') return null;
         const address = item.url.trim();
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,7 +40,8 @@
             const icon = document.createElement('span');
             icon.className = 'social-icon';
             icon.setAttribute('aria-hidden', 'true');
-            icon.innerHTML = icons[platform];
+            icon.innerHTML = options.reference === true && Object.hasOwn(referenceIcons, platform)
+                ? referenceIcons[platform] : icons[platform];
             link.append(icon);
         } else {
             link.className = 'social-text-link';
@@ -44,9 +50,9 @@
         return link;
     }
 
-    function render(container, items) {
+    function render(container, items, options) {
         if (!container) return;
-        const links = (Array.isArray(items) ? items : []).map(createLink).filter(Boolean);
+        const links = (Array.isArray(items) ? items : []).map(item => createLink(item, options)).filter(Boolean);
         container.replaceChildren(...links);
         container.hidden = links.length === 0;
     }

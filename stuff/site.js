@@ -110,8 +110,14 @@ function renderNavigation() {
     basketButton.setAttribute('aria-label', 'Open shopping basket');
     basketButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2" /></svg><span class="cart-count" id="nav-cart-count-root" hidden>0</span>';
     links.append(list);
-
-    nav.append(brand, toggle, links, basketButton);
+    if (page === 'home') {
+        // Filled shopping-bag silhouette used by the original homepage.
+        basketButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 28"><path fill-rule="evenodd" d="M7 7V5a5 5 0 0 1 10 0v2h4a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3h4Zm2 0h6V5a3 3 0 0 0-6 0v2Zm0 5a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm8 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Z"/></svg><span class="cart-count" id="nav-cart-count-root" hidden>0</span>';
+        links.append(basketButton);
+        nav.append(brand, toggle, links);
+    } else {
+        nav.append(brand, toggle, links, basketButton);
+    }
     siteHeader.replaceChildren(nav);
     if (!document.querySelector('.skip-link')) {
         const skip = makeElement('a', 'skip-link', 'Skip to content');
@@ -123,6 +129,14 @@ function renderNavigation() {
         toggle.setAttribute('aria-expanded', 'false');
         toggle.setAttribute('aria-label', 'Open navigation');
     };
+    if (page === 'home') {
+        basketButton.addEventListener('click', () => {
+            if (nav.classList.contains('menu-open')) {
+                closeMenu();
+                toggle.focus();
+            }
+        });
+    }
     nav.addEventListener('keydown', event => {
         if (event.key === 'Escape' && nav.classList.contains('menu-open')) { closeMenu(); toggle.focus(); }
     });
@@ -227,7 +241,12 @@ function renderFooter() {
     const footerText = window.siteSettings && typeof window.siteSettings.footerText === 'string'
         ? window.siteSettings.footerText
         : 'Mvrk Spence';
-    const copyright = makeElement('p', '', `© ${new Date().getFullYear()} ${footerText}`);
+    const copyright = makeElement('p', '', `© ${new Date().getFullYear()} ${page === 'home' ? '' : footerText}`);
+    if (page === 'home') {
+        const name = makeElement('a', 'footer-brand', footerText);
+        name.href = `${pagePrefix}index.html`;
+        copyright.append(name);
+    }
     const links = document.createElement('nav');
     links.setAttribute('aria-label', 'Footer');
     const configuredNavigation = Array.isArray(window.siteSettings && window.siteSettings.navigation)
@@ -242,7 +261,7 @@ function renderFooter() {
     const footerLinks = document.createElement('nav');
     footerLinks.className = 'social-links-list';
     footerLinks.setAttribute('aria-label', 'Social links');
-    window.MvrkSocialLinks.render(footerLinks, window.siteSettings && window.siteSettings.footerLinks);
+    window.MvrkSocialLinks.render(footerLinks, window.siteSettings && window.siteSettings.footerLinks, { reference: page === 'home' });
     const adminLabel = window.siteSettings && typeof window.siteSettings.adminLinkLabel === 'string'
         ? window.siteSettings.adminLinkLabel
         : 'Admin';
@@ -250,7 +269,8 @@ function renderFooter() {
     admin.href = '/manage/';
     admin.setAttribute('aria-label', 'Open site administration');
     if (footerLinks.children.length) footer.append(footerLinks);
-    footer.append(copyright, admin);
+    footer.append(copyright);
+    if (page !== 'home') footer.append(admin);
     siteFooter.className = 'site-footer';
     siteFooter.replaceChildren(footer);
 }
@@ -476,21 +496,13 @@ function renderContact(data) {
         }
         panel.append(email);
     }
-    const socials = makeElement('div', 'social-links');
-    (Array.isArray(data.socialLinks) ? data.socialLinks : []).forEach(item => {
-        if (!item || typeof item.label !== 'string' || typeof item.url !== 'string') return;
-        try {
-            const url = new URL(item.url);
-            if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
-            const link = makeElement('a', 'text-button', item.label);
-            link.href = url.href;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            socials.append(link);
-        } catch (error) {
-            console.error('Invalid social link in contact content.', error);
-        }
-    });
+    const socials = makeElement('nav', 'social-links social-links-list');
+    socials.setAttribute('aria-label', 'Contact social links');
+    const customLinks = Array.isArray(data.socialLinks) ? data.socialLinks : [];
+    const useSiteLinks = typeof data.useSiteSocialLinks === 'boolean'
+        ? data.useSiteSocialLinks : customLinks.length === 0;
+    const links = useSiteLinks ? window.siteSettings && window.siteSettings.footerLinks : customLinks;
+    window.MvrkSocialLinks.render(socials, links);
     panel.append(socials);
     pageContent.replaceChildren(intro, panel);
 }
@@ -652,4 +664,4 @@ function scrollToPageAnchor() {
 renderNavigation();
 renderModal();
 renderFooter();
-initializeSite();
+if (!window.MvrkIdentityRedirecting) initializeSite();

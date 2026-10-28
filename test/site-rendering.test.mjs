@@ -79,6 +79,22 @@ function descendants(element, predicate) {
 function byTag(element, tag) { return descendants(element, child => child.tagName === tag); }
 function byClass(element, name) { return descendants(element, child => child.className.split(' ').includes(name)); }
 
+test('original homepage menu contains a working basket and restores the visible menu control on mobile', () => {
+    const { context, roots } = fixture('home');
+    context.renderNavigation();
+    const nav = byClass(roots['site-header'], 'site-nav')[0];
+    const menu = byClass(nav, 'nav-links')[0];
+    const toggle = byClass(nav, 'menu-toggle')[0];
+    const basket = byClass(nav, 'basket-link')[0];
+    assert.ok(menu.contains(basket), 'basket follows the original mobile dropdown layout');
+    assert.equal(basket.id, 'desktop-basket-link', 'existing basket opening handler still receives clicks');
+    toggle.listeners.click();
+    assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+    basket.listeners.click();
+    assert.equal(toggle.getAttribute('aria-expanded'), 'false');
+    assert.equal(context.document.activeElement, toggle, 'basket can return focus to a visible button');
+});
+
 test('footer uses editable social and email icons with accessible names', () => {
     const { context, roots, window } = fixture();
     window.siteSettings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
@@ -116,6 +132,40 @@ test('social links reject unsafe URLs and keep custom names as text', () => {
     assert.equal(link.textContent, '<b>Portfolio</b>');
     assert.equal(link.children.length, 0);
     assert.equal(link.className, 'social-text-link');
+});
+
+test('Contact displays working shared Instagram, Facebook and email icons from admin settings', () => {
+    const { context, roots, window } = fixture('contact');
+    window.siteSettings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
+    const contact = JSON.parse(readFileSync(new URL('../content/contact.json', import.meta.url), 'utf8'));
+    context.renderContact(contact);
+    const icons = byClass(roots['page-content'], 'social-icon-link');
+    assert.deepEqual(icons.map(icon => icon.href), [
+        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/', 'mailto:mvrkspence@gmail.com'
+    ]);
+    assert.equal(icons[0].target, '_blank');
+    assert.equal(icons[1].rel, 'noopener noreferrer');
+    assert.equal(icons[2].target, undefined);
+    assert.equal(icons[2].getAttribute('aria-label'), 'Email: mvrkspence@gmail.com');
+    window.siteSettings.footerLinks = [{ platform: 'instagram', label: 'New studio profile', url: 'https://www.instagram.com/new-studio/' }];
+    context.renderContact(contact);
+    assert.deepEqual(byClass(roots['page-content'], 'social-icon-link').map(icon => icon.href), ['https://www.instagram.com/new-studio/']);
+});
+
+test('Contact preserves custom links and permits hiding icons without falling back to shared links', () => {
+    const { context, roots, window } = fixture('contact');
+    window.siteSettings = { footerLinks: [{ label: 'Shared', url: 'https://example.com/shared' }] };
+    const custom = [
+        { platform: 'email', label: 'Studio email', url: 'mailto:studio@example.com' },
+        { label: 'Unsafe', url: 'javascript:alert(1)' }
+    ];
+    for (const useSiteSocialLinks of [undefined, false]) {
+        context.renderContact({ socialLinks: custom, useSiteSocialLinks });
+        const links = byTag(byClass(roots['page-content'], 'social-links')[0], 'a');
+        assert.deepEqual(links.map(link => link.href), ['mailto:studio@example.com']);
+    }
+    context.renderContact({ useSiteSocialLinks: false, socialLinks: [] });
+    assert.equal(byClass(roots['page-content'], 'social-links')[0].hidden, true);
 });
 
 test('email icons accept editable addresses and reject malformed mail links', () => {

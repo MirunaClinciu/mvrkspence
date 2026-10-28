@@ -7,10 +7,10 @@ Netlify. If the repository is connected, commits to `main` trigger a deploy.
 The included `netlify.toml` sets the publish directory and PayPal function
 directory.
 
-The root URL displays a coming-soon page. The original portfolio homepage and
-the full site are available at
-`https://stellar-tanuki-2253d7.netlify.app/preview/`; its Home, Concept,
-Artwork & Shop, and Contact pages are all under `/preview/`.
+The root URL displays the original portfolio homepage. Home, Concept,
+Artwork & Shop, and Contact are available at
+`https://stellar-tanuki-2253d7.netlify.app/`. The `/preview/` pages remain
+available for testing. The separate coming-soon page is at `/coming-soon.html`.
 The portfolio homepage keeps the original image-led layout: full-width Book,
 Artwork, and Concept images stacked below the dark navigation.
 
@@ -48,7 +48,7 @@ To enable the editor:
    Publishing commits the content and uploaded images to GitHub and triggers a
    Netlify deploy.
 
-The editor controls the coming-soon page, shared site name/description/logo,
+The editor controls the separate `/coming-soon.html` page, shared site name/description/logo,
 browser icon, navigation, footer, all page copy and images, contact/social
 links, journal posts, and shop settings/products. Open **PayPal payments** from
 the website dashboard to enter both the Client ID and Secret directly, choose
@@ -144,7 +144,7 @@ Netlify Identity/Git Gateway, PayPal credentials and the Netlify site itself
 must be configured in their respective dashboards; those account-specific
 settings cannot be created from the static site files.
 
-The preview homepage preserves the original full-width image stack without an
+The homepage preserves the original full-width image stack without an
 added title or introductory panel. Images and destinations remain CMS-editable.
 Shared pages include a skip link, keyboard-accessible navigation and a basket
 dialog that returns focus when closed.

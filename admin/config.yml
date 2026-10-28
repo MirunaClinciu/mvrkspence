@@ -156,16 +156,28 @@ collections:
           - { name: intro, label: Introduction, widget: text }
           - { name: email, label: Contact email address, widget: string, hint: 'Enter the complete email address visitors should use, such as hello@example.com.', pattern: ['^[^\s@]+@[^\s@]+\.[^\s@]+$', 'Enter a complete email address, such as hello@example.com.'] }
           - { name: details, label: Additional contact information, widget: text }
+          - { name: useSiteSocialLinks, label: Use the website social icons, widget: boolean, default: true, hint: 'Keep on to use the profiles under Website setup → Logo, social links & footer → Social links & icons. Switch off to use the custom contact links below.' }
           - name: socialLinks
-            label: Contact page social links
+            label: Custom contact links
             widget: list
             required: false
             default: []
             collapsed: true
             summary: '{{fields.label}}'
+            hint: 'Optional. These icons appear only when Use the website social icons is switched off.'
             fields:
-              - { name: label, label: Link name, widget: string }
-              - { name: url, label: Full URL, widget: string }
+              - name: platform
+                label: Social icon
+                widget: select
+                required: false
+                default: link
+                options:
+                  - { label: Instagram, value: instagram }
+                  - { label: Facebook, value: facebook }
+                  - { label: Email, value: email }
+                  - { label: Other link, value: link }
+              - { name: label, label: Link name, widget: string, hint: 'The accessible name for the icon, such as Instagram or Facebook.' }
+              - { name: url, label: Profile URL or email address, widget: string, hint: 'For social profiles, paste the complete https:// address. For Email, enter name@example.com; mailto:name@example.com also works.', pattern: ['^(?![\s\S]*\s)(?:https://[^\s]+|(?:mailto:)?[^\s@]+@[^\s@]+\.[^\s@]+)$', 'Enter a complete https:// profile URL or email address, without spaces.'] }
 
   - name: shop
     label: Shop & payments
