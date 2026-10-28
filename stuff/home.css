@@ -1,12 +1,14 @@
 /* Homepage proportions follow the original portfolio in Desktop/everything/mvrk. */
 body[data-page="home"] {
-  padding-top: 0;
+  --nav-height: 3.3rem;
+  padding-top: var(--nav-height);
   font-family: Inter, Arial, Helvetica, sans-serif;
   line-height: 1.5;
 }
 
 body[data-page="home"] .site-nav {
   min-height: 0;
+  height: var(--nav-height);
   padding: 0.4rem 4rem;
 }
 
@@ -92,8 +94,8 @@ body[data-page="home"] .footer-inner a:hover { color: #ff0004; }
 body[data-page="home"] .footer-brand { letter-spacing: 0.03em; }
 
 @media (max-width: 768px) {
-  body[data-page="home"] { padding-top: 60px; }
-  body[data-page="home"] .site-nav { height: 50px; padding: 0 0.75rem; }
+  body[data-page="home"] { --nav-height: 50px; }
+  body[data-page="home"] .site-nav { padding: 0 0.75rem; }
 }
 
 @media (max-width: 767px) {
