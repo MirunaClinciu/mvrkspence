@@ -22,7 +22,8 @@ export async function handler(event) {
         const result = await requestPaypal(
             `/v2/checkout/orders/${encodeURIComponent(request.orderId)}/capture`,
             accessToken,
-            {}
+            {},
+            `capture-${request.orderId}`
         );
 
         if (result.status !== 'COMPLETED') {
@@ -31,6 +32,6 @@ export async function handler(event) {
         return jsonResponse(200, { status: result.status });
     } catch (error) {
         console.error('Could not capture PayPal order:', error.message);
-        return jsonResponse(502, { error: error.message || 'Could not confirm the PayPal payment.' });
+        return jsonResponse(error.statusCode || 502, { error: error.message || 'Could not confirm the PayPal payment.' });
     }
 }

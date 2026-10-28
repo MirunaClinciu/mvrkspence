@@ -6,6 +6,8 @@ publish_mode: editorial_workflow
 media_folder: uploads
 public_folder: /uploads
 locale: en
+display_url: /preview/
+logo_url: /stuff/img/logo.png
 
 collections:
   - name: site
@@ -24,6 +26,8 @@ collections:
           - name: navigation
             label: Navigation links
             widget: list
+            collapsed: true
+            summary: '{{fields.label}}'
             hint: Add, remove, or reorder links in the site navigation.
             fields:
               - { name: label, label: Link text, widget: string }
@@ -40,6 +44,9 @@ collections:
             label: Footer social links
             widget: list
             required: false
+            default: []
+            collapsed: true
+            summary: '{{fields.label}}'
             hint: Add or remove the links shown in the site footer.
             fields:
               - { name: label, label: Link name, widget: string }
@@ -69,6 +76,9 @@ collections:
           - name: cards
             label: Homepage image links
             widget: list
+            collapsed: true
+            summary: '{{fields.title}}'
+            label_singular: Image link
             hint: Add, remove, or reorder the full-width photos on the original portfolio homepage.
             fields:
               - { name: title, label: Accessible image-link name, widget: string }
@@ -82,7 +92,7 @@ collections:
                   - { label: Concept, value: concept.html }
                   - { label: Contact, value: contact.html }
       - name: concept
-        label: Concept page
+        label: Concept page & journal
         file: content/concept.json
         format: json
         fields:
@@ -97,11 +107,34 @@ collections:
             label: Concept photo gallery
             widget: list
             required: false
+            default: []
+            collapsed: true
+            summary: '{{fields.caption}}'
+            label_singular: Photo
             hint: Add, remove, or reorder gallery photos.
             fields:
               - { name: image, label: Gallery photo (upload from computer), widget: image }
               - { name: alt, label: Image description, widget: string, required: false }
               - { name: caption, label: Caption, widget: string, required: false }
+          - name: posts
+            label: Journal posts
+            label_singular: Post
+            widget: list
+            required: false
+            default: []
+            collapsed: true
+            add_to_top: true
+            summary: '{{fields.title}} - {{fields.date}}'
+            hint: 'Add an update, project story or studio note. Switch Published on when ready, then publish this Concept page. Newest posts appear first. Delete a post here to remove it from the site.'
+            fields:
+              - { name: id, label: Permanent post ID, widget: string, pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase letters, numbers and hyphens, such as studio-notes-01.'], hint: 'Choose a unique ID and keep it unchanged so links to this post keep working.' }
+              - { name: title, label: Post title, widget: string }
+              - { name: date, label: Post date, widget: datetime, date_format: 'YYYY-MM-DD', time_format: false, default: '{{now}}' }
+              - { name: summary, label: Short introduction, widget: text, required: false }
+              - { name: body, label: Post text, widget: text, hint: 'Plain text. Leave a blank line between paragraphs.' }
+              - { name: image, label: Post photo (upload from computer), widget: image, required: false }
+              - { name: imageAlt, label: Post photo description, widget: string, required: false }
+              - { name: published, label: Published on the website, widget: boolean, default: false }
       - name: contact
         label: Contact page
         file: content/contact.json
@@ -116,6 +149,9 @@ collections:
             label: Contact page social links
             widget: list
             required: false
+            default: []
+            collapsed: true
+            summary: '{{fields.label}}'
             fields:
               - { name: label, label: Link name, widget: string }
               - { name: url, label: Full URL, widget: string }
@@ -146,14 +182,19 @@ collections:
               - { name: amount, label: Shipping fee per order, widget: number, value_type: float, min: 0 }
           - name: products
             label: Products
+            label_singular: Product
             widget: list
             required: false
+            default: []
+            collapsed: true
+            summary: '{{fields.name}} - {{fields.price}}'
             hint: Add, remove, or reorder shop items. Unavailable products are hidden and cannot be purchased.
             fields:
-              - { name: id, label: Unique product ID, widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use 1-80 letters, numbers, hyphens, underscores, or periods.'], hint: "Use a unique ID with letters, numbers, hyphens, underscores, or periods." }
+              - { name: id, label: Unique product ID, widget: string, pattern: ['^[A-Za-z0-9._-]{1,80}$', 'Use 1-80 letters, numbers, hyphens, underscores, or periods.'], hint: "Use a unique ID and keep it unchanged after publishing. For a new piece, use a new ID." }
               - { name: name, label: Product name, widget: string }
               - { name: description, label: Product description, widget: text }
-              - { name: price, label: Price per item, widget: number, value_type: float, min: 0.01 }
+              - { name: purchasable, label: Enable PayPal checkout, widget: boolean, default: false, hint: 'Leave off to display this piece with an enquiry link. Set its real price above zero before enabling checkout.' }
+              - { name: price, label: Price per item, widget: number, value_type: float, min: 0, step: 0.01, default: 0, required: false, hint: 'Enter the real price in the selected shop currency, using up to two decimal places. A zero price is an enquiry listing.' }
               - name: type
                 label: Item type
                 widget: select
@@ -163,4 +204,4 @@ collections:
                 default: physical
               - { name: image, label: Product photo (upload from computer), widget: image }
               - { name: imageAlt, label: Product photo description, widget: string, required: false }
-              - { name: available, label: Available for purchase, widget: boolean, default: true }
+              - { name: available, label: Show on Artwork page, widget: boolean, default: true, hint: 'Switch off to hide a sold or withdrawn piece and prevent checkout.' }

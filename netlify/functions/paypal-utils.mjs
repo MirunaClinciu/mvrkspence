@@ -1,3 +1,5 @@
+import bundledShop from '../../content/shop.json' with { type: 'json' };
+
 const paypalHosts = {
     sandbox: 'https://api-m.sandbox.paypal.com',
     live: 'https://api-m.paypal.com'
@@ -31,13 +33,8 @@ export function getSiteUrl() {
 
 export async function getShopConfig() {
     const siteUrl = getSiteUrl();
-    const response = await fetch(new URL('/content/shop.json', siteUrl), {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(10000)
-    });
-    if (!response.ok) throw new Error(`Could not load the product catalog (${response.status}).`);
-
-    const config = await response.json();
+    // A bundled catalog also works when the deployment requires visitor authentication.
+    const config = structuredClone(bundledShop);
     if (!config || typeof config !== 'object') throw new Error('The product catalog is invalid.');
     if (typeof config.paypalClientId !== 'string' || !config.paypalClientId.trim()) {
         throw new Error('PayPal client ID is missing from the shop settings.');
@@ -81,26 +78,27 @@ export async function getPaypalAccessToken(clientId) {
 }
 
 export function readRequestBody(event) {
-    if (!event.body || event.body.length > 20000) throw new Error('The request body is missing or too large.');
+    const invalid = message => Object.assign(new Error(message), { statusCode: 400 });
+    if (!event.body || event.body.length > 20000) throw invalid('The request body is missing or too large.');
     let body;
     try {
-        body = JSON.parse(event.body);
+        body = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body);
     } catch (error) {
-        throw new Error('The request body must be valid JSON.');
+        throw invalid('The request body must be valid JSON.');
     }
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
-        throw new Error('The request body must be a JSON object.');
+        throw invalid('The request body must be a JSON object.');
     }
     return body;
 }
 
-export async function requestPaypal(path, accessToken, body) {
+export async function requestPaypal(path, accessToken, body, requestId = crypto.randomUUID()) {
     const response = await fetch(`${getPaypalHost()}${path}`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'PayPal-Request-Id': crypto.randomUUID()
+            'PayPal-Request-Id': requestId
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(20000)

@@ -44,7 +44,7 @@ function safeLinkPath(path) {
         const url = new URL(path, document.baseURI);
         if (url.protocol !== 'https:' && url.protocol !== 'http:') return homePage;
         if (url.origin !== window.location.origin) return homePage;
-        const pagePath = url.pathname.replace(/^\/+/, '');
+        const pagePath = url.pathname.replace(/^\/+/, '').replace(/^preview\//, '');
         return `${pagePrefix}${pagePath}${url.search}${url.hash}`;
     } catch (error) {
         console.error('Invalid link in site content.', error);
@@ -109,11 +109,26 @@ function renderNavigation() {
     basketButton.id = 'desktop-basket-link';
     basketButton.setAttribute('aria-label', 'Open shopping basket');
     basketButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2" /></svg><span class="cart-count" id="nav-cart-count-root" hidden>0</span>';
-    list.append(basketButton);
     links.append(list);
 
-    nav.append(brand, toggle, links);
+    nav.append(brand, toggle, links, basketButton);
     siteHeader.replaceChildren(nav);
+    if (!document.querySelector('.skip-link')) {
+        const skip = makeElement('a', 'skip-link', 'Skip to content');
+        skip.href = '#page-content';
+        document.body.prepend(skip);
+    }
+    const closeMenu = () => {
+        nav.classList.remove('menu-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open navigation');
+    };
+    nav.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && nav.classList.contains('menu-open')) { closeMenu(); toggle.focus(); }
+    });
+    document.addEventListener('click', event => {
+        if (!nav.contains(event.target)) closeMenu();
+    });
 
     toggle.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -133,6 +148,7 @@ function renderNavigation() {
 function renderModal() {
     const overlay = makeElement('div', 'modal-overlay');
     overlay.id = 'shopping-cart-modal';
+    overlay.inert = true;
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML = `
       <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="cart-title">
@@ -156,13 +172,29 @@ function renderModal() {
         if (event.target === overlay) closeShoppingBasket();
     });
     document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && overlay.classList.contains('show')) closeShoppingBasket();
+        if (!overlay.classList.contains('show')) return;
+        if (event.key === 'Escape') closeShoppingBasket();
+        if (event.key === 'Tab') {
+            const focusable = [...overlay.querySelectorAll('button:not(:disabled), a[href], iframe, [tabindex="0"]')]
+                .filter(element => element.getClientRects().length);
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
     });
 }
+
+let basketReturnFocus = null;
 
 function openShoppingBasket() {
     const overlay = document.getElementById('shopping-cart-modal');
     if (!overlay) return;
+    if (overlay.classList.contains('show')) return;
+    basketReturnFocus = document.activeElement;
+    overlay.inert = false;
+    document.body.classList.add('basket-open');
+    [siteHeader, pageContent, siteFooter].forEach(element => { element.inert = true; });
     overlay.classList.add('show');
     overlay.setAttribute('aria-hidden', 'false');
     document.getElementById('close-cart-modal').focus();
@@ -173,6 +205,10 @@ function closeShoppingBasket() {
     const overlay = document.getElementById('shopping-cart-modal');
     if (!overlay) return;
     overlay.classList.remove('show');
+    overlay.inert = true;
+    document.body.classList.remove('basket-open');
+    [siteHeader, pageContent, siteFooter].forEach(element => { element.inert = false; });
+    if (basketReturnFocus && basketReturnFocus.isConnected) basketReturnFocus.focus();
     overlay.setAttribute('aria-hidden', 'true');
 }
 
@@ -215,9 +251,10 @@ function renderFooter() {
         ? window.siteSettings.adminLinkLabel
         : 'Admin';
     const admin = makeElement('a', 'admin-link', adminLabel || 'Admin');
-    admin.href = 'admin/';
+    admin.href = '/admin/';
     admin.setAttribute('aria-label', 'Open site administration');
-    footer.append(copyright, links, footerLinks, admin);
+    if (footerLinks.children.length) footer.append(footerLinks);
+    footer.append(copyright, admin);
     siteFooter.className = 'site-footer';
     siteFooter.replaceChildren(footer);
 }
@@ -233,6 +270,7 @@ function renderPageIntro(data) {
 function renderHome(data) {
     const imageLinks = makeElement('section', 'home-image-links');
     imageLinks.setAttribute('aria-label', 'Explore the portfolio');
+    const heading = makeElement('h1', 'visually-hidden', window.siteSettings?.siteName || 'Mvrk Spence');
     (Array.isArray(data.cards) ? data.cards : []).forEach(card => {
         if (!card || typeof card.title !== 'string' || typeof card.image !== 'string') return;
         const imagePath = safeImagePath(card.image);
@@ -243,11 +281,25 @@ function renderHome(data) {
         const image = document.createElement('img');
         image.src = imagePath;
         image.alt = typeof card.alt === 'string' ? card.alt : card.title;
-        image.loading = 'lazy';
+        const firstImage = imageLinks.children.length === 0;
+        image.loading = firstImage ? 'eager' : 'lazy';
+        image.decoding = 'async';
+        if (firstImage) image.fetchPriority = 'high';
+        setImageDimensions(image, card.image);
         link.append(image);
         imageLinks.append(link);
     });
-    pageContent.replaceChildren(imageLinks);
+    pageContent.replaceChildren(heading, imageLinks);
+}
+
+function setImageDimensions(image, path) {
+    const dimensions = {
+        'stuff/img/Book1.png': [1600, 612],
+        'stuff/img/Artwork.png': [1600, 752],
+        'stuff/img/Concept.png': [1600, 755]
+    }[path];
+    if (dimensions) [image.width, image.height] = dimensions;
+    image.decoding = 'async';
 }
 
 function renderConcept(data) {
@@ -285,10 +337,63 @@ function renderConcept(data) {
             if (item.caption) figure.append(makeElement('figcaption', '', item.caption));
             gallery.append(figure);
         });
-        pageContent.replaceChildren(intro, feature, gallery);
+        pageContent.replaceChildren(intro, feature, gallery, renderConceptPosts(data.posts));
         return;
     }
-    pageContent.replaceChildren(intro, feature);
+    pageContent.replaceChildren(intro, feature, renderConceptPosts(data.posts));
+}
+
+function renderConceptPosts(posts) {
+    const journal = makeElement('section', 'concept-journal');
+    const published = (Array.isArray(posts) ? posts : [])
+        .filter(post => post && post.published === true && typeof post.title === 'string' && post.title.trim())
+        .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    if (!published.length) { journal.hidden = true; return journal; }
+    journal.setAttribute('aria-labelledby', 'journal-heading');
+    journal.append(makeElement('p', 'eyebrow', 'From the studio'), makeElement('h2', 'journal-heading', 'Notes & ideas'));
+    journal.lastChild.id = 'journal-heading';
+    const usedIds = new Set();
+    published.forEach((post, index) => {
+        const article = makeElement('article', 'journal-post');
+        const slug = typeof post.id === 'string' && /^[a-z0-9-]+$/.test(post.id) ? post.id : String(index + 1);
+        let articleId = `post-${slug}`;
+        while (usedIds.has(articleId)) articleId += `-${index + 1}`;
+        usedIds.add(articleId);
+        article.id = articleId;
+        if (typeof post.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(post.date)) {
+            const date = new Date(`${post.date}T12:00:00Z`);
+            if (Number.isFinite(date.getTime())) {
+                const time = makeElement('time', 'post-date', date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }));
+                time.dateTime = post.date;
+                article.append(time);
+            }
+        }
+        const title = makeElement('h3');
+        const permalink = makeElement('a', '', post.title);
+        permalink.href = `${pagePrefix}concept.html#${article.id}`;
+        title.append(permalink);
+        article.append(title);
+        if (post.summary) article.append(makeElement('p', 'post-summary', post.summary));
+        const imagePath = safeImagePath(post.image);
+        if (imagePath) {
+            const image = document.createElement('img');
+            image.src = imagePath;
+            image.alt = typeof post.imageAlt === 'string' ? post.imageAlt : '';
+            image.loading = 'lazy';
+            image.decoding = 'async';
+            article.append(image);
+        }
+        if (typeof post.body === 'string' && post.body.trim()) {
+            const details = makeElement('details', 'post-details');
+            const summary = makeElement('summary', '', 'Read more');
+            summary.setAttribute('aria-label', `Read more: ${post.title}`);
+            details.append(summary);
+            post.body.trim().split(/\n\s*\n/).forEach(paragraph => details.append(makeElement('p', '', paragraph)));
+            article.append(details);
+        }
+        journal.append(article);
+    });
+    return journal;
 }
 
 function renderArtwork(data) {
@@ -306,7 +411,8 @@ function renderArtwork(data) {
         );
         const contact = makeElement('a', 'button button-outline', 'Contact');
         contact.href = `${pagePrefix}contact.html`;
-        pageContent.replaceChildren(intro, empty, contact);
+        empty.append(contact);
+        pageContent.replaceChildren(intro, empty);
         return;
     }
 
@@ -330,16 +436,29 @@ function renderArtwork(data) {
             product.type === 'digital' ? 'Digital item' : 'Physical item'
         ));
         const footer = makeElement('div', 'product-footer');
-        footer.append(makeElement('span', 'product-price', formatPrice(product.price, data.currency)));
-        const addButton = makeElement('button', 'button add-to-basket-btn', 'Add to basket');
-        addButton.type = 'button';
-        addButton.dataset.productId = product.id;
-        footer.append(addButton);
+        if (product.purchasable !== false && Number(product.price) > 0) {
+            footer.append(makeElement('span', 'product-price', formatPrice(product.price, data.currency)));
+            const addButton = makeElement('button', 'button add-to-basket-btn', 'Add to basket');
+            addButton.type = 'button';
+            addButton.dataset.productId = product.id;
+            footer.append(addButton);
+        } else {
+            footer.append(makeElement('span', 'product-enquiry', 'Enquiries welcome'));
+            const enquiry = makeElement('a', 'button button-outline', 'Enquire');
+            enquiry.href = `${pagePrefix}contact.html?artwork=${encodeURIComponent(product.name)}`;
+            footer.append(enquiry);
+        }
         details.append(footer);
         card.append(details);
         productList.append(card);
     });
-    pageContent.replaceChildren(intro, productList);
+    const checkout = makeElement('section', 'shop-checkout');
+    const checkoutButton = makeElement('button', 'button button-outline', 'View basket & checkout');
+    checkoutButton.type = 'button';
+    checkoutButton.addEventListener('click', openShoppingBasket);
+    checkout.append(makeElement('p', '', 'Selected something? Review your basket and pay securely with PayPal.'), checkoutButton);
+    checkout.hidden = !activeProducts.some(product => product.purchasable !== false && Number(product.price) > 0);
+    pageContent.replaceChildren(intro, productList, checkout);
 }
 
 function renderContact(data) {
@@ -349,6 +468,11 @@ function renderContact(data) {
     if (typeof data.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
         const email = makeElement('a', 'contact-email', data.email);
         email.href = `mailto:${data.email}`;
+        const artwork = new URLSearchParams(window.location.search).get('artwork');
+        if (artwork) {
+            email.href += `?subject=${encodeURIComponent(`Artwork enquiry: ${artwork.slice(0, 160)}`)}`;
+            panel.prepend(makeElement('p', 'enquiry-context', `Enquiring about ${artwork.slice(0, 160)}`));
+        }
         panel.append(email);
     }
     const socials = makeElement('div', 'social-links');
@@ -405,7 +529,7 @@ renderFooter();
         const siteName = typeof settings.siteName === 'string' && settings.siteName.trim()
             ? settings.siteName.trim()
             : 'Mvrk Spence';
-        document.title = `${siteName} | ${document.body.dataset.page}`;
+        document.title = `${siteName} | ${{ home: 'Home', concept: 'Concept', artwork: 'Artwork & Shop', contact: 'Contact' }[page] || 'Portfolio'}`;
         if (typeof settings.metaDescription === 'string') {
             const description = document.getElementById('page-description');
             if (description) description.content = settings.metaDescription;
@@ -422,9 +546,11 @@ renderFooter();
                     !productIds.has(product.id) &&
                     typeof product.name === 'string' &&
                     product.name.trim() !== '' &&
-                    /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(product.price)) &&
-                    Number.isSafeInteger(Math.round(Number(product.price) * 100)) &&
-                    Number(product.price) > 0;
+                    (product.purchasable === false || (
+                        /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(product.price)) &&
+                        Number.isSafeInteger(Math.round(Number(product.price) * 100)) &&
+                        Number(product.price) > 0
+                    ));
                 if (!valid) {
                     console.error('Ignoring an invalid or duplicate product in the shop settings.');
                     return false;
@@ -448,10 +574,28 @@ renderFooter();
         else if (page === 'concept') renderConcept(data);
         else if (page === 'contact') renderContact(data);
         if (data.title) document.title = `${siteName} | ${data.title}`;
+        scrollToPageAnchor();
     } catch (error) {
         console.error('Unable to load website content.', error);
         pageContent.replaceChildren(
-            makeElement('section', 'empty-state', 'This page could not be loaded. Please try again later.')
+            makeElement('section', 'empty-state', 'This page could not be loaded. Please try again.')
         );
+        const retry = makeElement('button', 'button', 'Try again');
+        retry.type = 'button';
+        retry.addEventListener('click', () => window.location.reload());
+        pageContent.firstChild.append(retry);
     }
 })();
+
+function scrollToPageAnchor() {
+    let id;
+    try { id = decodeURIComponent(window.location.hash.slice(1)); }
+    catch (_) { return; }
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (target && pageContent.contains(target)) {
+        const details = target.querySelector('.post-details');
+        if (details) details.open = true;
+        requestAnimationFrame(() => target.scrollIntoView({ block: 'start', behavior: 'instant' }));
+    }
+}

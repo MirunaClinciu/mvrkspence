@@ -61,6 +61,7 @@ export async function handler(event) {
                 item &&
                 item.id === requested.id &&
                 item.available !== false &&
+                item.purchasable !== false &&
                 typeof item.name === 'string' &&
                 item.name.trim() !== ''
             );
@@ -147,13 +148,13 @@ export async function handler(event) {
             }
         });
 
-        if (typeof result.id !== 'string' || result.status !== 'CREATED') {
+        if (typeof result.id !== 'string' || !result.id.trim() || !['CREATED', 'PAYER_ACTION_REQUIRED'].includes(result.status)) {
             console.error('PayPal returned an unexpected create-order response.');
             return jsonResponse(502, { error: 'PayPal did not create an order. Please try again.' });
         }
         return jsonResponse(200, { id: result.id });
     } catch (error) {
         console.error('Could not create PayPal order:', error.message);
-        return jsonResponse(502, { error: error.message || 'Could not create a PayPal order.' });
+        return jsonResponse(error.statusCode || 502, { error: error.message || 'Could not create a PayPal order.' });
     }
 }

@@ -33,7 +33,8 @@ To enable the editor:
    the invited email and password.
 4. In the CMS, open **Website setup**, **Website pages**, or **Shop & payments**
    to edit the related settings. List controls add, remove, and reorder home
-   cards, navigation links, gallery photos, footer/contact links, and products.
+   cards, navigation links, gallery photos, journal posts, footer/contact links,
+   and products. Collapsed entries show their names so long lists stay manageable.
    The image fields open a file picker so photos can be selected from the
    computer. Photos are uploaded to `uploads/`.
 5. Save changes as a draft, then use the CMS publish action when ready.
@@ -42,13 +43,15 @@ To enable the editor:
 
 The editor controls the coming-soon page, shared site name/description/logo,
 browser icon, navigation, footer, all page copy and images, contact/social
-links, and shop settings/products. To change the PayPal app, edit **PayPal
+links, journal posts, and shop settings/products. To change the PayPal app, edit **PayPal
 public client ID** in **Shop & payments**. This value is safe to edit in the
 CMS because PayPal client IDs are public identifiers. The matching secret
 must remain in Netlify environment variables and must be updated there when
 switching PayPal apps or environments; never paste the secret into the CMS.
 
 The site layout and styling are still maintained in the website source code.
+Home, Concept, and Shop have visual previews inside the editor. These help check
+text and uploaded images before publishing; preview buttons do not take payments.
 The shop supports a fixed optional shipping fee per order containing physical
 items; configure it in **Shop & payments**. Inventory is not tracked, orders
 are not stored in an admin dashboard, and no order-email or digital-download
@@ -57,6 +60,35 @@ and arrange fulfillment directly through PayPal. Tax handling is not configured
 by the site. To preview changes locally, serve this folder over HTTP rather
 than opening the HTML files directly; the site loads editable content from
 JSON files.
+
+## Editing the blog and shop
+
+Open **Website pages > Concept page & journal** to change the page introduction,
+main story or gallery. Under **Journal posts**, choose **Add Post**, enter a unique
+permanent ID such as `studio-notes-01`, title, date and text, then optionally
+upload a photo from your computer. Leave a blank line between paragraphs. Switch
+**Published on the website** on when ready. Save and publish the Concept page to
+make the changes live. Switch it off to hide a post while keeping it in the editor;
+remove the list entry to delete it. Keep IDs unchanged after publishing so links
+to those posts continue to work. Posts appear newest first on the Concept page. Hidden entries in a published
+content file can still be read in its JSON; keep private drafts in the CMS
+editorial workflow until ready to publish.
+There are no prewritten journal entries.
+
+Open **Shop & payments > Shop settings & products** to add, remove or reorder
+Artwork listings. Use **Add Product**, choose a unique permanent ID, add its name,
+description and image, then choose physical or digital. For an enquiry listing,
+leave **Enable PayPal checkout** off. To sell it, enter the actual price above zero
+in the selected shop currency and switch checkout on. Use **Show on Artwork page**
+to hide a listing without deleting it; remove the list entry to delete it. New
+listings start as enquiries to prevent publishing an unintended selling price.
+The initial artwork listings use existing portfolio images and accept enquiries
+until the administrator enters prices and enables checkout.
+
+Publishing content and taking payments are separate: the CMS can publish artwork
+before PayPal is configured. For checkout, complete the sandbox setup below and
+test a payment before entering live credentials. The administrator controls the
+public client ID in the CMS; the private secret stays in Netlify.
 
 ## PayPal checkout
 
@@ -87,3 +119,11 @@ The website source is in the `MirunaClinciu/mvrkspence` GitHub repository.
 Netlify Identity/Git Gateway, PayPal credentials and the Netlify site itself
 must be configured in their respective dashboards; those account-specific
 settings cannot be created from the static site files.
+
+The preview homepage preserves the original full-width image stack without an
+added title or introductory panel. Images and destinations remain CMS-editable.
+Shared pages include a skip link, keyboard-accessible navigation and a basket
+dialog that returns focus when closed.
+
+Editor configuration follows the [Decap list widget documentation](https://decapcms.org/docs/widgets/list/)
+and [custom preview API](https://decapcms.org/docs/customization/).

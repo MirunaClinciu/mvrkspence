@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import bundledShop from '../content/shop.json' with { type: 'json' };
+const originalCatalog = structuredClone(bundledShop);
 import { afterEach, beforeEach, test } from 'node:test';
 import { handler as createOrder } from '../netlify/functions/paypal-create-order.mjs';
 import { handler as captureOrder } from '../netlify/functions/paypal-capture-order.mjs';
@@ -25,6 +27,7 @@ beforeEach(() => {
     process.env.PAYPAL_CLIENT_SECRET = 'test-secret';
     process.env.PAYPAL_ENVIRONMENT = 'sandbox';
     shop.shipping = { enabled: false, amount: 0 };
+    Object.assign(bundledShop, shop);
     shop.products = [
         { id: 'print-1', name: 'Limited Print', price: 12.5, available: true },
         { id: 'sold-out', name: 'Sold Out', price: 50, available: false }
@@ -32,6 +35,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    for (const key of Object.keys(bundledShop)) delete bundledShop[key];
+    Object.assign(bundledShop, originalCatalog);
     globalThis.fetch = originalFetch;
     for (const [name, value] of Object.entries(originalEnvironment)) {
         if (value === undefined) delete process.env[name];
@@ -40,6 +45,7 @@ afterEach(() => {
 });
 
 function mockPaypal(createResult = { id: 'ORDER-123', status: 'CREATED' }) {
+    Object.assign(bundledShop, shop);
     const calls = [];
     globalThis.fetch = async (input, options = {}) => {
         const url = String(input);
@@ -63,6 +69,7 @@ function mockPaypal(createResult = { id: 'ORDER-123', status: 'CREATED' }) {
 }
 
 test('create order uses the server catalog price, not a browser-supplied price', async () => {
+    Object.assign(bundledShop, shop);
     const calls = mockPaypal();
     const response = await createOrder({
         httpMethod: 'POST',
@@ -97,6 +104,7 @@ test('create order rejects unavailable products without contacting PayPal', asyn
 });
 
 test('create order rejects invalid quantities', async () => {
+    Object.assign(bundledShop, shop);
     mockPaypal();
     const response = await createOrder({
         httpMethod: 'POST',
@@ -185,4 +193,66 @@ test('capture order reports the PayPal capture status', async () => {
 test('payment functions reject non-POST requests', async () => {
     assert.equal((await createOrder({ httpMethod: 'GET' })).statusCode, 405);
     assert.equal((await captureOrder({ httpMethod: 'GET' })).statusCode, 405);
+});
+
+
+test('private deployment checkout does not fetch the protected website catalog', async () => {
+    Object.assign(bundledShop, shop);
+    const calls = mockPaypal();
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 200);
+    assert.equal(calls.some(call => call.url.endsWith('/content/shop.json')), false);
+});
+
+test('enquiry-only artwork cannot be purchased even when a browser submits its ID', async () => {
+    shop.products[0].purchasable = false;
+    Object.assign(bundledShop, shop);
+    const calls = mockPaypal();
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 400);
+    assert.equal(calls.some(call => call.url.includes('paypal.com')), false);
+});
+
+test('malformed JSON returns a client error before any payment request', async () => {
+    const calls = mockPaypal();
+    for (const handler of [createOrder, captureOrder]) {
+        assert.equal((await handler({ httpMethod: 'POST', body: '{broken' })).statusCode, 400);
+    }
+    assert.equal(calls.length, 0);
+});
+
+test('capture retries reuse the PayPal idempotency key', async () => {
+    Object.assign(bundledShop, shop);
+    const calls = mockPaypal();
+    for (let i = 0; i < 2; i++) {
+        assert.equal((await captureOrder({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) })).statusCode, 200);
+    }
+    const captures = calls.filter(call => call.url.endsWith('/ORDER-123/capture'));
+    assert.equal(captures[0].options.headers['PayPal-Request-Id'], captures[1].options.headers['PayPal-Request-Id']);
+});
+
+
+test('create order returns the SDK an order requiring payer approval', async () => {
+    mockPaypal({ id: 'ORDER-123', status: 'PAYER_ACTION_REQUIRED' });
+    const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.body), { id: 'ORDER-123' });
+});
+
+test('create order rejects missing order IDs and unexpected order states', async () => {
+    for (const result of [{ status: 'CREATED' }, { id: '', status: 'CREATED' }, { id: 'ORDER-123', status: 'COMPLETED' }]) {
+        mockPaypal(result);
+        const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+        assert.equal(response.statusCode, 502);
+    }
+});
+
+test('non-object JSON returns a client error before any payment request', async () => {
+    const calls = mockPaypal();
+    for (const handler of [createOrder, captureOrder]) {
+        for (const body of ['[]', 'null', '12', '"text"']) {
+            assert.equal((await handler({ httpMethod: 'POST', body })).statusCode, 400);
+        }
+    }
+    assert.equal(calls.length, 0);
 });

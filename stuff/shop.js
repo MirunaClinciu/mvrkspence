@@ -16,7 +16,19 @@ function getBasket() {
         if (!basket || typeof basket !== 'object' || Array.isArray(basket)) {
             throw new Error('The saved basket has an invalid format.');
         }
-        return basket;
+        const cleaned = Object.create(null);
+        for (const [id, item] of Object.entries(basket).slice(0, 30)) {
+            if (!/^[A-Za-z0-9._-]{1,80}$/.test(id) || !item || typeof item !== 'object' ||
+                !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10 ||
+                typeof item.name !== 'string' || !Number.isFinite(Number(item.price)) || Number(item.price) <= 0) continue;
+            cleaned[id] = {
+                name: item.name,
+                price: Number(item.price),
+                type: item.type === 'digital' ? 'digital' : 'physical',
+                quantity: item.quantity
+            };
+        }
+        return cleaned;
     } catch (error) {
         console.error('Could not read the saved basket.', error);
         try {
@@ -25,7 +37,7 @@ function getBasket() {
             console.error('Could not clear the unreadable basket from browser storage.', storageError);
         }
         showCartStatus('Your saved basket could not be read and has been cleared. Please add your items again.');
-        return {};
+        return Object.create(null);
     }
 }
 
@@ -65,7 +77,7 @@ function reconcileBasket() {
     let changed = false;
     Object.keys(basket).forEach(productId => {
         const product = getCurrentProduct(productId);
-        if (!product || product.available === false) {
+        if (!product || product.available === false || product.purchasable === false) {
             delete basket[productId];
             changed = true;
             return;
@@ -177,12 +189,12 @@ function formatMoney(value) {
 
 function addToBasket(productId) {
     const product = getCurrentProduct(productId);
-    if (!product || product.available === false || !Number.isFinite(Number(product.price))) {
+    if (!product || product.available === false || product.purchasable === false || !Number.isFinite(Number(product.price)) || Number(product.price) <= 0) {
         showCartStatus('That item is no longer available. Please refresh the page.', true);
         return;
     }
 
-    const basket = getBasket();
+    const basket = reconcileBasket();
     const quantity = basket[productId] ? basket[productId].quantity : 0;
     if (quantity === 0 && Object.keys(basket).length >= 30) {
         showCartStatus('Your basket can contain a maximum of 30 different products.', true);
@@ -205,7 +217,8 @@ function addToBasket(productId) {
 }
 
 function changeQuantity(productId, change) {
-    const basket = getBasket();
+    if (!Number.isInteger(change) || ![-1, 1].includes(change)) return;
+    const basket = reconcileBasket();
     if (!basket[productId]) return;
     const quantity = basket[productId].quantity + change;
     if (quantity <= 0) delete basket[productId];
@@ -223,7 +236,10 @@ async function postJson(path, data) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    const result = await response.json();
+    let result;
+    try { result = await response.json(); }
+    catch (error) { throw new Error('Checkout could not connect to the payment service. Please try again later.'); }
+    if (!result || typeof result !== 'object') throw new Error('The payment service returned an invalid response. Please try again later.');
     if (!response.ok) {
         throw new Error(result.error || `Payment request failed (${response.status}).`);
     }
@@ -249,7 +265,7 @@ function renderPayPalButtons() {
         return;
     }
     if (!clientId) {
-        showCartStatus('PayPal checkout is not set up yet. Add the PayPal client ID in the site admin.');
+        showCartStatus('Online checkout is not available yet. Please use the Contact page to enquire about your selection.');
         return;
     }
     if (!/^[A-Z]{3}$/.test(currency || '')) {
@@ -262,8 +278,8 @@ function renderPayPalButtons() {
     script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}&intent=capture`;
     script.async = true;
     script.onload = () => {
-        paypalButtonsLoading = false;
         if (!window.paypal || typeof window.paypal.Buttons !== 'function') {
+            paypalButtonsLoading = false;
             showCartStatus('PayPal could not be loaded. Please try again later.', true);
             return;
         }
@@ -299,11 +315,14 @@ function renderPayPalButtons() {
         if (buttons.isEligible()) {
             buttons.render(paypalButtonsContainer).then(() => {
                 paypalButtonsRendered = true;
+                paypalButtonsLoading = false;
             }).catch(error => {
+                paypalButtonsLoading = false;
                 console.error('PayPal buttons could not be rendered.', error);
                 showCartStatus('PayPal checkout could not be started. Please try again later.', true);
             });
         } else {
+            paypalButtonsLoading = false;
             showCartStatus('PayPal checkout is not available for this browser or account.', true);
         }
     };
@@ -318,6 +337,7 @@ document.addEventListener('click', event => {
     const addButton = event.target.closest('.add-to-basket-btn');
     if (addButton) {
         addToBasket(addButton.dataset.productId);
+        if (typeof openShoppingBasket === 'function') openShoppingBasket();
         return;
     }
 
@@ -347,3 +367,7 @@ window.addEventListener('site:ready', () => {
 });
 
 renderBasket();
+
+window.addEventListener('storage', event => {
+    if (event.key === basketStorageKey || event.key === null) renderBasket();
+});

@@ -1,3 +1,14 @@
+function redirectIdentityEmailAction() {
+    const hash = window.location.hash;
+    const parameters = new URLSearchParams(hash.replace(/^#/, ''));
+    const actions = ['invite_token', 'recovery_token', 'confirmation_token', 'email_change_token'];
+    if (!actions.some(action => parameters.get(action))) return false;
+
+    // Only the admin page loads Identity; keep email tokens in the URL fragment.
+    window.location.replace(`/admin/${hash}`);
+    return true;
+}
+
 function setText(id, value) {
     if (typeof value !== 'string') return;
     const element = document.getElementById(id);
@@ -46,4 +57,4 @@ async function loadComingSoonContent() {
     }
 }
 
-loadComingSoonContent();
+if (!redirectIdentityEmailAction()) loadComingSoonContent();

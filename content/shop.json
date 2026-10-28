@@ -1,7 +1,7 @@
 {
   "eyebrow": "Selected works",
   "title": "Artwork & Shop",
-  "intro": "Browse available work. Add an item to your basket to begin checkout.",
+  "intro": "Explore the book and artwork collection. Get in touch about a piece, or add work with a listed price to your basket.",
   "emptyTitle": "New work coming soon",
   "emptyMessage": "Please get in touch if you would like to enquire about a piece.",
   "currency": "USD",
@@ -10,5 +10,28 @@
     "enabled": false,
     "amount": 0
   },
-  "products": []
+  "products": [
+    {
+      "id": "holy-window",
+      "name": "Holy Window",
+      "description": "The book project by Mvrk Spence. Get in touch to ask about the book and availability.",
+      "purchasable": false,
+      "price": 0,
+      "type": "physical",
+      "image": "stuff/img/Book1.png",
+      "imageAlt": "Holy Window book cover by Mvrk Spence",
+      "available": true
+    },
+    {
+      "id": "artwork-collection",
+      "name": "Artwork collection",
+      "description": "Enquire about artwork, available pieces and editions directly with Mvrk Spence.",
+      "purchasable": false,
+      "price": 0,
+      "type": "physical",
+      "image": "stuff/img/Artwork.png",
+      "imageAlt": "Artwork collection by Mvrk Spence",
+      "available": true
+    }
+  ]
 }

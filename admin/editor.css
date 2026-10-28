@@ -1,0 +1,24 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f7f6f2; color: #171717; font: 15px/1.7 Arial, Helvetica, sans-serif; }
+h1, h2 { font-family: Georgia, serif; font-weight: 400; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 7vw, 4rem); }
+h2 { font-size: 1.7rem; }
+img { display: block; width: 100%; height: auto; }
+p { white-space: pre-line; }
+figure { margin: 0; }
+figcaption, time { font-size: .85rem; color: #676767; }
+.eyebrow { color: #bc2f31; font-size: .75rem; text-transform: uppercase; letter-spacing: .15em; }
+.editor-page { max-width: 1120px; margin: 0 auto; padding: 42px 26px; }
+.editor-intro { max-width: 660px; margin: 0 auto 44px; text-align: center; }
+.editor-intro p { color: #676767; }
+.editor-nav { padding: 20px; background: #000; color: #fff; font-weight: bold; }
+.editor-home figure img { width: 100%; }
+.editor-feature { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 28px; margin-bottom: 32px; }
+.editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.editor-product { background: #fff; border: 1px solid #deddd8; }
+.editor-product img { aspect-ratio: 4/3; object-fit: cover; }
+.editor-product-copy { padding: 20px; }
+.editor-button { display: block; width: fit-content; margin-top: 16px; padding: 10px 14px; background: #171717; color: #fff; font-size: .8rem; }
+.editor-post { margin: 40px 0 0; padding-top: 28px; border-top: 1px solid #deddd8; }
+.editor-post img { max-height: 440px; object-fit: contain; }
+@media (max-width: 520px) { .editor-feature, .editor-grid { grid-template-columns: 1fr; } }
