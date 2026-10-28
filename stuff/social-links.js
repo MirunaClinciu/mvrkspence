@@ -4,7 +4,8 @@
     const icons = {
         instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
         facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.8 21v-8.2h2.8l.4-3h-3.2V7.9c0-.9.3-1.5 1.6-1.5h1.7V3.7c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v1.9H7.6v3h2.8V21z"/></svg>',
-        email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>'
+        email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>',
+        buymeacoffee: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 7h12l-1.5 14h-9L6 7ZM5 4h14v3H5V4ZM8 4l1-2h6l1 2"/><path d="M6.5 11h11l-.6 6H7.1l-.6-6Z" fill="currentColor" stroke="none"/></svg>'
     };
 
     const referenceIcons = {
@@ -24,7 +25,8 @@
         } else if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null;
 
         const host = url.hostname.replace(/^www\./, '');
-        const inferred = isEmail ? 'email' : host === 'instagram.com' ? 'instagram' : host === 'facebook.com' ? 'facebook' : 'link';
+        const inferred = isEmail ? 'email' : host === 'instagram.com' ? 'instagram'
+            : host === 'facebook.com' ? 'facebook' : host === 'buymeacoffee.com' ? 'buymeacoffee' : 'link';
         const platform = typeof item.platform === 'string' ? item.platform : inferred;
         const label = item.label.trim();
         const link = document.createElement('a');

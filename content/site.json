@@ -14,7 +14,8 @@
   "footerLinks": [
     { "platform": "instagram", "label": "Instagram", "url": "https://www.instagram.com/mvrkspence/" },
     { "platform": "facebook", "label": "Facebook", "url": "https://www.facebook.com/mvrkspence/" },
-    { "platform": "email", "label": "Email", "url": "mvrkspence@gmail.com" }
+    { "platform": "email", "label": "Email", "url": "mvrkspence@gmail.com" },
+    { "platform": "buymeacoffee", "label": "Buy Me a Coffee", "url": "https://buymeacoffee.com/mvrkspence" }
   ],
   "adminLinkLabel": "Admin"
 }

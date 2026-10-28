@@ -145,7 +145,8 @@ test('footer uses editable social and email icons with accessible names', () => 
     context.renderFooter();
     const links = byClass(roots['site-footer'], 'social-icon-link');
     assert.deepEqual(links.map(link => link.href), [
-        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/', 'mailto:mvrkspence@gmail.com'
+        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/', 'mailto:mvrkspence@gmail.com',
+        'https://buymeacoffee.com/mvrkspence'
     ]);
     links.forEach((link, index) => {
         if (link.href.startsWith('mailto:')) {
@@ -178,14 +179,15 @@ test('social links reject unsafe URLs and keep custom names as text', () => {
     assert.equal(link.className, 'social-text-link');
 });
 
-test('Contact displays working shared Instagram, Facebook and email icons from admin settings', () => {
+test('Contact displays shared social, email and Buy Me a Coffee icons from admin settings', () => {
     const { context, roots, window } = fixture('contact');
     window.siteSettings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
     const contact = JSON.parse(readFileSync(new URL('../content/contact.json', import.meta.url), 'utf8'));
     context.renderContact(contact);
     const icons = byClass(roots['page-content'], 'social-icon-link');
     assert.deepEqual(icons.map(icon => icon.href), [
-        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/', 'mailto:mvrkspence@gmail.com'
+        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/', 'mailto:mvrkspence@gmail.com',
+        'https://buymeacoffee.com/mvrkspence'
     ]);
     assert.equal(icons[0].target, '_blank');
     assert.equal(icons[1].rel, 'noopener noreferrer');
