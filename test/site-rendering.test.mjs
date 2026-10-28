@@ -41,12 +41,12 @@ const source = readFileSync(new URL('../stuff/site.js', import.meta.url), 'utf8'
 const socialSource = readFileSync(new URL('../stuff/social-links.js', import.meta.url), 'utf8');
 const renderers = source.slice(0, source.lastIndexOf('\nrenderNavigation();'));
 
-function fixture(page = 'home') {
+function fixture(page = 'home', prefix = '/preview/') {
     const roots = Object.fromEntries(['page-content', 'site-header', 'site-footer', 'site-modal-root']
         .map(id => [id, new Element('div')]));
     const body = new Element('body');
-    body.dataset = { page, sitePrefix: '/preview/' };
-    const window = { location: { origin: 'https://portfolio.example', pathname: '/preview/index.html', search: '', hash: '' }, dispatchEvent() {} };
+    body.dataset = { page, sitePrefix: prefix };
+    const window = { location: { origin: 'https://portfolio.example', pathname: `${prefix}${page === 'home' ? 'index' : page}.html`, search: '', hash: '' }, dispatchEvent() {} };
     const document = {
         body,
         baseURI: 'https://portfolio.example/',
@@ -79,20 +79,64 @@ function descendants(element, predicate) {
 function byTag(element, tag) { return descendants(element, child => child.tagName === tag); }
 function byClass(element, name) { return descendants(element, child => child.className.split(' ').includes(name)); }
 
-test('original homepage menu contains a working basket and restores the visible menu control on mobile', () => {
-    const { context, roots } = fixture('home');
-    context.renderNavigation();
-    const nav = byClass(roots['site-header'], 'site-nav')[0];
-    const menu = byClass(nav, 'nav-links')[0];
-    const toggle = byClass(nav, 'menu-toggle')[0];
-    const basket = byClass(nav, 'basket-link')[0];
-    assert.ok(menu.contains(basket), 'basket follows the original mobile dropdown layout');
-    assert.equal(basket.id, 'desktop-basket-link', 'existing basket opening handler still receives clicks');
-    toggle.listeners.click();
-    assert.equal(toggle.getAttribute('aria-expanded'), 'true');
-    basket.listeners.click();
-    assert.equal(toggle.getAttribute('aria-expanded'), 'false');
-    assert.equal(context.document.activeElement, toggle, 'basket can return focus to a visible button');
+test('every public page uses the same working mobile basket menu and marks its current page', () => {
+    let basketMarkup;
+    for (const prefix of ['/', '/preview/']) {
+        for (const page of ['home', 'concept', 'artwork', 'contact']) {
+            const { context, roots } = fixture(page, prefix);
+            context.renderNavigation();
+            const nav = byClass(roots['site-header'], 'site-nav')[0];
+            const menu = byClass(nav, 'nav-links')[0];
+            const toggle = byClass(nav, 'menu-toggle')[0];
+            const basket = byClass(nav, 'basket-link')[0];
+            assert.ok(menu.contains(basket), 'basket follows the same dropdown layout on every page');
+            assert.equal(basket.id, 'desktop-basket-link', 'existing basket opening handler still receives clicks');
+            basketMarkup ??= basket.innerHTML;
+            assert.equal(basket.innerHTML, basketMarkup);
+            const current = byClass(nav, 'active');
+            assert.equal(current.length, 1);
+            assert.equal(current[0].getAttribute('aria-current'), 'page');
+            assert.equal(current[0].href, `${prefix}${page === 'home' ? 'index' : page}.html`);
+            toggle.listeners.click();
+            assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+            basket.listeners.click();
+            assert.equal(toggle.getAttribute('aria-expanded'), 'false');
+            assert.equal(context.document.activeElement, toggle, 'basket can return focus to a visible button');
+        }
+    }
+});
+
+test('all public footers use matching social icons, copyright and inline admin access', () => {
+    const settings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
+    let expectedIcons;
+    let expectedCopyright;
+    for (const prefix of ['/', '/preview/']) {
+        for (const page of ['home', 'concept', 'artwork', 'contact']) {
+            const { context, roots, window } = fixture(page, prefix);
+            window.siteSettings = settings;
+            context.renderFooter();
+            const footer = roots['site-footer'];
+            const icons = byClass(footer, 'social-icon-link').map(link => ({ href: link.href, icon: link.firstChild.innerHTML }));
+            expectedIcons ??= icons;
+            assert.deepEqual(icons, expectedIcons, 'icon style and destinations match the homepage');
+            const copyright = byTag(footer, 'p')[0];
+            expectedCopyright ??= copyright.textContent;
+            assert.equal(copyright.textContent, expectedCopyright);
+            assert.equal(byClass(footer, 'footer-brand')[0].href, `${prefix}index.html`);
+            const admin = byClass(footer, 'admin-link')[0];
+            assert.equal(admin.href, '/manage/');
+            assert.ok(copyright.contains(admin), 'admin access does not create an extra footer row');
+        }
+    }
+});
+
+test('all eight public templates load the shared navigation/footer stylesheet and font', () => {
+    for (const path of ['index.html', 'concept.html', 'artwork.html', 'contact.html', 'preview/index.html', 'preview/concept.html', 'preview/artwork.html', 'preview/contact.html']) {
+        const html = readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+        assert.equal([...html.matchAll(/href="stuff\/site-chrome\.css"/g)].length, 1, path);
+        assert.ok(html.indexOf('stuff/site-chrome.css') > html.indexOf('stuff/social-links.css'), path);
+        assert.match(html, /fonts\.googleapis\.com\/css2\?family=Inter:wght@400;700/, path);
+    }
 });
 
 test('footer uses editable social and email icons with accessible names', () => {
