@@ -4,8 +4,12 @@ import bundledPayments from '../content/payments.json' with { type: 'json' };
 const originalCatalog = structuredClone(bundledShop);
 const originalPayments = structuredClone(bundledPayments);
 import { afterEach, beforeEach, test } from 'node:test';
-import { handler as createOrder } from '../netlify/functions/paypal-create-order.mjs';
-import { handler as captureOrder } from '../netlify/functions/paypal-capture-order.mjs';
+import { createHandler as createOrderHandler } from '../netlify/functions/paypal-create-order.mjs';
+import { createHandler as captureOrderHandler } from '../netlify/functions/paypal-capture-order.mjs';
+import { getShopConfig } from '../netlify/functions/paypal-utils.mjs';
+const legacyDependencies = { initialize() {}, loadConfig: () => getShopConfig({ readSettings: async () => null }) };
+const createOrder = createOrderHandler(legacyDependencies);
+const captureOrder = captureOrderHandler(legacyDependencies);
 
 const originalFetch = globalThis.fetch;
 const originalEnvironment = {
@@ -300,7 +304,7 @@ test('a live mode switch never reuses the sandbox legacy secret', async () => {
     process.env.PAYPAL_ENVIRONMENT = 'sandbox';
     const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
     assert.equal(response.statusCode, 502);
-    assert.match(JSON.parse(response.body).error, /PAYPAL_CLIENT_SECRET_LIVE/);
+    assert.match(JSON.parse(response.body).error, /PayPal is not connected/);
     assert.equal(calls.length, 0);
 });
 
@@ -349,4 +353,55 @@ test('sample GBP products and flat shipping create the exact server total', asyn
     assert.equal(order.amount.breakdown.item_total.value, '148.00');
     assert.equal(order.amount.breakdown.shipping.value, '4.95');
     assert.equal(order.items.length, 4);
+});
+
+test('saved admin credentials take effect without a content deploy and stay outside public catalog data', async () => {
+    const calls = mockPaypal();
+    const saved = { environment: 'sandbox', sandboxClientId: 'saved-client', sandboxSecret: 'saved-secret', liveClientId: '', liveSecret: '' };
+    const loadConfig = () => getShopConfig({ readSettings: async () => saved });
+    const dependencies = { initialize() {}, loadConfig };
+    const configuredCreate = createOrderHandler(dependencies);
+    const configuredCapture = captureOrderHandler(dependencies);
+    assert.equal((await configuredCreate({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) })).statusCode, 200);
+    assert.equal((await configuredCapture({ httpMethod: 'POST', body: JSON.stringify({ orderId: 'ORDER-123' }) })).statusCode, 200);
+    const authorization = calls.find(call => call.url.endsWith('/v1/oauth2/token')).options.headers.Authorization;
+    assert.equal(Buffer.from(authorization.slice(6), 'base64').toString(), 'saved-client:saved-secret');
+    const loaded = await loadConfig();
+    assert.equal(loaded.paymentSecret, 'saved-secret');
+    assert.ok(!JSON.stringify(loaded.config).includes('saved-secret'));
+});
+
+test('saved live credentials select the live API even when legacy environment is sandbox', async () => {
+    const calls = mockPaypal();
+    bundledShop.testMode = false;
+    const configuredCreate = createOrderHandler({
+        initialize() {},
+        loadConfig: () => getShopConfig({ readSettings: async () => ({ environment: 'live', liveClientId: 'saved-live-client', liveSecret: 'saved-live-secret' }) })
+    });
+    const response = await configuredCreate({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 200);
+    assert.ok(calls.every(call => call.url.startsWith('https://api-m.paypal.com/')));
+});
+
+test('saved missing secrets cannot silently reuse old environment credentials', async () => {
+    const calls = mockPaypal();
+    const configuredCreate = createOrderHandler({
+        initialize() {},
+        loadConfig: () => getShopConfig({ readSettings: async () => ({ environment: 'sandbox', sandboxClientId: 'saved-client', sandboxSecret: '' }) })
+    });
+    const response = await configuredCreate({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 502);
+    assert.match(JSON.parse(response.body).error, /PayPal is not connected/);
+    assert.equal(calls.length, 0);
+});
+
+test('saved settings storage failures stop checkout instead of using stale credentials', async () => {
+    const calls = mockPaypal();
+    const configuredCreate = createOrderHandler({
+        initialize() {},
+        loadConfig: () => getShopConfig({ readSettings: async () => { throw new Error('Payment settings temporarily unavailable.'); } })
+    });
+    const response = await configuredCreate({ httpMethod: 'POST', body: JSON.stringify({ items: [{ id: 'print-1', quantity: 1 }] }) });
+    assert.equal(response.statusCode, 502);
+    assert.equal(calls.length, 0);
 });

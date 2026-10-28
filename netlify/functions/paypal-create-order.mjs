@@ -1,5 +1,6 @@
 import {
     getPaypalAccessToken,
+    initializePaymentStore,
     getShopConfig,
     jsonResponse,
     readRequestBody,
@@ -26,18 +27,20 @@ function money(value) {
     return (value / 100).toFixed(2);
 }
 
-export async function handler(event) {
+export function createHandler({ initialize = initializePaymentStore, loadConfig = getShopConfig } = {}) {
+return async function handler(event) {
     if (event.httpMethod !== 'POST') {
         return jsonResponse(405, { error: 'Use POST to create a PayPal order.' });
     }
 
     try {
+        initialize(event);
         const request = readRequestBody(event);
         if (!Array.isArray(request.items) || request.items.length === 0 || request.items.length > 30) {
             return jsonResponse(400, { error: 'Choose between 1 and 30 products.' });
         }
 
-        const { config, siteUrl } = await getShopConfig();
+        const { config, siteUrl, paymentSecret } = await loadConfig();
         const catalog = Array.isArray(config.products) ? config.products : [];
         const requestedIds = new Set();
         const orderItems = [];
@@ -104,7 +107,7 @@ export async function handler(event) {
             return jsonResponse(400, { error: 'The basket total is invalid.' });
         }
 
-        const accessToken = await getPaypalAccessToken(config.paypalClientId, config.paypalEnvironment);
+        const accessToken = await getPaypalAccessToken(config.paypalClientId, config.paypalEnvironment, paymentSecret);
         const breakdown = {
             item_total: {
                 currency_code: config.currency,
@@ -157,4 +160,7 @@ export async function handler(event) {
         console.error('Could not create PayPal order:', error.message);
         return jsonResponse(error.statusCode || 502, { error: error.message || 'Could not create a PayPal order.' });
     }
+};
 }
+
+export const handler = createHandler();

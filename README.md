@@ -50,11 +50,11 @@ To enable the editor:
 
 The editor controls the coming-soon page, shared site name/description/logo,
 browser icon, navigation, footer, all page copy and images, contact/social
-links, journal posts, and shop settings/products. In **Shop & payments > PayPal
-payment settings**, the administrator can save separate public Client IDs for
-test and live payments and choose the active payment mode. These public IDs are
-safe to store in the CMS. Matching secrets stay in Netlify's secure environment
-settings, linked from the PayPal setup page; never paste secrets into the CMS.
+links, journal posts, and shop settings/products. Open **PayPal payments** from
+the website dashboard to enter both the Client ID and Secret directly, choose
+test or live mode, then use **Save and connect PayPal**. This protected form
+checks the app details with PayPal and stores them on the server. Secrets never
+enter the CMS content, GitHub repository or a browser storage field.
 
 The site layout and styling are still maintained in the website source code.
 Home, Concept, and Shop have visual previews inside the editor. These help check
@@ -98,8 +98,8 @@ example prices are in use. Keep it on until the real catalogue is ready.
 
 Publishing content and taking payments are separate: the CMS can publish artwork
 before PayPal is configured. For checkout, complete the sandbox setup below and
-test a payment before entering live credentials. The administrator controls the
-public Client IDs and test/live mode in the CMS; private secrets stay in Netlify.
+test a payment before entering live credentials. The administrator manages
+Client IDs, Secrets and payment mode at `/manage/paypal.html`.
 
 ## PayPal checkout
 
@@ -108,29 +108,31 @@ each deployment and creates/captures
 orders using server-side credentials. It does not accept prices from a
 customer's browser.
 
-1. Open `/manage/paypal.html` for the plain-language setup instructions and links.
-2. Create or open a **sandbox** app in the PayPal Developer Dashboard. In
-   **Shop & payments > PayPal payment settings**, choose **Test payments** and
-   copy its Client ID into **Test PayPal public client ID**.
-3. In Netlify's secure environment variables, store its matching secret as
-   `PAYPAL_CLIENT_SECRET_SANDBOX`, available to the production deployment and
-   functions. After adding or changing a secret, start a new deploy using
-   **Deploys > Trigger deploy**, or save and publish the payment settings after
-   the secret has been added. Environment changes require a fresh deployment.
-4. Test a complete checkout using a separate PayPal sandbox buyer account.
-5. Before accepting real payments, replace every sample product and price,
-   add the live Client ID in **Live PayPal public client ID**, and store its
-   matching secret as `PAYPAL_CLIENT_SECRET_LIVE` in Netlify. Turn **Test shop
-   with sample products** off, choose **Real payments**, and publish/redeploy.
+1. Open **PayPal payments** at `/manage/paypal.html` and sign in with the
+   website administrator account.
+2. Open or create a **Sandbox** app in the PayPal Developer Dashboard. Copy its
+   Client ID and Secret into **Test Client ID** and **Test Secret** on the form.
+3. Choose **Test payments**, then select **Save and connect PayPal**. The server
+   verifies the details with PayPal before saving; this does not make a charge.
+   Reopen the shop to use the updated payment setup. No content publish or
+   Netlify environment-variable editing is required.
+4. Test checkout using a separate PayPal sandbox buyer account.
+5. Before real sales, replace all sample products and prices and turn **Test
+   shop with sample products** off. Enter the Live app's Client ID and Secret
+   under **Real payment details**, choose **Real payments**, then save.
 
-The active mode and public Client IDs are stored in `content/payments.json`.
-Payment functions select the matching secret and PayPal API host for that mode.
-Older configurations using `PAYPAL_CLIENT_SECRET` and `PAYPAL_ENVIRONMENT` remain
-supported only when the legacy environment matches the selected mode.
+Secrets are stored in a site-wide Netlify Blobs store, encrypted by Netlify at
+rest and in transit. Only the verified website owner or an account with a
+server-assigned admin role may read the redacted settings or save credentials.
+The API returns only public Client IDs and whether each Secret is saved. A saved
+Secret is never returned to the browser. Leave a Secret field blank to preserve
+it; supply a new matching Secret when changing its Client ID.
 
-Never put a PayPal client secret in the CMS, a JSON file, or browser code. The
-PayPal buttons appear after a client ID is configured; checkout will report a
-configuration error until the matching server secret is set in Netlify.
+Existing public settings in `content/payments.json` and matching Netlify
+environment secrets remain a migration fallback until settings are saved in
+the protected form. The server uses the active saved payment mode and selects
+the matching PayPal API host. Never place a private Secret in CMS JSON files.
+
 Product prices and the fixed shipping fee use two decimal places. Physical
 goods checkout asks PayPal for the buyer's shipping address; digital items do
 not add shipping.

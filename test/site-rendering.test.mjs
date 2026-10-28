@@ -265,7 +265,7 @@ test('payment settings load with the catalog and select the matching public clie
     setContentResponses(context, {
         'content/site.json': { siteName: 'Mvrk Spence' },
         'content/shop.json': { products: [], paypalClientId: 'legacy-sandbox', testMode: false },
-        'content/payments.json': { environment: 'live', sandboxClientId: 'sandbox-public', liveClientId: 'live-public' }
+        '/.netlify/functions/paypal-public-settings': { environment: 'live', sandboxClientId: 'sandbox-public', liveClientId: 'live-public' }
     });
     await context.initializeSite();
     assert.equal(window.siteConfig.paypalEnvironment, 'live');
@@ -295,4 +295,37 @@ test('a missing new payment file keeps the legacy sandbox setup usable', () => {
     context.applyPaymentSettings(config, null);
     assert.equal(config.paypalEnvironment, 'sandbox');
     assert.equal(config.paypalClientId, 'legacy-sandbox');
+});
+
+test('older deployments can use the bundled payment file when the new endpoint is absent', async () => {
+    const { context } = fixture();
+    const requests = [];
+    context.fetch = async path => {
+        requests.push(path);
+        return path === '/.netlify/functions/paypal-public-settings'
+            ? { ok: false, status: 404 }
+            : { ok: true, json: async () => ({ environment: 'sandbox', sandboxClientId: 'static-client' }) };
+    };
+    assert.equal((await context.loadPaymentSettings()).sandboxClientId, 'static-client');
+    assert.deepEqual(requests, ['/.netlify/functions/paypal-public-settings', 'content/payments.json']);
+});
+
+test('payment service failures never reuse stale bundled IDs while server settings may differ', async () => {
+    const { context, window } = fixture('artwork');
+    const requests = [];
+    const responses = {
+        'content/site.json': { siteName: 'Mvrk Spence' },
+        'content/shop.json': { products: [], paypalClientId: 'old-client' },
+        'content/payments.json': { environment: 'sandbox', sandboxClientId: 'stale-client' }
+    };
+    context.renderNavigation = () => {};
+    context.renderFooter = () => {};
+    context.console = { error() {} };
+    context.fetch = async path => {
+        requests.push(path);
+        return { ok: responses[path] !== undefined, status: 503, json: async () => responses[path] };
+    };
+    await context.initializeSite();
+    assert.equal(window.siteConfig.paypalClientId, '');
+    assert.ok(!requests.includes('content/payments.json'));
 });

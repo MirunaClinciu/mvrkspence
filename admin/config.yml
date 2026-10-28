@@ -159,21 +159,6 @@ collections:
   - name: shop
     label: Shop & payments
     files:
-      - name: payments
-        label: PayPal payment settings
-        file: content/payments.json
-        format: json
-        fields:
-          - name: environment
-            label: Payment mode
-            widget: select
-            default: sandbox
-            hint: 'Choose Test payments while setting up. Use Real payments only after replacing sample products and testing checkout.'
-            options:
-              - { label: Test payments (PayPal sandbox), value: sandbox }
-              - { label: Real payments (PayPal live), value: live }
-          - { name: sandboxClientId, label: Test PayPal public client ID, widget: string, required: false, hint: 'Copy Client ID from your PayPal sandbox app. The matching secret goes in the secure Netlify settings linked from PayPal setup.' }
-          - { name: liveClientId, label: Live PayPal public client ID, widget: string, required: false, hint: 'Copy Client ID from your PayPal live app. Enter the public Client ID only, never the secret or your PayPal password.' }
       - name: shop
         label: Shop settings & products
         file: content/shop.json

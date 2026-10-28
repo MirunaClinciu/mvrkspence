@@ -1,3 +1,5 @@
+import { connectLambda } from '@netlify/blobs';
+import { readPaymentSettings } from '../lib/payment-settings.mjs';
 import bundledShop from '../../content/shop.json' with { type: 'json' };
 import bundledPayments from '../../content/payments.json' with { type: 'json' };
 
@@ -32,19 +34,32 @@ export function getSiteUrl() {
     return url;
 }
 
-export async function getShopConfig() {
+export function initializePaymentStore(event) {
+    // Netlify supplies the scoped Blobs token on legacy Lambda events.
+    // Modern Functions use the runtime context automatically.
+    if (event.blobs) connectLambda(event);
+}
+
+export async function getShopConfig({ readSettings = readPaymentSettings } = {}) {
     const siteUrl = getSiteUrl();
     // A bundled catalog also works when the deployment requires visitor authentication.
     const config = structuredClone(bundledShop);
     if (!config || typeof config !== 'object') throw new Error('The product catalog is invalid.');
     const legacyEnvironment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
-    const environment = bundledPayments.environment ?? legacyEnvironment;
+    let saved;
+    try { saved = await readSettings(); }
+    catch (_) { throw new Error('PayPal settings are temporarily unavailable. Please try again later.'); }
+    if (saved !== null && (!saved || typeof saved !== 'object' || Array.isArray(saved))) {
+        throw new Error('The saved PayPal settings could not be read. Reconnect PayPal in the admin.');
+    }
+    const payments = saved || bundledPayments;
+    const environment = saved ? payments.environment : payments.environment ?? legacyEnvironment;
     getPaypalHost(environment);
-    const publicId = environment === 'live' ? bundledPayments.liveClientId : bundledPayments.sandboxClientId;
+    const publicId = environment === 'live' ? payments.liveClientId : payments.sandboxClientId;
     config.paypalEnvironment = environment;
     config.paypalClientId = typeof publicId === 'string' && publicId.trim()
         ? publicId.trim()
-        : environment === legacyEnvironment && typeof config.paypalClientId === 'string'
+        : !saved && environment === legacyEnvironment && typeof config.paypalClientId === 'string'
             ? config.paypalClientId.trim() : '';
     if (config.testMode === true && environment !== 'sandbox') {
         throw new Error('The sample catalogue can only use PayPal sandbox. Choose Test payments in the admin PayPal settings while testing.');
@@ -56,7 +71,12 @@ export async function getShopConfig() {
     if (typeof config.currency !== 'string' || !supportedCurrencies.has(config.currency)) {
         throw new Error('The shop currency is invalid or unsupported.');
     }
-    return { config, siteUrl };
+    // Secrets stay separate from the public catalog shape and are never returned
+    // from the create/capture endpoints.
+    const paymentSecret = saved
+        ? environment === 'live' ? saved.liveSecret || '' : saved.sandboxSecret || ''
+        : undefined;
+    return { config, siteUrl, paymentSecret };
 }
 
 export function getPaypalHost(environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox') {
@@ -67,13 +87,14 @@ export function getPaypalHost(environment = process.env.PAYPAL_ENVIRONMENT || 's
     return host;
 }
 
-export async function getPaypalAccessToken(clientId, environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox') {
+export async function getPaypalAccessToken(clientId, environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox', secretOverride) {
     const host = getPaypalHost(environment);
     const secretName = environment === 'live' ? 'PAYPAL_CLIENT_SECRET_LIVE' : 'PAYPAL_CLIENT_SECRET_SANDBOX';
     const legacyEnvironment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
-    const clientSecret = process.env[secretName]?.trim() ||
-        (legacyEnvironment === environment ? process.env.PAYPAL_CLIENT_SECRET?.trim() : '');
-    if (!clientSecret) throw new Error(`${secretName} is not set in Netlify. Add the matching private secret using the secure settings link in the admin.`);
+    const clientSecret = secretOverride === undefined
+        ? process.env[secretName]?.trim() || (legacyEnvironment === environment ? process.env.PAYPAL_CLIENT_SECRET?.trim() : '')
+        : typeof secretOverride === 'string' ? secretOverride.trim() : '';
+    if (!clientSecret) throw new Error('PayPal is not connected. Add the matching Client ID and Secret in the admin PayPal settings, then choose Save and connect.');
 
     const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
     const response = await fetch(`${host}/v1/oauth2/token`, {

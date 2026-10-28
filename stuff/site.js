@@ -515,8 +515,23 @@ function formatPrice(price, currency) {
 
 async function loadJson(path) {
     const response = await fetch(path, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`Could not load ${path} (${response.status}).`);
+    if (!response.ok) {
+        const error = new Error(`Could not load ${path} (${response.status}).`);
+        error.status = response.status;
+        throw error;
+    }
     return response.json();
+}
+
+async function loadPaymentSettings() {
+    try {
+        return await loadJson('/.netlify/functions/paypal-public-settings');
+    } catch (error) {
+        // An older static deploy has no settings endpoint yet. Other failures
+        // must not reuse an old public ID while the server uses saved settings.
+        if (error.status === 404) return loadJson('content/payments.json');
+        throw error;
+    }
 }
 
 async function initializeSite() {
@@ -525,7 +540,7 @@ async function initializeSite() {
         loadJson('content/site.json'),
         loadJson('content/shop.json'),
         contentPath ? loadJson(contentPath) : Promise.resolve(null),
-        loadJson('content/payments.json')
+        loadPaymentSettings()
     ]);
     const settings = settingsResult.status === 'fulfilled' && settingsResult.value &&
         typeof settingsResult.value === 'object' && !Array.isArray(settingsResult.value)
@@ -545,7 +560,11 @@ async function initializeSite() {
     if (shopResult.status === 'fulfilled' && shopResult.value &&
         typeof shopResult.value === 'object' && !Array.isArray(shopResult.value)) {
         config = shopResult.value;
-        applyPaymentSettings(config, paymentsResult.status === 'fulfilled' ? paymentsResult.value : null);
+        if (paymentsResult.status === 'fulfilled') applyPaymentSettings(config, paymentsResult.value);
+        else {
+            config.paypalClientId = '';
+            config.paypalEnvironment = 'sandbox';
+        }
         window.siteConfig = config;
         const productIds = new Set();
         window.siteProducts = Array.isArray(config.products)
