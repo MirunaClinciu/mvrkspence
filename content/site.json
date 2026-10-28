@@ -13,7 +13,8 @@
   "footerText": "Mvrk Spence",
   "footerLinks": [
     { "platform": "instagram", "label": "Instagram", "url": "https://www.instagram.com/mvrkspence/" },
-    { "platform": "facebook", "label": "Facebook", "url": "https://www.facebook.com/mvrkspence/" }
+    { "platform": "facebook", "label": "Facebook", "url": "https://www.facebook.com/mvrkspence/" },
+    { "platform": "email", "label": "Email", "url": "mvrkspence@gmail.com" }
   ],
   "adminLinkLabel": "Admin"
 }

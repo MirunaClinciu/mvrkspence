@@ -79,18 +79,23 @@ function descendants(element, predicate) {
 function byTag(element, tag) { return descendants(element, child => child.tagName === tag); }
 function byClass(element, name) { return descendants(element, child => child.className.split(' ').includes(name)); }
 
-test('footer uses editable Instagram and Facebook icons with accessible names and safe new tabs', () => {
+test('footer uses editable social and email icons with accessible names', () => {
     const { context, roots, window } = fixture();
     window.siteSettings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
     context.renderFooter();
     const links = byClass(roots['site-footer'], 'social-icon-link');
     assert.deepEqual(links.map(link => link.href), [
-        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/'
+        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/', 'mailto:mvrkspence@gmail.com'
     ]);
     links.forEach((link, index) => {
-        assert.equal(link.getAttribute('aria-label'), `${window.siteSettings.footerLinks[index].label} (opens in a new tab)`);
-        assert.equal(link.target, '_blank');
-        assert.equal(link.rel, 'noopener noreferrer');
+        if (link.href.startsWith('mailto:')) {
+            assert.equal(link.getAttribute('aria-label'), 'Email: mvrkspence@gmail.com');
+            assert.equal(link.target, undefined, 'email opens the email app without an empty browser tab');
+        } else {
+            assert.equal(link.getAttribute('aria-label'), `${window.siteSettings.footerLinks[index].label} (opens in a new tab)`);
+            assert.equal(link.target, '_blank');
+            assert.equal(link.rel, 'noopener noreferrer');
+        }
         assert.equal(link.firstChild.getAttribute('aria-hidden'), 'true');
         assert.match(link.firstChild.innerHTML, /<svg /);
     });
@@ -111,6 +116,19 @@ test('social links reject unsafe URLs and keep custom names as text', () => {
     assert.equal(link.textContent, '<b>Portfolio</b>');
     assert.equal(link.children.length, 0);
     assert.equal(link.className, 'social-text-link');
+});
+
+test('email icons accept editable addresses and reject malformed mail links', () => {
+    const { window } = fixture();
+    for (const url of ['artist@example.com', 'mailto:artist@example.com']) {
+        const link = window.MvrkSocialLinks.createLink({ platform: 'email', label: 'Email', url });
+        assert.equal(link.href, 'mailto:artist@example.com');
+        assert.equal(link.className, 'social-icon-link');
+        assert.equal(link.target, undefined);
+    }
+    for (const url of ['mailto:invalid', 'mailto:user@example.com?bcc=other@example.com', 'mailto:user@example.com#fragment', 'mailto:user%0A@example.com', 'mailto:one,two@example.com']) {
+        assert.equal(window.MvrkSocialLinks.createLink({ platform: 'email', label: 'Email', url }), null);
+    }
 });
 
 test('home preserves the reference image-only layout and prioritizes its first image', () => {
