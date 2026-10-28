@@ -196,6 +196,7 @@ test('Contact displays shared social, email and Buy Me a Coffee icons from admin
     window.siteSettings.footerLinks = [{ platform: 'instagram', label: 'New studio profile', url: 'https://www.instagram.com/new-studio/' }];
     context.renderContact(contact);
     assert.deepEqual(byClass(roots['page-content'], 'social-icon-link').map(icon => icon.href), ['https://www.instagram.com/new-studio/']);
+    assert.equal(byClass(roots['page-content'], 'social-link-label')[0].textContent, 'New studio profile');
 });
 
 test('Contact preserves custom links and permits hiding icons without falling back to shared links', () => {
@@ -324,6 +325,8 @@ test('Artwork enquiry carries the selected work into a safely encoded email subj
     window.location.search = '?artwork=Book%20%26%20prints';
     context.renderContact({ title: 'Contact', email: 'artist@example.com' });
     assert.equal(byClass(roots['page-content'], 'contact-email')[0].href,
+        'mailto:artist@example.com?subject=Artwork%20enquiry%3A%20Book%20%26%20prints');
+    assert.equal(byClass(roots['page-content'], 'contact-action')[0].href,
         'mailto:artist@example.com?subject=Artwork%20enquiry%3A%20Book%20%26%20prints');
 });
 

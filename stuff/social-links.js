@@ -45,6 +45,12 @@
             icon.innerHTML = options.reference === true && Object.hasOwn(referenceIcons, platform)
                 ? referenceIcons[platform] : icons[platform];
             link.append(icon);
+            if (options.showLabel === true) {
+                const caption = document.createElement('span');
+                caption.className = 'social-link-label';
+                caption.textContent = label;
+                link.append(caption);
+            }
         } else {
             link.className = 'social-text-link';
             link.textContent = label;

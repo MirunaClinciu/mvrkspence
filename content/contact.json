@@ -3,7 +3,10 @@
   "title": "Contact",
   "intro": "For enquiries, collaborations and questions about the work, get in touch.",
   "email": "mvrkspence@gmail.com",
+  "emailLabel": "Direct enquiries",
+  "emailButtonLabel": "Send an email",
   "details": "For artwork and project enquiries, please include a little information about what you have in mind.",
+  "socialTitle": "Find me elsewhere",
   "useSiteSocialLinks": true,
   "socialLinks": []
 }

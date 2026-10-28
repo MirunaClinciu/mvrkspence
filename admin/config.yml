@@ -156,7 +156,10 @@ collections:
           - { name: title, label: Main heading, widget: string }
           - { name: intro, label: Introduction, widget: text }
           - { name: email, label: Contact email address, widget: string, hint: 'Enter the complete email address visitors should use, such as hello@example.com.', pattern: ['^[^\s@]+@[^\s@]+\.[^\s@]+$', 'Enter a complete email address, such as hello@example.com.'] }
+          - { name: emailLabel, label: Email section heading, widget: string, required: false, default: Direct enquiries }
+          - { name: emailButtonLabel, label: Email button text, widget: string, required: false, default: Send an email, hint: "Opens the visitor's email app." }
           - { name: details, label: Additional contact information, widget: text }
+          - { name: socialTitle, label: Social links heading, widget: string, required: false, default: Find me elsewhere }
           - { name: useSiteSocialLinks, label: Use the website social icons, widget: boolean, default: true, hint: 'Keep on to use the profiles under Website setup → Logo, social links & footer → Social links & icons. Switch off to use the custom contact links below.' }
           - name: socialLinks
             label: Custom contact links

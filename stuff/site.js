@@ -462,8 +462,13 @@ function renderArtwork(data) {
 
 function renderContact(data) {
     const intro = renderPageIntro(data);
+    intro.classList.add('contact-intro');
+    const layout = makeElement('div', 'contact-layout');
     const panel = makeElement('section', 'contact-panel');
-    if (data.details) panel.append(makeElement('p', '', data.details));
+    panel.setAttribute('aria-labelledby', 'contact-email-heading');
+    const emailHeading = makeElement('h2', 'contact-label', data.emailLabel || 'Direct enquiries');
+    emailHeading.id = 'contact-email-heading';
+    panel.append(emailHeading);
     if (typeof data.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
         const email = makeElement('a', 'contact-email', data.email);
         email.href = `mailto:${data.email}`;
@@ -473,16 +478,39 @@ function renderContact(data) {
             panel.prepend(makeElement('p', 'enquiry-context', `Enquiring about ${artwork.slice(0, 160)}`));
         }
         panel.append(email);
+        if (data.details) panel.append(makeElement('p', 'contact-details', data.details));
+        const action = makeElement('a', 'button contact-action', data.emailButtonLabel || 'Send an email');
+        action.href = email.href;
+        const arrow = makeElement('span', 'contact-link-arrow', '\u2197');
+        arrow.setAttribute('aria-hidden', 'true');
+        action.append(arrow);
+        panel.append(action);
+    } else if (data.details) {
+        panel.append(makeElement('p', 'contact-details', data.details));
     }
-    const socials = makeElement('nav', 'social-links social-links-list');
+    layout.append(intro, panel);
+
+    const elsewhere = makeElement('section', 'contact-elsewhere');
+    elsewhere.setAttribute('aria-labelledby', 'contact-social-heading');
+    const socialHeading = makeElement('h2', 'contact-label', data.socialTitle || 'Find me elsewhere');
+    socialHeading.id = 'contact-social-heading';
+    const socials = makeElement('nav', 'social-links social-links-list contact-socials');
     socials.setAttribute('aria-label', 'Contact social links');
     const customLinks = Array.isArray(data.socialLinks) ? data.socialLinks : [];
     const useSiteLinks = typeof data.useSiteSocialLinks === 'boolean'
         ? data.useSiteSocialLinks : customLinks.length === 0;
     const links = useSiteLinks ? window.siteSettings && window.siteSettings.footerLinks : customLinks;
-    window.MvrkSocialLinks.render(socials, links, { reference: true });
-    panel.append(socials);
-    pageContent.replaceChildren(intro, panel);
+    window.MvrkSocialLinks.render(socials, links, { reference: true, showLabel: true });
+    Array.from(socials.children).forEach(link => {
+        if (link.target === '_blank') {
+            const arrow = makeElement('span', 'contact-link-arrow', '\u2197');
+            arrow.setAttribute('aria-hidden', 'true');
+            link.append(arrow);
+        }
+    });
+    elsewhere.hidden = socials.hidden;
+    elsewhere.append(socialHeading, socials);
+    pageContent.replaceChildren(layout, elsewhere);
 }
 
 function formatPrice(price, currency) {

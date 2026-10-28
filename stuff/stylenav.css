@@ -125,7 +125,6 @@ h1 {
 }
 
 .concept-copy p,
-.contact-panel > p,
 .empty-state p {
   color: var(--muted);
   font-size: 1.05rem;
@@ -264,22 +263,183 @@ h1 {
   min-height: calc(100vh - var(--nav-height) - 100px);
   flex-direction: column;
   justify-content: center;
+  gap: clamp(48px, 7vw, 80px);
+}
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(32px, 7vw, 88px);
+  align-items: center;
+}
+
+.contact-page .contact-intro {
+  max-width: none;
+  margin: 0;
+  text-align: left;
+}
+
+.contact-intro h1 {
+  margin-bottom: 24px;
+  font-size: clamp(3.6rem, 8vw, 7rem);
+  overflow-wrap: anywhere;
+}
+
+.contact-intro .intro-copy {
+  max-width: 34ch;
+  margin: 0;
+  line-height: 1.8;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .contact-panel {
-  max-width: 650px;
-  margin: 0 auto;
-  text-align: center;
+  min-width: 0;
+  padding: clamp(24px, 3.5vw, 42px);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--ink);
+  background: #f7f6f3;
+}
+
+.contact-label {
+  margin: 0;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  text-transform: uppercase;
 }
 
 .contact-email {
   display: inline-block;
-  margin: 12px 0 26px;
-  color: var(--accent);
+  max-width: 100%;
+  margin: 20px 0;
+  color: var(--ink);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-decoration-color: #bab8b0;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
+}
+
+.contact-email:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+.contact-details {
+  margin-bottom: 26px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.contact-panel .enquiry-context {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.contact-action {
+  min-height: 48px;
+  gap: 24px;
+  padding: 12px 20px;
+  text-align: left;
+}
+
+.contact-link-arrow {
+  margin-left: auto;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.contact-elsewhere {
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.contact-elsewhere > .contact-label {
+  margin-bottom: 20px;
+  color: var(--muted);
+}
+
+.contact-page .contact-socials {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.contact-socials .social-icon-link,
+.contact-socials .social-text-link {
+  min-width: 0;
+  width: auto;
+  min-height: 64px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  font-size: 0.83rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.contact-socials .social-icon {
+  flex-shrink: 0;
+}
+
+.contact-socials .social-link-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.contact-socials .contact-link-arrow {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.contact-socials a:hover {
+  border-color: var(--accent);
+  background: #f7f6f3;
+  color: var(--accent);
+}
+
+@media (max-width: 1000px) {
+  .contact-page .contact-socials {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .contact-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .contact-intro .intro-copy {
+    max-width: 48ch;
+  }
+
+  .contact-action {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-page .contact-socials {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .social-links {
@@ -502,7 +662,6 @@ html { scrollbar-gutter: stable; scroll-padding-top: calc(var(--nav-height) + 20
 .product-type { min-height: auto !important; font-size: .75rem !important; text-transform: uppercase; letter-spacing: .08em; }
 .button:disabled, .text-button:disabled { opacity: .45; cursor: default; }
 .social-links { flex-wrap: wrap; }
-.contact-email { max-width: 100%; overflow-wrap: anywhere; }
 .empty-state .button { margin-top: 16px; }
 .quantity-btn { min-width: 44px; height: 44px; }
 .modal-content { overscroll-behavior: contain; }
