@@ -4,9 +4,17 @@
     const h = window.h;
     const dataFor = props => props.entry.getIn(['data']).toJS();
     const assetFor = (props, path) => {
-        if (!path) return '';
+        if (typeof path !== 'string' || !path.trim()) return '';
         const asset = props.getAsset(path);
-        return asset ? asset.toString() : '';
+        const source = asset ? asset.toString() : path;
+        // Preview iframes inherit /admin/ as their base. Bundled images are
+        // rooted at the website, while new upload previews use blob/data URLs.
+        if (/^(?:blob:|data:image\/|https?:\/\/|\/\/)/i.test(source)) return source;
+        if (/^[a-z][a-z0-9+.-]*:/i.test(source)) return '';
+        try {
+            const url = new URL(source, `${window.location.origin}/`);
+            return `${url.pathname}${url.search}${url.hash}`;
+        } catch (_) { return ''; }
     };
     const image = (props, path, alt, className) => path
         ? h('img', { src: assetFor(props, path), alt: alt || '', className: className || '' })
