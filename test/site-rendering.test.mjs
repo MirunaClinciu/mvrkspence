@@ -38,6 +38,7 @@ class Element {
 }
 
 const source = readFileSync(new URL('../stuff/site.js', import.meta.url), 'utf8');
+const socialSource = readFileSync(new URL('../stuff/social-links.js', import.meta.url), 'utf8');
 const renderers = source.slice(0, source.lastIndexOf('\nrenderNavigation();'));
 
 function fixture(page = 'home') {
@@ -63,6 +64,7 @@ function fixture(page = 'home') {
         URLSearchParams,
         console
     });
+    runInContext(socialSource, context, { filename: 'stuff/social-links.js' });
     runInContext(renderers, context, { filename: 'stuff/site.js' });
     return { context, roots, window };
 }
@@ -76,6 +78,40 @@ function descendants(element, predicate) {
 
 function byTag(element, tag) { return descendants(element, child => child.tagName === tag); }
 function byClass(element, name) { return descendants(element, child => child.className.split(' ').includes(name)); }
+
+test('footer uses editable Instagram and Facebook icons with accessible names and safe new tabs', () => {
+    const { context, roots, window } = fixture();
+    window.siteSettings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
+    context.renderFooter();
+    const links = byClass(roots['site-footer'], 'social-icon-link');
+    assert.deepEqual(links.map(link => link.href), [
+        'https://www.instagram.com/mvrkspence/', 'https://www.facebook.com/mvrkspence/'
+    ]);
+    links.forEach((link, index) => {
+        assert.equal(link.getAttribute('aria-label'), `${window.siteSettings.footerLinks[index].label} (opens in a new tab)`);
+        assert.equal(link.target, '_blank');
+        assert.equal(link.rel, 'noopener noreferrer');
+        assert.equal(link.firstChild.getAttribute('aria-hidden'), 'true');
+        assert.match(link.firstChild.innerHTML, /<svg /);
+    });
+    window.siteSettings.footerLinks = [{ platform: 'instagram', label: 'Studio photos', url: 'https://www.instagram.com/new-profile/' }];
+    context.renderFooter();
+    assert.equal(byClass(roots['site-footer'], 'social-icon-link')[0].href, 'https://www.instagram.com/new-profile/');
+    window.siteSettings.footerLinks = [];
+    context.renderFooter();
+    assert.equal(byClass(roots['site-footer'], 'social-icon-link').length, 0);
+});
+
+test('social links reject unsafe URLs and keep custom names as text', () => {
+    const { window } = fixture();
+    for (const url of ['javascript:alert(1)', 'data:text/html,test', '/relative', 'https://name:password@example.com']) {
+        assert.equal(window.MvrkSocialLinks.createLink({ label: 'Profile', url }), null);
+    }
+    const link = window.MvrkSocialLinks.createLink({ platform: 'link', label: '<b>Portfolio</b>', url: 'https://example.com/' });
+    assert.equal(link.textContent, '<b>Portfolio</b>');
+    assert.equal(link.children.length, 0);
+    assert.equal(link.className, 'social-text-link');
+});
 
 test('home preserves the reference image-only layout and prioritizes its first image', () => {
     const { context, roots } = fixture();

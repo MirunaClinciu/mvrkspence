@@ -2,19 +2,19 @@
   "cards": [
     {
       "title": "The Book",
-      "image": "stuff/img/Book1.png",
+      "image": "/stuff/img/Book1.png",
       "alt": "Book project",
       "link": "artwork.html"
     },
     {
       "title": "Artwork",
-      "image": "stuff/img/Artwork.png",
+      "image": "/stuff/img/Artwork.png",
       "alt": "Artwork collection",
       "link": "artwork.html"
     },
     {
       "title": "Concept",
-      "image": "stuff/img/Concept.png",
+      "image": "/stuff/img/Concept.png",
       "alt": "Concept project",
       "link": "concept.html"
     }

@@ -28,6 +28,7 @@ async function loadComingSoonContent() {
             contentResponse.json(),
             settingsResponse.json()
         ]);
+        window.MvrkSocialLinks.render(document.getElementById('coming-soon-socials'), settings.footerLinks);
         const logo = document.getElementById('coming-soon-logo');
         if (typeof content.logo === 'string' && content.logo.trim()) {
             logo.src = `/${content.logo.replace(/^\/+/, '')}`;

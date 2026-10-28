@@ -34,7 +34,8 @@
         const shop = path === 'content/shop.json' || (collection === 'shop' && slug === 'shop');
         const payments = path === 'content/payments.json' || (collection === 'shop' && slug === 'payments');
         const concept = path === 'content/concept.json' || (collection === 'pages' && slug === 'concept');
-        if (!shop && !concept && !payments) return storedData;
+        const contact = path === 'content/contact.json' || (collection === 'pages' && slug === 'contact');
+        if (!shop && !concept && !payments && !contact) return storedData;
         if (!data || typeof data !== 'object') throw new Error('This page could not be read. Reload the editor and try again.');
 
         if (shop) {
@@ -57,6 +58,9 @@
             }
         }
         if (concept) uniqueIds(data.posts === undefined ? [] : data.posts, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Journal post');
+        if (contact && (typeof data.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))) {
+            throw new Error('Contact: enter a complete email address, such as hello@example.com, so visitors can get in touch.');
+        }
         if (payments) {
             if (!['sandbox', 'live'].includes(data.environment)) {
                 throw new Error('PayPal: choose Test payments or Real payments before saving.');

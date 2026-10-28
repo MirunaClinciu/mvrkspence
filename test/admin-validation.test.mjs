@@ -70,8 +70,26 @@ test('post ID validation also runs when an entry is identified by collection and
 });
 
 test('unrelated pages and their content are not altered or validated as shop data', () => {
-    const entry = entryFor({ title: 'Contact', products: [{ id: '' }] }, { collection: 'pages', slug: 'contact', path: 'content/contact.json' });
+    const entry = entryFor({ title: 'Home', products: [{ id: '' }] }, { collection: 'pages', slug: 'home', path: 'content/home.json' });
     assert.equal(validators().preSave({ entry }), entry.storedData);
+});
+
+test('contact save and publish require an email that the website can display', () => {
+    const routes = [
+        { collection: 'pages', slug: 'contact', path: 'content/contact.json' },
+        { collection: 'pages', slug: 'contact', path: undefined }
+    ];
+    for (const fields of routes) {
+        for (const handler of Object.values(validators())) {
+            for (const email of ['', 'secret@now', 'hello', 'hello@example', 'hello @example.com', ' hello@example.com', 'hello@example.com ', undefined, null, 123]) {
+                assert.throws(() => handler({ entry: entryFor({ email }, fields) }), /Contact: enter a complete email address/);
+            }
+            for (const email of ['hello@example.com', 'studio+art@example.co.uk']) {
+                const entry = entryFor({ email, details: 'Keep these details unchanged.' }, fields);
+                assert.equal(handler({ entry }), entry.storedData);
+            }
+        }
+    }
 });
 
 test('editor retains a direct editing route after login and loads validation before previews', () => {

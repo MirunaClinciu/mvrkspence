@@ -1,9 +1,9 @@
 {
   "siteName": "Mvrk Spence",
   "metaDescription": "Photography, concepts and artwork by Mvrk Spence.",
-  "logo": "stuff/img/logo.png",
+  "logo": "/stuff/img/logo.png",
   "logoAlt": "Mvrk Spence",
-  "favicon": "stuff/img/Iconlogo.png",
+  "favicon": "/stuff/img/Iconlogo.png",
   "navigation": [
     { "label": "Home", "page": "index.html" },
     { "label": "Concept", "page": "concept.html" },
@@ -11,6 +11,9 @@
     { "label": "Contact", "page": "contact.html" }
   ],
   "footerText": "Mvrk Spence",
-  "footerLinks": [],
+  "footerLinks": [
+    { "platform": "instagram", "label": "Instagram", "url": "https://www.instagram.com/mvrkspence/" },
+    { "platform": "facebook", "label": "Facebook", "url": "https://www.facebook.com/mvrkspence/" }
+  ],
   "adminLinkLabel": "Admin"
 }

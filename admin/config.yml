@@ -14,7 +14,7 @@ collections:
     label: Website setup
     files:
       - name: site-settings
-        label: Logo, navigation & footer
+        label: Logo, social links & footer
         file: content/site.json
         format: json
         fields:
@@ -41,16 +41,26 @@ collections:
                   - { label: Contact, value: contact.html }
           - { name: footerText, label: Footer text, widget: string }
           - name: footerLinks
-            label: Footer social links
+            label: Social links & icons
+            label_singular: Social link
             widget: list
             required: false
             default: []
             collapsed: true
             summary: '{{fields.label}}'
-            hint: Add or remove the links shown in the site footer.
+            hint: Add, remove, or reorder the social icons shown on the website and coming-soon page. Choose an icon and enter the complete profile URL.
             fields:
-              - { name: label, label: Link name, widget: string }
-              - { name: url, label: Full URL, widget: string }
+              - name: platform
+                label: Social icon
+                widget: select
+                required: false
+                default: link
+                options:
+                  - { label: Instagram, value: instagram }
+                  - { label: Facebook, value: facebook }
+                  - { label: Other link, value: link }
+              - { name: label, label: Link name, widget: string, hint: 'The accessible name for the icon, such as Instagram or Facebook.' }
+              - { name: url, label: Profile URL, widget: string, hint: 'Paste the complete profile address beginning with https://.', pattern: ['^https://[^\s]+$', 'Enter a complete profile URL beginning with https://.'] }
           - { name: adminLinkLabel, label: Admin footer link text, widget: string, required: false }
       - name: coming-soon
         label: Coming soon page
@@ -143,7 +153,7 @@ collections:
           - { name: eyebrow, label: Small heading, widget: string }
           - { name: title, label: Main heading, widget: string }
           - { name: intro, label: Introduction, widget: text }
-          - { name: email, label: Contact email address, widget: string }
+          - { name: email, label: Contact email address, widget: string, hint: 'Enter the complete email address visitors should use, such as hello@example.com.', pattern: ['^[^\s@]+@[^\s@]+\.[^\s@]+$', 'Enter a complete email address, such as hello@example.com.'] }
           - { name: details, label: Additional contact information, widget: text }
           - name: socialLinks
             label: Contact page social links
@@ -179,7 +189,7 @@ collections:
             widget: object
             fields:
               - { name: enabled, label: Charge a flat shipping fee for physical items, widget: boolean, default: false }
-              - { name: amount, label: Shipping fee per order, widget: number, value_type: float, min: 0 }
+              - { name: amount, label: Shipping fee per order, widget: number, value_type: float, min: 0, step: 0.01 }
           - name: products
             label: Products
             label_singular: Product

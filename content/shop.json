@@ -17,7 +17,7 @@
       "purchasable": true,
       "price": 35,
       "type": "physical",
-      "image": "stuff/img/Book1.png",
+      "image": "/stuff/img/Book1.png",
       "imageAlt": "Holy Window cover used for the sample book listing",
       "available": true
     },
@@ -28,7 +28,7 @@
       "purchasable": true,
       "price": 25,
       "type": "physical",
-      "image": "stuff/img/sample-print.svg",
+      "image": "/stuff/img/sample-print.svg",
       "imageAlt": "Placeholder art print with a red sun and dark mountains",
       "available": true
     },
@@ -39,7 +39,7 @@
       "purchasable": true,
       "price": 60,
       "type": "physical",
-      "image": "stuff/img/sample-framed-art.svg",
+      "image": "/stuff/img/sample-framed-art.svg",
       "imageAlt": "Placeholder framed artwork with a red sun and dark mountains",
       "available": true
     },
@@ -50,7 +50,7 @@
       "purchasable": true,
       "price": 28,
       "type": "physical",
-      "image": "stuff/img/sample-tshirt.svg",
+      "image": "/stuff/img/sample-tshirt.svg",
       "imageAlt": "Placeholder natural-colour T-shirt with a red and black art print",
       "available": true
     }

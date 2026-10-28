@@ -230,23 +230,9 @@ function renderFooter() {
         links.append(link);
     });
     const footerLinks = document.createElement('nav');
+    footerLinks.className = 'social-links-list';
     footerLinks.setAttribute('aria-label', 'Social links');
-    (Array.isArray(window.siteSettings && window.siteSettings.footerLinks)
-        ? window.siteSettings.footerLinks
-        : []).forEach(item => {
-        if (!item || typeof item.label !== 'string' || typeof item.url !== 'string') return;
-        try {
-            const url = new URL(item.url);
-            if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
-            const link = makeElement('a', '', item.label);
-            link.href = url.href;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            footerLinks.append(link);
-        } catch (error) {
-            console.error('Invalid footer link in site settings.', error);
-        }
-    });
+    window.MvrkSocialLinks.render(footerLinks, window.siteSettings && window.siteSettings.footerLinks);
     const adminLabel = window.siteSettings && typeof window.siteSettings.adminLinkLabel === 'string'
         ? window.siteSettings.adminLinkLabel
         : 'Admin';
@@ -297,7 +283,7 @@ function setImageDimensions(image, path) {
         'stuff/img/Book1.png': [1600, 612],
         'stuff/img/Artwork.png': [1600, 752],
         'stuff/img/Concept.png': [1600, 755]
-    }[path];
+    }[typeof path === 'string' ? path.replace(/^\/+/, '') : path];
     if (dimensions) [image.width, image.height] = dimensions;
     image.decoding = 'async';
 }

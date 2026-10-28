@@ -1,7 +1,7 @@
 {
-  "logo": "stuff/img/logo.png",
+  "logo": "/stuff/img/logo.png",
   "logoAlt": "Mvrk Spence",
-  "favicon": "stuff/img/Iconlogo.png",
+  "favicon": "/stuff/img/Iconlogo.png",
   "message": "Coming soon",
   "previewLabel": "Preview the website",
   "previewLink": "/preview/",
