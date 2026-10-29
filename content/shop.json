@@ -1,16 +1,16 @@
 {
-  "eyebrow": "Books, prints & wearable art",
-  "title": "Artwork & Shop",
-  "intro": "Explore photographs as art prints, framed prints, canvas and wearable art. Browse photography and art books in their own collection below.",
   "photographsTitle": "Photographs & artwork",
-  "photographsIntro": "Choose a photograph, then choose a print, T-shirt, frame or canvas.",
+  "products": [],
+  "eyebrow": "Books, prints & wearable art [admin save check]",
   "emptyTitle": "New work coming soon",
-  "emptyMessage": "Please get in touch if you would like to enquire about a piece.",
-  "currency": "GBP",
+  "intro": "Explore photographs as art prints, framed prints, canvas and wearable art. Browse photography and art books in their own collection below.",
   "shipping": {
     "enabled": true,
     "amount": 4.95
   },
+  "currency": "GBP",
+  "testMode": true,
+  "photographsIntro": "Choose a photograph, then choose a print, T-shirt, frame or canvas.",
   "photographs": [
     {
       "id": "studio-artwork",
@@ -20,13 +20,41 @@
       "imageAlt": "Placeholder artwork with a red sun and dark mountains",
       "available": true,
       "variants": [
-        { "id": "sample-art-print", "format": "print", "option": "A3", "price": 25, "purchasable": true, "available": true },
-        { "id": "sample-framed-art", "format": "framed", "option": "30 × 40 cm", "price": 60, "purchasable": true, "available": true },
-        { "id": "sample-art-tshirt", "format": "tshirt", "option": "M", "price": 28, "purchasable": true, "available": true },
-        { "id": "sample-canvas", "format": "canvas", "option": "40 × 60 cm", "price": 70, "purchasable": true, "available": true }
+        {
+          "id": "sample-art-print",
+          "format": "print",
+          "option": "A3",
+          "price": 25,
+          "purchasable": true,
+          "available": true
+        },
+        {
+          "id": "sample-framed-art",
+          "format": "framed",
+          "option": "30 × 40 cm",
+          "price": 60,
+          "purchasable": true,
+          "available": true
+        },
+        {
+          "id": "sample-art-tshirt",
+          "format": "tshirt",
+          "option": "M",
+          "price": 28,
+          "purchasable": true,
+          "available": true
+        },
+        {
+          "id": "sample-canvas",
+          "format": "canvas",
+          "option": "40 × 60 cm",
+          "price": 70,
+          "purchasable": true,
+          "available": true
+        }
       ]
     }
   ],
-  "products": [],
-  "testMode": true
+  "title": "Artwork & Shop",
+  "emptyMessage": "Please get in touch if you would like to enquire about a piece."
 }
