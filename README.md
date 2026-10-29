@@ -82,6 +82,20 @@ JSON files.
 
 ## Editing the blog and shop
 
+The Artwork & Shop preview combines photographs and books in one searchable
+catalogue. Search matches item names; Previous, numbered pages and Next appear
+when the collection exceeds the page size. Change **Items per shop page** in
+**Photographs & shop settings** (nine by default). Photograph formats stay
+together, and browsing does not remove items already in the basket.
+
+Shop policies are at `/policies/`, linked from visitor footers and the basket.
+Open **Website setup > Shop policies & seller details** to edit the five policies,
+payment-method image and wording, seller identity, returns address, delivery
+arrangements and privacy information. These are explicitly editable drafts;
+complete the missing details and review the wording before switching off the
+draft notice. Confirm the pictured card brands against the live PayPal checkout.
+The policies draft switch does not enable real payments or turn off shop test mode.
+
 Open **Website pages > Concept page & journal** to change the page introduction,
 main story or gallery. Under **Journal posts**, choose **Add Post**, enter a
 title, date and text, then optionally

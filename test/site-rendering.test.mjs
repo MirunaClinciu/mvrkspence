@@ -40,6 +40,7 @@ class Element {
 const source = readFileSync(new URL('../stuff/site.js', import.meta.url), 'utf8');
 const socialSource = readFileSync(new URL('../stuff/social-links.js', import.meta.url), 'utf8');
 const catalogSource = readFileSync(new URL('../stuff/catalog.js', import.meta.url), 'utf8');
+const browseSource = readFileSync(new URL('../stuff/catalog-browse.js', import.meta.url), 'utf8');
 const renderers = source.slice(0, source.lastIndexOf('\nrenderNavigation();'));
 
 function fixture(page = 'home', prefix = '/preview/') {
@@ -47,7 +48,19 @@ function fixture(page = 'home', prefix = '/preview/') {
         .map(id => [id, new Element('div')]));
     const body = new Element('body');
     body.dataset = { page, sitePrefix: prefix };
-    const window = { location: { origin: 'https://portfolio.example', pathname: `${prefix}${page === 'home' ? 'index' : page}.html`, search: '', hash: '' }, dispatchEvent() {} };
+    const events = new Map();
+    const window = {
+        location: { origin: 'https://portfolio.example', pathname: `${prefix}${page === 'home' ? 'index' : page}.html`, search: '', hash: '' },
+        addEventListener(type, listener) { if (!events.has(type)) events.set(type, new Set()); events.get(type).add(listener); },
+        removeEventListener(type, listener) { events.get(type)?.delete(listener); },
+        dispatchEvent(event) { events.get(event.type)?.forEach(listener => listener(event)); }
+    };
+    Object.defineProperty(window.location, 'href', { get() { return this.origin + this.pathname + this.search + this.hash; } });
+    window.history = { entries: [], pushState(state, title, address) {
+        this.entries.push(address);
+        const url = new URL(address, window.location.origin);
+        Object.assign(window.location, { pathname: url.pathname, search: url.search, hash: url.hash });
+    } };
     const document = {
         body,
         baseURI: 'https://portfolio.example/',
@@ -67,6 +80,7 @@ function fixture(page = 'home', prefix = '/preview/') {
     });
     runInContext(socialSource, context, { filename: 'stuff/social-links.js' });
     runInContext(catalogSource, context, { filename: 'stuff/catalog.js' });
+    runInContext(browseSource, context, { filename: 'stuff/catalog-browse.js' });
     runInContext(renderers, context, { filename: 'stuff/site.js' });
     return { context, roots, window };
 }
@@ -128,6 +142,12 @@ test('public and preview footers keep social icons and copyright without exposin
             assert.equal(byClass(footer, 'admin-link').length, 0);
             assert.ok(byTag(footer, 'a').every(link => !/^\/(?:manage|admin)(?:\/|$)/.test(link.href)), 'editing access is absent from visitor footers');
             assert.equal(byClass(footer, 'footer-separator').length, 0, 'there is no orphaned separator');
+            const policies = byClass(footer, 'footer-policy-links')[0];
+            assert.equal(policies.getAttribute('aria-label'), 'Shop policies');
+            assert.deepEqual(byTag(policies, 'a').map(link => link.href), [
+                '/policies/#terms-and-conditions', '/policies/#refunds', '/policies/#delivery',
+                '/policies/#privacy-and-security', '/policies/#secure-checkout', '/policies/#accepted-payment-methods'
+            ]);
         }
     }
 });
@@ -322,7 +342,7 @@ test('Artwork offers enquiries separately from purchasable works and hides unava
     assert.equal(byClass(roots['page-content'], 'shop-checkout')[0].hidden, true);
 });
 
-test('photograph format selection updates the preview, price and basket SKU while books stay separate', () => {
+test('photograph format selection updates the preview, price and basket SKU while books share the grid', () => {
     const { context, roots, window } = fixture('artwork');
     const shop = JSON.parse(readFileSync(new URL('../content/shop.json', import.meta.url), 'utf8'));
     const books = JSON.parse(readFileSync(new URL('../content/books.json', import.meta.url), 'utf8'));
@@ -346,10 +366,86 @@ test('photograph format selection updates the preview, price and basket SKU whil
         assert.equal(byTag(card, 'img').length, 1);
         assert.equal(byTag(card, 'img')[0].src, 'https://portfolio.example/stuff/img/sample-print.svg');
     }
-    const bookSection = byClass(roots['page-content'], 'artwork-collection').find(section => section.id === 'books');
-    assert.ok(bookSection);
-    assert.equal(byClass(bookSection, 'add-to-basket-btn')[0].dataset.productId, 'holy-window');
-    assert.equal(byClass(bookSection, 'product-variant-select').length, 0);
+    const book = byClass(roots['page-content'], 'product-card')
+        .find(card => byClass(card, 'add-to-basket-btn')[0]?.dataset.productId === 'holy-window');
+    assert.ok(book);
+    assert.equal(byClass(book, 'product-variant-select').length, 0);
+    assert.equal(byClass(roots['page-content'], 'shop-results-grid').length, 1);
+});
+
+test('one catalogue paginates without losing off-page basket products and searches by name', () => {
+    const { context, roots, window } = fixture('artwork');
+    const products = Array.from({ length: 20 }, (_, index) => ({
+        id: `work-${index + 1}`, name: `Flower ${String(index + 1).padStart(2, '0')}`,
+        price: 25, available: true, group: index === 19 ? 'books' : 'legacy'
+    }));
+    window.siteProducts = products;
+    window.location.search = '?checkout=returned';
+    window.location.hash = '#product-list';
+    context.renderArtwork({ title: 'Shop', currency: 'GBP' });
+    const main = roots['page-content'];
+    const names = () => byClass(main, 'product-card').map(card => byTag(card, 'h3')[0].textContent);
+    const pageButton = text => byClass(main, 'shop-page-button').find(button => button.textContent === text);
+    assert.equal(names().length, 9);
+    assert.equal(pageButton('Previous').disabled, true);
+    assert.equal(pageButton('1').getAttribute('aria-current'), 'page');
+    pageButton('Next').listeners.click();
+    assert.equal(names()[0], 'Flower 10');
+    assert.equal(byClass(main, 'shop-results-count')[0].textContent, 'Showing 10–18 of 20 items');
+    assert.equal(new URLSearchParams(window.location.search).get('page'), '2');
+    assert.equal(new URLSearchParams(window.location.search).get('checkout'), 'returned');
+    assert.equal(window.location.hash, '#product-list');
+    pageButton('3').listeners.click();
+    assert.deepEqual(names(), ['Flower 19', 'Flower 20']);
+    assert.equal(pageButton('Next').disabled, true);
+    assert.equal(window.siteProducts, products, 'browsing does not replace the full cart catalogue');
+    assert.equal(window.siteProducts.length, 20);
+    const input = byTag(main, 'input')[0];
+    input.value = 'fLoWeR 20';
+    let prevented = false;
+    byTag(main, 'form')[0].listeners.submit({ preventDefault() { prevented = true; } });
+    assert.equal(prevented, true);
+    assert.deepEqual(names(), ['Flower 20']);
+    assert.equal(byClass(main, 'shop-pagination')[0].hidden, true);
+    assert.equal(new URLSearchParams(window.location.search).get('page'), null);
+    assert.equal(new URLSearchParams(window.location.search).get('q'), 'fLoWeR 20');
+    assert.equal(byClass(main, 'shop-results-count')[0].getAttribute('aria-live'), 'polite');
+    assert.equal(context.document.activeElement.id, 'shop-results-heading');
+});
+
+test('search empty state and browser history preserve photograph formats and a complete catalogue', () => {
+    const { context, roots, window } = fixture('artwork');
+    const shop = JSON.parse(readFileSync(new URL('../content/shop.json', import.meta.url), 'utf8'));
+    const books = JSON.parse(readFileSync(new URL('../content/books.json', import.meta.url), 'utf8'));
+    shop.itemsPerPage = 1;
+    window.siteProducts = window.MvrkCatalog.expandCatalog(shop, books);
+    const ids = window.siteProducts.map(product => product.id).join(',');
+    context.renderArtwork(shop, books);
+    const main = roots['page-content'];
+    const input = byTag(main, 'input')[0];
+    const select = byClass(main, 'product-variant-select')[0];
+    select.value = 'ravens-canvas-40x60';
+    select.listeners.change();
+    input.value = 'Holy';
+    byTag(main, 'form')[0].listeners.submit({ preventDefault() {} });
+    assert.equal(byClass(main, 'add-to-basket-btn')[0].dataset.productId, 'holy-window');
+    input.value = '<script>missing</script>';
+    byTag(main, 'form')[0].listeners.submit({ preventDefault() {} });
+    assert.equal(byClass(main, 'shop-no-results')[0].hidden, false);
+    assert.equal(byClass(main, 'shop-results-grid')[0].hidden, true);
+    assert.equal(byClass(main, 'shop-checkout')[0].hidden, false, 'zero matches does not hide the existing basket');
+    byClass(main, 'shop-no-results')[0].children.at(-1).listeners.click();
+    assert.equal(input.value, '');
+    assert.equal(byClass(main, 'product-variant-select')[0].value, 'ravens-canvas-40x60');
+    assert.equal(byClass(main, 'add-to-basket-btn')[0].dataset.productId, 'ravens-canvas-40x60');
+    assert.equal(window.siteProducts.map(product => product.id).join(','), ids);
+    window.location.search = '?q=holy&page=999';
+    window.dispatchEvent({ type: 'popstate' });
+    assert.equal(byClass(main, 'add-to-basket-btn')[0].dataset.productId, 'holy-window');
+    assert.equal(input.value, 'holy');
+    window.location.search = '';
+    window.dispatchEvent({ type: 'popstate' });
+    assert.equal(byClass(main, 'product-variant-select')[0].value, 'ravens-canvas-40x60');
 });
 
 test('photograph choices hide unavailable formats and retain enquiries for the selected size', () => {

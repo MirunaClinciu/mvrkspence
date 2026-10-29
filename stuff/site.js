@@ -163,6 +163,7 @@ function renderModal() {
         <div id="cart-items-container"></div>
         <p class="cart-shipping" id="cart-shipping-row" hidden>Shipping <strong id="cart-shipping-amount"></strong></p>
         <p class="cart-total">Total <strong id="cart-total-amount">0.00</strong></p>
+        <p class="checkout-policies">Please read our <a href="/policies/#terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>, <a href="/policies/#refunds" target="_blank" rel="noopener noreferrer">Refund Policy</a> and <a href="/policies/#delivery" target="_blank" rel="noopener noreferrer">Delivery Policy</a> before ordering. See <a href="/policies/#privacy-and-security" target="_blank" rel="noopener noreferrer">Privacy and Security</a>, <a href="/policies/#secure-checkout" target="_blank" rel="noopener noreferrer">Secure Checkout Policy</a> and <a href="/policies/#accepted-payment-methods" target="_blank" rel="noopener noreferrer">Accepted Payment Methods</a>. Policy links open in a new tab.</p>
         <div id="checkout-payment-methods" hidden>
           <section class="payment-method" aria-labelledby="card-payment-heading">
             <h3 id="card-payment-heading">Debit or credit card</h3>
@@ -241,7 +242,18 @@ function renderFooter() {
     footerLinks.setAttribute('aria-label', 'Social links');
     window.MvrkSocialLinks.render(footerLinks, window.siteSettings && window.siteSettings.footerLinks, { reference: true });
     if (footerLinks.children.length) footer.append(footerLinks);
-    footer.append(copyright);
+    const policies = makeElement('nav', 'footer-policy-links');
+    policies.setAttribute('aria-label', 'Shop policies');
+    for (const [anchor, label] of [
+        ['terms-and-conditions', 'Terms and Conditions'], ['refunds', 'Refund Policy'],
+        ['delivery', 'Delivery Policy'], ['privacy-and-security', 'Privacy and Security'],
+        ['secure-checkout', 'Secure Checkout Policy'], ['accepted-payment-methods', 'Accepted Payment Methods']
+    ]) {
+        const link = makeElement('a', '', label);
+        link.href = `/policies/#${anchor}`;
+        policies.append(link);
+    }
+    footer.append(copyright, policies);
     siteFooter.className = 'site-footer';
     siteFooter.replaceChildren(footer);
 }
@@ -411,6 +423,7 @@ function renderStandaloneProduct(product, data) {
         card.append(image);
     }
     const details = makeElement('div', 'product-details');
+    details.append(makeElement('p', 'product-kind', product.group === 'books' ? 'Book' : 'Artwork'));
     details.append(makeElement('h3', '', product.name));
     if (product.description) details.append(makeElement('p', '', product.description));
     details.append(makeElement('p', 'product-type', product.type === 'digital' ? 'Digital item' : 'Physical item'));
@@ -421,7 +434,7 @@ function renderStandaloneProduct(product, data) {
     return card;
 }
 
-function renderPhotograph(photo, offers, data) {
+function renderPhotograph(photo, offers, data, selection = {}) {
     const card = makeElement('article', 'product-card photograph-card');
     card.dataset.photographId = photo.id;
     const preview = makeElement('figure', 'product-mockup');
@@ -438,6 +451,7 @@ function renderPhotograph(photo, offers, data) {
     const caption = makeElement('figcaption', 'product-mockup-caption');
     preview.append(surface, caption);
     const details = makeElement('div', 'product-details');
+    details.append(makeElement('p', 'product-kind', 'Artwork'));
     details.append(makeElement('h3', '', photo.name));
     if (photo.description) details.append(makeElement('p', '', photo.description));
     const choices = makeElement('div', 'product-choices');
@@ -454,13 +468,14 @@ function renderPhotograph(photo, offers, data) {
         option.value = offer.id;
         select.append(option);
     });
-    select.value = offers[0].id;
+    select.value = offers.some(offer => offer.id === selection.selectedId) ? selection.selectedId : offers[0].id;
     const footer = makeElement('div', 'product-footer');
     const updateSelection = () => {
         const selected = offers.find(offer => offer.id === select.value) || offers[0];
         preview.dataset.format = selected.format;
         caption.textContent = `${window.MvrkCatalog.formatLabels[selected.format]} preview${selected.option ? ` \u00b7 ${selected.option}` : ''}`;
         renderProductFooter(footer, selected, data);
+        if (typeof selection.onSelectionChange === 'function') selection.onSelectionChange(selected.id);
     };
     select.addEventListener('change', updateSelection);
     updateSelection();
@@ -471,18 +486,33 @@ function renderPhotograph(photo, offers, data) {
 }
 
 function renderArtwork(data, booksData = {}) {
+    if (typeof renderArtwork.cleanup === 'function') renderArtwork.cleanup();
+    renderArtwork.cleanup = null;
     const intro = renderPageIntro(data);
     if (data.testMode === true) {
         const notice = makeElement('p', 'shop-test-notice', 'Test collection — sample products and prices. PayPal checkout requires a sandbox account.');
         notice.setAttribute('role', 'note');
         intro.append(notice);
     }
-    const productList = makeElement('div', 'artwork-collections');
-    productList.id = 'product-list';
-    productList.setAttribute('aria-label', 'Available artwork');
     const activeProducts = window.siteProducts.filter(product => product.available !== false);
+    const photographOffers = new Map();
+    activeProducts.forEach(product => {
+        if (product.group !== 'photographs') return;
+        if (!photographOffers.has(product.photographId)) photographOffers.set(product.photographId, []);
+        photographOffers.get(product.photographId).push(product);
+    });
+    const photographs = (Array.isArray(data.photographs) ? data.photographs : []).flatMap(photo => {
+        if (!photo || photo.available === false) return [];
+        const offers = photographOffers.get(photo.id) || [];
+        return offers.length ? [{ name: photo.name, photo, offers }] : [];
+    });
+    const catalogItems = [
+        ...photographs,
+        ...activeProducts.filter(product => product.group !== 'photographs')
+            .map(product => ({ name: product.name, product }))
+    ];
 
-    if (activeProducts.length === 0) {
+    if (catalogItems.length === 0) {
         const empty = makeElement('div', 'empty-state');
         empty.append(
             makeElement('h2', '', data.emptyTitle || 'New work coming soon'),
@@ -495,44 +525,146 @@ function renderArtwork(data, booksData = {}) {
         return;
     }
 
-    const sections = [];
-    function addCollection(id, title, description, cards) {
-        if (!cards.length) return;
-        const section = makeElement('section', 'artwork-collection');
-        section.id = id;
-        section.setAttribute('aria-labelledby', `${id}-heading`);
-        const heading = makeElement('h2', 'collection-heading', title);
-        heading.id = `${id}-heading`;
-        const header = makeElement('header', 'collection-intro');
-        header.append(heading);
-        if (description) header.append(makeElement('p', '', description));
-        const grid = makeElement('div', 'product-grid');
-        grid.append(...cards);
-        section.append(header, grid);
-        productList.append(section);
-        sections.push({ id, title });
-    }
-    const photographs = (Array.isArray(data.photographs) ? data.photographs : []).flatMap(photo => {
-        if (!photo || photo.available === false) return [];
-        const offers = activeProducts.filter(product => product.group === 'photographs' && product.photographId === photo.id);
-        return offers.length ? [renderPhotograph(photo, offers, data)] : [];
+    const productList = makeElement('section', 'artwork-collections shop-catalog');
+    productList.id = 'product-list';
+    productList.setAttribute('aria-labelledby', 'shop-results-heading');
+    const form = makeElement('form', 'shop-search');
+    form.setAttribute('role', 'search');
+    const label = makeElement('label', 'shop-search-label', 'Search by name');
+    label.htmlFor = 'shop-search-input';
+    const controls = makeElement('div', 'shop-search-controls');
+    const input = makeElement('input', 'shop-search-input');
+    input.id = 'shop-search-input';
+    input.name = 'q';
+    input.type = 'search';
+    input.placeholder = 'Artwork or book name';
+    input.maxLength = 160;
+    const submit = makeElement('button', 'button', 'Search');
+    submit.type = 'submit';
+    const clear = makeElement('button', 'button button-outline shop-search-clear', 'Clear');
+    clear.type = 'button';
+    clear.setAttribute('aria-label', 'Clear search and show all items');
+    controls.append(input, submit, clear);
+    form.append(label, controls);
+    const header = makeElement('header', 'shop-results-header');
+    const heading = makeElement('h2', '', 'All artwork & books');
+    heading.id = 'shop-results-heading';
+    heading.setAttribute('tabindex', '-1');
+    const count = makeElement('p', 'shop-results-count');
+    count.setAttribute('role', 'status');
+    count.setAttribute('aria-live', 'polite');
+    count.setAttribute('aria-atomic', 'true');
+    header.append(heading, count);
+    const grid = makeElement('div', 'product-grid shop-results-grid');
+    const noResults = makeElement('div', 'empty-state shop-no-results');
+    const showAll = makeElement('button', 'button button-outline', 'Show all items');
+    showAll.type = 'button';
+    noResults.append(
+        makeElement('h3', '', 'No matching items'),
+        makeElement('p', '', 'Try another name, or show the full collection.'),
+        showAll
+    );
+    const pagination = makeElement('nav', 'shop-pagination');
+    pagination.setAttribute('aria-label', 'Shop pages');
+    productList.append(form, header, grid, noResults, pagination);
+
+    const selectedFormats = new Map();
+    let query = '';
+    let currentPage = 1;
+    const currentUrl = () => new URL(window.location.pathname + window.location.search + window.location.hash, window.location.origin);
+    const readUrl = () => {
+        const parameters = currentUrl().searchParams;
+        query = parameters.get('q') || '';
+        currentPage = Number(parameters.get('page'));
+    };
+    const writeUrl = () => {
+        const url = currentUrl();
+        if (query) url.searchParams.set('q', query);
+        else url.searchParams.delete('q');
+        if (currentPage > 1) url.searchParams.set('page', String(currentPage));
+        else url.searchParams.delete('page');
+        const next = `${url.pathname}${url.search}${url.hash}`;
+        const previous = window.location.pathname + window.location.search + window.location.hash;
+        if (next !== previous) window.history.pushState(null, '', next);
+    };
+    const drawResults = (focusResults = false, updateUrl = false) => {
+        const result = window.MvrkCatalogBrowse.browseItems(catalogItems, { query, page: currentPage, pageSize: data.itemsPerPage });
+        query = result.query;
+        currentPage = result.page;
+        input.value = query;
+        clear.hidden = !query;
+        heading.textContent = query ? 'Search results' : 'All artwork & books';
+        const itemLabel = result.total === 1 ? 'item' : 'items';
+        count.textContent = result.total
+            ? `Showing ${result.from}\u2013${result.to} of ${result.total} ${itemLabel}${query ? ` for \u201c${query}\u201d` : ''}`
+            : `No items found${query ? ` for \u201c${query}\u201d` : ''}`;
+        grid.replaceChildren(...result.items.map(item => item.photo
+            ? renderPhotograph(item.photo, item.offers, data, {
+                selectedId: selectedFormats.get(item.photo.id),
+                onSelectionChange: id => selectedFormats.set(item.photo.id, id)
+            })
+            : renderStandaloneProduct(item.product, data)));
+        grid.hidden = result.total === 0;
+        noResults.hidden = result.total !== 0;
+        pagination.replaceChildren();
+        pagination.hidden = result.totalPages <= 1;
+        if (result.totalPages > 1) {
+            const pageButton = (text, target, disabled = false, active = false) => {
+                const button = makeElement('button', `shop-page-button${active ? ' is-current' : ''}`, text);
+                button.type = 'button';
+                button.disabled = disabled;
+                button.dataset.page = String(target);
+                if (active) button.setAttribute('aria-current', 'page');
+                button.setAttribute('aria-label', /^\d+$/.test(String(text)) ? `Page ${text}` : `${text} page`);
+                button.addEventListener('click', () => {
+                    if (disabled || target === currentPage) return;
+                    currentPage = target;
+                    drawResults(true, true);
+                });
+                return button;
+            };
+            pagination.append(pageButton('Previous', result.page - 1, result.page === 1));
+            window.MvrkCatalogBrowse.pageNumbers(result.page, result.totalPages).forEach(number => {
+                if (number === 'ellipsis') {
+                    const ellipsis = makeElement('span', 'shop-page-ellipsis', '\u2026');
+                    ellipsis.setAttribute('aria-hidden', 'true');
+                    pagination.append(ellipsis);
+                } else pagination.append(pageButton(String(number), number, false, number === result.page));
+            });
+            pagination.append(pageButton('Next', result.page + 1, result.page === result.totalPages));
+        }
+        if (updateUrl) writeUrl();
+        if (focusResults) {
+            heading.focus({ preventScroll: true });
+            if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start', behavior: 'auto' });
+        }
+    };
+    const resetSearch = () => {
+        query = '';
+        currentPage = 1;
+        drawResults(false, true);
+        input.focus();
+    };
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        query = input.value;
+        currentPage = 1;
+        drawResults(true, true);
     });
-    addCollection('photographs', data.photographsTitle || 'Photographs & artwork', data.photographsIntro, photographs);
-    addCollection('books', booksData.title || 'Books', booksData.intro,
-        activeProducts.filter(product => product.group === 'books').map(product => renderStandaloneProduct(product, data)));
-    addCollection('more-artwork', 'More artwork', '',
-        activeProducts.filter(product => product.group !== 'photographs' && product.group !== 'books')
-            .map(product => renderStandaloneProduct(product, data)));
-    if (sections.length > 1) {
-        const navigation = makeElement('nav', 'collection-navigation');
-        navigation.setAttribute('aria-label', 'Shop collections');
-        sections.forEach(section => {
-            const link = makeElement('a', '', section.title);
-            link.href = `#${section.id}`;
-            navigation.append(link);
-        });
-        intro.append(navigation);
-    }
+    input.addEventListener('input', () => {
+        clear.hidden = !input.value;
+        if (!input.value && query) resetSearch();
+    });
+    clear.addEventListener('click', resetSearch);
+    showAll.addEventListener('click', resetSearch);
+    const onPopState = () => {
+        readUrl();
+        drawResults();
+    };
+    window.addEventListener('popstate', onPopState);
+    renderArtwork.cleanup = () => window.removeEventListener('popstate', onPopState);
+    readUrl();
+    drawResults();
     const checkout = makeElement('section', 'shop-checkout');
     const checkoutButton = makeElement('button', 'button button-outline', 'View basket & checkout');
     checkoutButton.type = 'button';

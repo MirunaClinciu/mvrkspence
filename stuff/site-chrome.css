@@ -1,4 +1,36 @@
 /* Shared masthead and footer retain the original portfolio's proportions. */
+.footer-policy-links {
+  display: flex;
+  width: 100%;
+  max-width: 1100px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: 24px;
+  padding: 12px 20px 0;
+  font-size: 0.78rem;
+}
+
+.site-footer .footer-policy-links a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.checkout-policies {
+  margin: 12px 0 20px;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.checkout-policies a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 :root {
   --nav-height: 3.3rem;
 }

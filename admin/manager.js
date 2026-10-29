@@ -59,7 +59,8 @@
             if (!dialog.classList.contains('manager-media-dialog') && [...dialog.querySelectorAll('h1,h2,h3')].some(heading => heading.textContent.trim() === 'Media assets')) dialog.classList.add('manager-media-dialog');
         }
         const hash = window.location.hash;
-        const context = hash.includes('/entries/shop') ? 'Artwork: add a photograph, enter its title and choose an image. Edit the prepared formats and prices. Remove deletes a listing; switching Show off keeps it for later.'
+        const context = hash.includes('/entries/shop') ? 'Artwork: add a photograph, enter its title and choose an image. Edit the prepared formats and prices. Items per shop page controls when visitors use Next. Remove deletes a listing; switching Show off keeps it for later.'
+            : hash.includes('/entries/policies') ? 'Shop policies: complete seller and delivery details, then review each policy. Open a section to edit its paragraphs or payment picture. Keep Policies are still a draft on until the wording is ready. Save and publish to update the policy page.'
             : hash.includes('/entries/books') ? 'Books: add a book, enter its title and choose a cover. Set its price or leave checkout off for enquiries. References are created automatically.'
             : hash.includes('/entries/home') ? 'Homepage: open an image item to replace its picture or destination. Add another image, drag to reorder, or use Remove to take an item off the page.'
             : hash.includes('/entries/concept') ? 'Concept & journal: edit the page text, gallery or posts. Add and remove pictures using their fields or list items. Post references are created automatically.'

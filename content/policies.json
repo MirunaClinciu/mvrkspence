@@ -1,0 +1,88 @@
+{
+  "title": "Shop policies",
+  "intro": "Information about ordering artwork and books, deliveries, returns and how your information is handled.",
+  "draft": true,
+  "updated": "2026-10-29",
+  "seller": {
+    "tradingName": "Mvrk Spence",
+    "legalName": "",
+    "businessAddress": "",
+    "returnsAddress": "",
+    "email": "mvrkspence@gmail.com",
+    "phone": "",
+    "companyNumber": "",
+    "vatNumber": ""
+  },
+  "deliveryDetails": {
+    "countries": "",
+    "dispatchTime": "",
+    "deliveryTime": "",
+    "changeOfMindReturnCosts": "",
+    "nonPostalReturnCost": ""
+  },
+  "privacyDetails": {
+    "retention": "Order and enquiry records are kept for as long as needed to handle the request, delivery, refunds and applicable accounting or legal requirements. Specific retention periods and the services used must be confirmed before real orders open.",
+    "serviceProviders": "Netlify hosts this website. PayPal provides payment processing. Email services handle messages sent to the contact address. Google Fonts is used on the portfolio pages. Confirm any printing, delivery or other service providers before real orders open.",
+    "internationalTransfers": "Some service providers may process information outside the UK. The seller must confirm the relevant locations and transfer safeguards before real orders open."
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "paragraphs": [
+      "These draft terms cover artwork, prints, framed prints, canvases, clothing and books offered by Mvrk Spence. The legal seller and contact details appear below. Seller information, delivery arrangements and these terms must be completed and reviewed before real orders are accepted.",
+      "Read the product description and choose the correct artwork, format, size and quantity before ordering. Screen colours and illustrative mockups may differ slightly from a physical item, but your statutory rights where goods are faulty or misdescribed are unaffected.",
+      "Prices and the order total are shown in the shop currency. Any delivery charge is displayed in the basket before payment. Applicable taxes, delivery restrictions and any additional charges must be made clear before a real order is placed; no extra charge will be added without your agreement.",
+      "The seller must confirm availability and provide an order acceptance and the applicable contract information in a form you can keep. A payment notification alone does not replace that information. If an order cannot be fulfilled, the seller will contact you and refund any payment due.",
+      "Contact us with your order reference for questions or complaints. These policies do not restrict consumer rights that apply by law. Purchasing a physical artwork or book does not transfer copyright or permission to reproduce it."
+    ]
+  },
+  "refunds": {
+    "title": "Refund Policy",
+    "paragraphs": [
+      "For standard catalogue goods, you may cancel without giving a reason from the time you order until 14 days after receiving your goods. If goods from one order arrive separately, this period runs from receipt of the final item. Tell us clearly by email that you wish to cancel, then return the goods within 14 days of telling us.",
+      "Contact us for return instructions before sending anything. The return address and who pays direct change-of-mind return costs must be confirmed before real sales begin. For items that cannot normally be posted, an estimated return cost must also be disclosed before purchase. Keep proof of return.",
+      "Refunds are made without undue delay and within 14 days after the returned goods arrive or you provide evidence of return, whichever is earlier. If nothing was supplied, the refund is due within 14 days of cancellation. We refund the standard outward delivery charge and use the original payment method unless you expressly agree otherwise, without a refund fee.",
+      "You may inspect goods as you reasonably would in a shop. A deduction may apply for loss of value caused by handling beyond that necessary inspection. A blanket restocking fee does not apply.",
+      "Goods genuinely made to your individual specifications or clearly personalised may be excluded from change-of-mind cancellation where the law allows and this is explained before purchase. Printing or making a standard catalogue item after you order does not, by itself, remove cancellation rights.",
+      "If goods are faulty, damaged or not as described, contact us with the order details. You retain your statutory remedies, including the short-term right to reject faulty goods within 30 days where applicable, and further repair, replacement or refund rights. Reasonable return costs for rejected faulty goods are covered. This protection also applies to personalised goods."
+    ]
+  },
+  "delivery": {
+    "title": "Delivery Policy",
+    "paragraphs": [
+      "Available destinations, production times and estimated delivery times are still being confirmed. The details below must be completed before real orders open. Please ask about a specific destination or deadline before purchasing.",
+      "Production or preparation time is separate from the time a parcel spends in transit. Any agreed longer delivery period must be clear before purchase. Unless a different period is agreed, consumer goods should be delivered within 30 days.",
+      "The basket displays the configured delivery charge before payment. Items may need separate parcels; the seller must explain the dispatch arrangements and any relevant charges before an order is placed. Tracking information will be shared when it is available.",
+      "Tell us if an order is delayed, damaged in transit or missing. Goods generally remain the seller's responsibility until you, or a person you nominate, receive them. Mandatory rights relating to delivery, agreed deadlines and cancellation are unaffected."
+    ]
+  },
+  "privacy": {
+    "title": "Privacy and Security",
+    "paragraphs": [
+      "The seller identified below is responsible for personal information handled for this shop. Use the contact email for privacy questions. This draft notice must be checked against the seller's actual services and record-keeping before real orders open.",
+      "An enquiry may include your name, email address and message. An order may involve contact and delivery details, purchased items and payment references supplied through PayPal. Hosting and payment services also process technical information such as IP addresses and browser information to operate their services and protect against misuse.",
+      "Information needed to take steps at your request, complete an order or respond about a purchase is used for those contractual purposes. Required accounting records are handled to meet legal obligations. Necessary security and ordinary enquiry handling may rely on legitimate interests, balanced against your rights. Consent will be requested where it is needed for an optional use.",
+      "Relevant information is shared with the services needed to operate the website, process payments, answer enquiries and fulfil an order. PayPal handles payment data under its own privacy terms. Do not send full card numbers, card security codes or passwords by email.",
+      "The basket uses browser local storage called mvrk-shopping-basket to remember selected products and quantities. Clearing site storage removes the saved basket. PayPal may use its own cookies or similar technologies when you open checkout. Invited administrator sign-in uses necessary authentication storage. The portfolio also requests fonts from Google, which may receive technical connection information.",
+      "You may have rights to access, correct, erase or restrict information, object to certain uses, receive portable information and withdraw consent where consent is the basis. Rights depend on the circumstances. Contact us to make a request. You may also complain to the UK Information Commissioner's Office or the relevant supervisory authority.",
+      "Reasonable technical and organisational measures are used to protect information, but no website or transmission can be guaranteed completely secure. Contact us if you suspect misuse of your information."
+    ]
+  },
+  "secureCheckout": {
+    "title": "Secure Checkout Policy",
+    "paragraphs": [
+      "Checkout is provided through PayPal over an encrypted HTTPS connection. Card details are entered in PayPal's payment interface. This website does not collect or store your full card number or card security code.",
+      "Available payment options are displayed by PayPal during checkout. Debit or credit card availability, guest checkout and supported card brands depend on PayPal eligibility, your location and the seller's payment configuration. You will see the amount before confirming payment.",
+      "Only enter payment information through the checkout opened from this website. We will not ask for your card security code, PayPal password or one-time security codes by email. If payment fails or its status is unclear, check your PayPal or card account and contact us before paying again."
+    ]
+  },
+  "paymentMethods": {
+    "title": "Accepted Payment Methods",
+    "image": "/stuff/img/payment-methods.png",
+    "imageAlt": "Visa, Mastercard, Discover and American Express card logos",
+    "imageCaption": "Available card options are shown by PayPal at checkout and can vary.",
+    "paragraphs": [
+      "PayPal is the checkout provider. Eligible debit and credit card options are shown in checkout when available. A particular card brand or payment option is not guaranteed.",
+      "While this shop is in test mode, use PayPal Sandbox buyer details or generated sandbox test-card details only. Do not use a real card for a sandbox test."
+    ]
+  }
+}

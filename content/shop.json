@@ -1,7 +1,8 @@
 {
   "eyebrow": "Books, prints & wearable art",
   "title": "Artwork & Shop",
-  "intro": "Explore photographs as art prints, framed prints, canvas and wearable art. Browse photography and art books in their own collection below.",
+  "intro": "Explore artwork and books in one collection. Search by name, then choose your photograph as an art print, framed print, canvas or T-shirt.",
+  "itemsPerPage": 9,
   "photographsTitle": "Photographs & artwork",
   "photographsIntro": "Choose a photograph, then choose a print, T-shirt, frame or canvas.",
   "emptyTitle": "New work coming soon",

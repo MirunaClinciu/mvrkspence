@@ -75,6 +75,120 @@ collections:
           - { name: intro, label: Short message below the heading, widget: text, required: false }
           - { name: footerText, label: Footer text, widget: string }
 
+      - name: policies
+        label: Shop policies & seller details
+        file: content/policies.json
+        format: json
+        fields:
+          - { name: title, label: Policy page heading, widget: string }
+          - { name: intro, label: Introduction, widget: text }
+          - { name: draft, label: Policies are still a draft, widget: boolean, default: true, hint: 'Keep on until all seller details, delivery arrangements and policy wording have been reviewed. This does not switch on real payments.' }
+          - { name: updated, label: Last updated, widget: string, hint: 'Enter the date you reviewed these policies, such as 2026-10-29.' }
+          - name: seller
+            label: Seller & contact details — complete before real sales
+            widget: object
+            fields:
+              - { name: tradingName, label: Trading / shop name, widget: string }
+              - { name: legalName, label: Legal seller name, widget: string, required: false, hint: 'Your legal business name or the individual who sells the goods. Do not enter only a social-media username.' }
+              - { name: businessAddress, label: Business postal address, widget: text, required: false }
+              - { name: returnsAddress, label: Address for returns, widget: text, required: false }
+              - { name: email, label: Customer support email, widget: string, hint: 'This address receives enquiries, cancellation notices and privacy requests.' }
+              - { name: phone, label: Customer support telephone, widget: string, required: false }
+              - { name: companyNumber, label: Company registration number (if applicable), widget: string, required: false }
+              - { name: vatNumber, label: VAT number (if applicable), widget: string, required: false }
+          - name: deliveryDetails
+            label: Delivery & return arrangements — complete before real sales
+            widget: object
+            fields:
+              - { name: countries, label: Countries / regions you deliver to, widget: text, required: false }
+              - { name: dispatchTime, label: Production and dispatch time, widget: text, required: false, hint: 'Describe how long you need to prepare each type of product before handing it to the carrier.' }
+              - { name: deliveryTime, label: Delivery estimates after dispatch, widget: text, required: false, hint: 'Give realistic transit estimates for the destinations you offer. Confirm any longer agreed delivery period before checkout.' }
+              - { name: changeOfMindReturnCosts, label: Who pays change-of-mind return costs?, widget: text, required: false, hint: 'State the arrangement customers must know before buying. Faulty-goods return rights are separate.' }
+              - { name: nonPostalReturnCost, label: Estimated return cost for bulky items, widget: text, required: false, hint: 'For goods that cannot normally be posted, give the estimated direct return cost. Enter Not applicable only if every item can normally be posted.' }
+          - name: privacyDetails
+            label: Privacy services & record keeping
+            widget: object
+            collapsed: true
+            fields:
+              - { name: retention, label: How long you keep customer information, widget: text, hint: 'Set actual periods or clear criteria for order, accounting and enquiry records.' }
+              - { name: serviceProviders, label: Services that receive customer information, widget: text, hint: 'Review hosting, payments, email, printing and delivery services. Include only services you actually use.' }
+              - { name: internationalTransfers, label: International processing and safeguards, widget: text, hint: 'Confirm the relevant locations and safeguards for the services you use.' }
+          - name: terms
+            label: Terms and Conditions
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: paragraphs
+                label: Paragraphs
+                label_singular: Paragraph
+                widget: list
+                min: 1
+                field: { name: paragraph, label: Paragraph, widget: text }
+          - name: refunds
+            label: Refund Policy
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: paragraphs
+                label: Paragraphs
+                label_singular: Paragraph
+                widget: list
+                min: 1
+                field: { name: paragraph, label: Paragraph, widget: text }
+          - name: delivery
+            label: Delivery Policy
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: paragraphs
+                label: Paragraphs
+                label_singular: Paragraph
+                widget: list
+                min: 1
+                field: { name: paragraph, label: Paragraph, widget: text }
+          - name: privacy
+            label: Privacy and Security
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: paragraphs
+                label: Paragraphs
+                label_singular: Paragraph
+                widget: list
+                min: 1
+                field: { name: paragraph, label: Paragraph, widget: text }
+          - name: secureCheckout
+            label: Secure Checkout Policy
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: paragraphs
+                label: Paragraphs
+                label_singular: Paragraph
+                widget: list
+                min: 1
+                field: { name: paragraph, label: Paragraph, widget: text }
+          - name: paymentMethods
+            label: Accepted Payment Methods
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - { name: image, label: Payment card logos (optional), widget: image, choose_url: false, required: false, hint: 'Choose, replace or remove the image. Before real sales, confirm these card brands are offered by your live PayPal checkout.' }
+              - { name: imageAlt, label: Description of the payment logos, widget: string, required: false }
+              - { name: imageCaption, label: Payment image caption, widget: text, required: false, hint: 'Explain that available options are shown by PayPal at checkout and can vary.' }
+              - name: paragraphs
+                label: Paragraphs
+                label_singular: Paragraph
+                widget: list
+                min: 1
+                field: { name: paragraph, label: Paragraph, widget: text }
+
   - name: pages
     label: Website pages
     files:
@@ -258,8 +372,9 @@ collections:
           - { name: eyebrow, label: Small heading, widget: string }
           - { name: title, label: Shop page heading, widget: string }
           - { name: intro, label: Shop introduction, widget: text }
-          - { name: photographsTitle, label: Photographs section heading, widget: string, required: false, default: Photographs & artwork }
-          - { name: photographsIntro, label: Photographs section introduction, widget: text, required: false, default: 'Choose a photograph, then choose a print, T-shirt, frame or canvas.' }
+          - { name: itemsPerPage, label: Items per shop page, widget: number, value_type: int, min: 1, max: 48, step: 1, default: 9, required: false, hint: 'How many artwork or book listings visitors see before using Next. Each photograph counts once; its print and clothing options stay together.' }
+          - { name: photographsTitle, widget: hidden, required: false, default: Photographs & artwork }
+          - { name: photographsIntro, widget: hidden, required: false, default: 'Choose a photograph, then choose a print, T-shirt, frame or canvas.' }
           - { name: emptyTitle, label: Empty shop heading, widget: string }
           - { name: emptyMessage, label: Empty shop message, widget: text }
           - { name: testMode, label: Test shop with sample products, widget: boolean, default: true, hint: "Keep on while testing sample prices. Payments are restricted to PayPal sandbox. Turn off only when real products and prices are ready." }
@@ -324,5 +439,5 @@ collections:
               - { name: type, label: Item type, widget: hidden, default: physical }
               - { name: available, label: Show this book, widget: boolean, default: true, hint: 'Switch off to hide a sold-out or withdrawn book and prevent checkout.' }
             add_to_top: true
-          - { name: title, label: Books section heading, widget: string }
-          - { name: intro, label: Books introduction, widget: text, required: false }
+          - { name: title, widget: hidden, default: Books }
+          - { name: intro, widget: hidden, required: false, default: '' }

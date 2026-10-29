@@ -9,7 +9,7 @@ if (output !== resolve(root, 'dist') || !output.startsWith(`${root}${sep}`)) {
 }
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
-const publicFiles = ['index.html', 'coming-soon.html', 'artwork.html', 'concept.html', 'contact.html', 'robots.txt', 'preview', 'admin', 'manage', 'stuff', 'content', 'uploads'];
+const publicFiles = ['index.html', 'coming-soon.html', 'artwork.html', 'concept.html', 'contact.html', 'robots.txt', 'preview', 'policies', 'admin', 'manage', 'stuff', 'content', 'uploads'];
 for (const file of publicFiles) {
     const source = resolve(root, file);
     try { await stat(source); }
