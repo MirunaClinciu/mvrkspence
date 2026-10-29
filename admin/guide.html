@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="A simple guide to updating the Mvrk Spence website.">
+  <meta name="description" content="Simple steps to change photos, artwork, books and website details.">
   <title>Editing guide | Mvrk Spence</title>
   <link rel="icon" href="/stuff/img/Iconlogo.png" type="image/png">
   <link rel="stylesheet" href="/admin/guide.css">
@@ -22,167 +22,165 @@
   </header>
   <main id="guide">
     <section class="intro" aria-labelledby="guide-title">
-      <p class="eyebrow">Website manager</p>
-      <h1 id="guide-title">Make it your own.</h1>
-      <p class="lead">Change words, upload photos and manage artwork using simple forms. You do not need to write any code.</p>
+      <p class="eyebrow">A little help</p>
+      <h1 id="guide-title">Your website, your way.</h1>
+      <p class="lead">Choose what to change, fill in the form and check the preview. No coding or technical references to enter.</p>
       <a class="button" href="/manage/">Open website manager</a>
-    </section>
-
-    <section aria-labelledby="start-title">
-      <p class="eyebrow">Start here</p>
-      <h2 id="start-title">Your first sign-in</h2>
-      <ol class="steps">
-        <li><strong>Accept your invitation.</strong> Open the invitation email and follow its link to choose your own password.</li>
-        <li><strong>Open the website manager.</strong> Sign in with your invited email address and password. If you forget your password, use the password reset option on the sign-in screen.</li>
-        <li><strong>Choose what to change.</strong> Open one of the editing options below. The editor shows fields for words, photos and settings.</li>
+      <ol class="quick-steps" aria-label="How to update the website">
+        <li><strong>1. Edit</strong><span>Choose a task and change its words or pictures.</span></li>
+        <li><strong>2. Save &amp; check</strong><span>Save a draft, then check its preview.</span></li>
+        <li><strong>3. Publish</strong><span>Publish when ready, then let the website update finish.</span></li>
       </ol>
-      <p class="note">If you see Netlify&rsquo;s private-site access screen before the manager, sign in with the Netlify account that has access to this project. This is separate from your website editor sign-in. If you have not received an invitation, ask the website owner to invite your email address.</p>
     </section>
 
-    <section aria-labelledby="edit-title">
-      <p class="eyebrow">Choose a task</p>
-      <h2 id="edit-title">What would you like to update?</h2>
+    <nav class="guide-topics" aria-label="Guide topics">
+      <a href="#photos-title">Photos</a>
+      <a href="#artwork-title">Artwork</a>
+      <a href="#books-title">Books</a>
+      <a href="#pages-title">Pages &amp; details</a>
+      <a href="#publish-title">Publishing</a>
+      <a href="#questions-title">Questions</a>
+    </nav>
+
+    <section aria-labelledby="photos-title">
+      <p class="eyebrow">Pictures made simple</p>
+      <h2 id="photos-title">Add, replace or remove an image</h2>
+      <div class="image-tasks">
+        <article>
+          <span class="task-number" aria-hidden="true">+</span>
+          <h3>Add an image</h3>
+          <p>Open the page, artwork or book. Choose <strong>Choose an image</strong> in its image field. Pick a library image, or choose <strong>Upload</strong> to select one from your computer. Select it and confirm your choice.</p>
+        </article>
+        <article>
+          <span class="task-number" aria-hidden="true">&#8635;</span>
+          <h3>Replace an image</h3>
+          <p>Expand the item you want to change and choose <strong>Replace image</strong>. Select the new picture. Your text and product formats stay in place.</p>
+        </article>
+        <article>
+          <span class="task-number" aria-hidden="true">&minus;</span>
+          <h3>Remove it from a page</h3>
+          <p>Choose <strong>Remove image</strong> for an optional image. To remove a gallery picture, homepage picture or complete artwork, use that list entry&rsquo;s <strong>Remove</strong> control. Save and publish the page.</p>
+        </article>
+      </div>
+      <p class="note">Uploading puts a file in your image library. To show it on the website, select it in a page, artwork or book. Removing an image from a page keeps its file in the library, ready to reuse.</p>
+      <details>
+        <summary>Manage or delete files in the image library</summary>
+        <p>Open <a href="/admin/?task=images">Manage image library</a> to upload files and see existing pictures. To delete an unused file completely, select it and choose <strong>Delete selected</strong>. Check that no page or product still uses it first; a shared file may be used in several places.</p>
+      </details>
+      <p class="section-end">An artwork or book needs an image. Replace its picture, hide the listing, or remove the whole listing instead of leaving its required image empty.</p>
+    </section>
+
+    <section aria-labelledby="artwork-title">
+      <p class="eyebrow">One image, four ways to offer it</p>
+      <h2 id="artwork-title">Add or update artwork</h2>
+      <ol class="steps">
+        <li>Open <a href="/admin/#/collections/shop/entries/shop">Photographs &amp; shop settings</a> from the manager. Under <strong>Photographs &amp; artwork</strong>, choose <strong>Add photograph</strong>. To edit existing work, expand its title.</li>
+        <li>Enter the title and description, then choose the photograph. Upload it once; the same picture is reused for its print, T-shirt, framed print and canvas.</li>
+        <li>Expand <strong>Formats &amp; sizes</strong>. A new photograph starts with four enquiry-only formats. Change their sizes and prices. Use <strong>Add format</strong> for another size, or remove formats you do not want.</li>
+        <li>For a format you want to sell, enter a price above zero, then switch <strong>Enable checkout for this format</strong> on. Leave it off to accept enquiries. Use <strong>Offer this format</strong> to show or hide that size.</li>
+        <li>Choose <strong>Save</strong>, check the picture and product previews, then <strong>Publish</strong> when ready.</li>
+      </ol>
+      <div class="two-column action-notes">
+        <div>
+          <h3>Hide it for now</h3>
+          <p>Switch <strong>Show this photograph on Artwork</strong> off. Its image, text and formats remain in the editor so you can bring it back later.</p>
+        </div>
+        <div>
+          <h3>Remove the listing</h3>
+          <p>Use <strong>Remove</strong> on the photograph entry, then save and publish. The uploaded image remains in the library.</p>
+        </div>
+      </div>
+      <p class="note">Keep <strong>Test shop with sample products</strong> on while practising. The editable &ldquo;Ravens in the Mist&rdquo; listing uses sample prices: print &pound;25, framed print &pound;60, T-shirt &pound;28 and canvas &pound;70. Replace example sizes and prices before real sales.</p>
+      <p class="section-end">Product previews show where your image appears. You arrange physical printing, production and shipping; the website does not order from a printing company automatically.</p>
+    </section>
+
+    <section aria-labelledby="books-title">
+      <p class="eyebrow">Books have their own editor</p>
+      <h2 id="books-title">Add or update a book</h2>
+      <ol class="steps">
+        <li>Open <a href="/admin/#/collections/shop/entries/books">Books</a> and choose <strong>Add book</strong>, or expand an existing book.</li>
+        <li>Enter its title and description, then choose or upload the cover. Include edition, binding and dimensions in the description if useful.</li>
+        <li>Set <strong>Price per book</strong>. Leave <strong>Enable PayPal checkout</strong> off for enquiries, or switch it on after entering a price above zero. Books share the shop currency and shipping settings.</li>
+        <li>Save, check the preview and publish. Use <strong>Show this book</strong> to hide a book, or <strong>Remove</strong> to remove its listing.</li>
+      </ol>
+      <p class="section-end">Artwork and Books are saved and published separately. You never need to create or edit their internal references.</p>
+    </section>
+
+    <section aria-labelledby="pages-title">
+      <p class="eyebrow">The rest of your website</p>
+      <h2 id="pages-title">Words, pages &amp; details</h2>
       <div class="task-grid">
         <article>
-          <h3>Home pictures</h3>
-          <p>Replace the Book, Artwork or Concept image. Add or remove a picture, change its description, or choose which page it opens.</p>
-          <a href="/admin/#/collections/pages/entries/home">Edit home pictures <span aria-hidden="true">&rarr;</span></a>
+          <h3>Homepage pictures</h3>
+          <p>Expand a picture to replace it or change the page it opens. Use <strong>Add image link</strong> for another picture, <strong>Remove</strong> to take one off the page, and the reorder control to change their order.</p>
+          <a href="/admin/#/collections/pages/entries/home">Edit homepage pictures <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
           <h3>Concept &amp; journal</h3>
-          <p>Change the Concept page text and gallery. Use <strong>Add Post</strong> under <strong>Journal posts</strong> for a new story, update or studio note.</p>
+          <p>Change the page text and gallery. Under <strong>Journal posts</strong>, choose <strong>Add post</strong>, enter its title, date and text, and optionally choose a photo. Switch <strong>Published on the website</strong> on to show it after publishing the page.</p>
           <a href="/admin/#/collections/pages/entries/concept">Edit Concept &amp; journal <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
-          <h3>Photographs &amp; shop settings</h3>
-          <p>Upload a photograph once, then offer it as an art print, T-shirt, framed print or canvas. Set a separate size and price for each format.</p>
-          <a href="/admin/#/collections/shop/entries/shop">Edit photographs &amp; formats <span aria-hidden="true">&rarr;</span></a>
-        </article>
-        <article>
-          <h3>Books</h3>
-          <p>Books have their own editor and website section. Add a cover, describe the edition and set the book price or accept enquiries.</p>
-          <a href="/admin/#/collections/shop/entries/books">Edit books <span aria-hidden="true">&rarr;</span></a>
-        </article>
-        <article>
           <h3>Contact details</h3>
-          <p>Update the contact email and introductory text. Keep <strong>Use the website social icons</strong> on to show the shared Instagram, Facebook and email icons.</p>
+          <p>Change your email, contact message and button text. Keep <strong>Use the website social icons</strong> on to use the shared profiles below.</p>
           <a href="/admin/#/collections/pages/entries/contact">Edit contact details <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
           <h3>Logo, social links &amp; footer</h3>
-          <p>Change the logo, website name, Instagram and Facebook icons, menu links and footer. The search description is the short explanation of your website used by search engines.</p>
+          <p>Replace the logo and edit menu names, footer text or <strong>Social links &amp; icons</strong>. Choose the icon and paste its full profile address. For Email, enter your normal email address. Add, remove or reorder links here.</p>
           <a href="/admin/#/collections/site/entries/site-settings">Edit website details <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
           <h3>Coming-soon page</h3>
-          <p>Change the logo, message and preview link on the separate <a href="/coming-soon.html" target="_blank" rel="noopener noreferrer">coming-soon page</a>. The main website address opens the portfolio homepage.</p>
+          <p>Change the logo and message on the separate coming-soon page. The main website address continues to open the portfolio homepage.</p>
           <a href="/admin/#/collections/site/entries/coming-soon">Edit coming-soon page <span aria-hidden="true">&rarr;</span></a>
         </article>
         <article>
           <h3>PayPal payments</h3>
-          <p>Connect your PayPal merchant app with its Client ID and Secret to offer PayPal and eligible Visa, debit and credit card payments.</p>
+          <p>Enter the Client ID and Secret from the same PayPal app, choose test or real payments, then use <strong>Save and connect PayPal</strong>. This payment form saves separately from page drafts.</p>
           <a href="/manage/paypal.html">Set up PayPal payments <span aria-hidden="true">&rarr;</span></a>
         </article>
       </div>
     </section>
 
-    <section aria-labelledby="social-title">
-      <p class="eyebrow">Social profiles</p>
-      <h2 id="social-title">Change your social, email and support icons</h2>
-      <ol class="steps">
-        <li>Open <a href="/admin/#/collections/site/entries/site-settings">Logo, social links &amp; footer</a> and find <strong>Social links &amp; icons</strong>.</li>
-        <li>Expand a link to change its <strong>Social icon</strong>, <strong>Link name</strong> or <strong>Profile URL or email address</strong>. Paste a full <strong>https://</strong> profile URL, or choose <strong>Email</strong> and enter your normal email address.</li>
-        <li>Add a social link to show another profile. Remove a list item to hide its icon, or reorder the list to change the icon order.</li>
-        <li>For your support link, choose <strong>Buy Me a Coffee</strong> and enter your direct profile URL, such as <strong>https://buymeacoffee.com/mvrkspence</strong>. You can edit or remove it in this same list.</li>
-        <li>Choose <strong>Save</strong>, then <strong>Publish</strong>. The icons update on the website and coming-soon page after the website update finishes.</li>
-      </ol>
-      <p>The Contact page uses these shared icons when <strong>Use the website social icons</strong> is on. For different icons on Contact, open <a href="/admin/#/collections/pages/entries/contact">Contact details</a>, switch it off and fill in <strong>Custom contact links</strong>. Choose an icon and enter a complete <strong>https://</strong> profile URL or email address for each link. The contact email and introductory text are edited on that same page.</p>
-    </section>
-
-    <section aria-labelledby="artwork-title">
-      <p class="eyebrow">One photograph, several products</p>
-      <h2 id="artwork-title">Offer your photograph in different formats</h2>
-      <ol class="steps">
-        <li>Open <a href="/admin/#/collections/shop/entries/shop">Photographs &amp; shop settings</a>. Find <strong>Photographs &amp; artwork</strong> and choose <strong>Add Photograph</strong>.</li>
-        <li>Enter a <strong>Photograph reference</strong> such as <strong>river-photo</strong>, its title and description. Upload the photograph in <strong>Photograph (upload once from computer)</strong>. This one upload is reused for every format.</li>
-        <li>Under <strong>Formats &amp; sizes</strong>, choose <strong>Add Format</strong>. Select <strong>Art print</strong>, <strong>T-shirt</strong>, <strong>Framed print</strong> or <strong>Canvas</strong>.</li>
-        <li>Give this format a unique <strong>Format reference</strong>, such as <strong>river-print-a3</strong>. Enter its <strong>Size or option</strong>, such as A3, 30 x 40 cm or T-shirt size M, and its <strong>Price for this format</strong>. Add another format entry for each additional size.</li>
-        <li>Keep <strong>Offer this format</strong> on. Leave <strong>Enable checkout for this format</strong> off for enquiries, or enter a price above zero and switch it on to allow purchases. Keep <strong>Test shop with sample products</strong> on while practising with example prices.</li>
-        <li>Save, check the preview and publish. Visitors choose a format and size on the Artwork page before adding that exact product to the basket.</li>
-      </ol>
-      <p>The website uses your photograph to make a visual product preview when a format is selected. This illustrates image placement; you arrange actual printing, production and dispatch yourself. It does not send orders to a printing company automatically.</p>
-      <p>Switch <strong>Offer this format</strong> off to withdraw one size, or switch <strong>Show this photograph on Artwork</strong> off to hide the photograph and all its formats. Keep references unchanged after publishing so baskets and checkout continue to identify the right items.</p>
-    </section>
-
-    <section aria-labelledby="books-title">
-      <p class="eyebrow">A separate collection</p>
-      <h2 id="books-title">Add or update a book</h2>
-      <ol class="steps">
-        <li>Open <a href="/admin/#/collections/shop/entries/books">Books</a> from the dashboard and choose <strong>Add Book</strong>.</li>
-        <li>Choose a unique <strong>Book reference</strong>, enter the <strong>Book title</strong> and description, and upload the cover. Describe the edition, binding and dimensions where relevant.</li>
-        <li>Enter <strong>Price per book</strong> as a number. Books use the currency and flat shipping settings in <strong>Photographs &amp; shop settings</strong>.</li>
-        <li>Leave <strong>Enable PayPal checkout</strong> off for enquiries, or set a price above zero and switch it on for purchases. Keep <strong>Show this book</strong> on to display it.</li>
-        <li>Save, check the book preview and publish. Books appear in their own section on the Artwork page.</li>
-      </ol>
-    </section>
-
-    <section aria-labelledby="photos-title">
-      <p class="eyebrow">Photos &amp; lists</p>
-      <h2 id="photos-title">Add, replace or remove</h2>
-      <div class="two-column">
-        <div>
-          <h3>Upload a photo from your computer</h3>
-          <ol class="steps compact">
-            <li>Open the page or product you want to edit.</li>
-            <li>Choose the image field, then choose an existing image or upload a file from your computer.</li>
-            <li>Select the photo and confirm it. Add a short description of what is in the photo.</li>
-            <li>Check the preview and save your changes.</li>
-          </ol>
-        </div>
-        <div>
-          <h3>Manage photos, posts and products</h3>
-          <p>Expand an entry to edit it. Use the list&rsquo;s add, remove and reorder controls to manage its contents.</p>
-          <p>Use <strong>Show this photograph on Artwork</strong>, <strong>Offer this format</strong> or <strong>Show this book</strong> to hide items without deleting them. Older standalone products remain under <strong>Other / existing products</strong> with their <strong>Show on Artwork page</strong> switch. For a journal post, turn <strong>Published on the website</strong> off to hide it from the page.</p>
-          <p>Keep references and permanent IDs unchanged after publishing. Give each photograph, product format, book and journal post its own reference.</p>
-        </div>
-      </div>
-    </section>
-
     <section class="publish-panel" aria-labelledby="publish-title">
-      <p class="eyebrow">When you are ready</p>
+      <p class="eyebrow">Finish your update</p>
       <h2 id="publish-title">Save. Check. Publish.</h2>
       <ol class="steps">
-        <li><strong>Save your draft.</strong> Your changes stay in the editor until you publish them.</li>
-        <li><strong>Check the preview.</strong> Review your words, pictures and prices. You can return to the draft and keep editing.</li>
-        <li><strong>Publish the changes.</strong> Use the editor&rsquo;s review and publish controls when you are happy with the result.</li>
-        <li><strong>View the website.</strong> Publishing starts a website update. Allow it to finish, then refresh the website to see the result.</li>
+        <li><strong>Save your draft.</strong> Wait for <strong>Changes saved</strong>. Save becomes available after you change a field.</li>
+        <li><strong>Check the preview.</strong> Review the words, pictures, sizes and prices inside the editor. Return to the form to make any adjustments.</li>
+        <li><strong>Publish when ready.</strong> Use <strong>Publish</strong> to send that page&rsquo;s changes to the website. A saved draft alone does not change the live page.</li>
+        <li><strong>View the website.</strong> Allow the website update to finish, then refresh the live page. If hosting reports that publishing is paused, the owner must resume deployments before updates can appear.</li>
       </ol>
-      <p>To keep a draft private, leave it in the editor&rsquo;s draft workflow until you are ready to publish.</p>
-      <a class="button" href="/admin/">Open the editor</a>
+      <a class="button" href="/manage/">Back to website manager</a>
     </section>
 
     <section class="questions" aria-labelledby="questions-title">
-      <p class="eyebrow">A little help</p>
+      <p class="eyebrow">Quick answers</p>
       <h2 id="questions-title">Common questions</h2>
       <details>
-        <summary>Will saving change the website straight away?</summary>
-        <p>No. Save keeps a draft. Publish sends the changes to the website, and the update must finish before visitors see them.</p>
+        <summary>How do I sign in or reset my password?</summary>
+        <p>Open <a href="/manage/">the website manager</a> and use the email address that received your administrator invitation. Accept the invitation to choose your password the first time. Use the password reset option if you forget it. Website editor access is separate from a Netlify hosting account.</p>
       </details>
       <details>
-        <summary>Can I add a piece without selling it yet?</summary>
-        <p>Yes. For a photograph format, leave <strong>Enable checkout for this format</strong> off. For a book or older standalone product, leave <strong>Enable PayPal checkout</strong> off. The item shows an enquiry link. To sell it, enter its real price and enable checkout after PayPal has been configured and tested.</p>
+        <summary>I uploaded a picture. Why is it not on Artwork?</summary>
+        <p>The image library stores files. Open <a href="/admin/#/collections/shop/entries/shop">Photographs &amp; shop settings</a>, add or expand a photograph entry and select that image. Enter its title, description and formats, then save and publish.</p>
       </details>
       <details>
-        <summary>Where do I change PayPal?</summary>
-        <p>Open <a href="/manage/paypal.html">PayPal payments</a> from the dashboard. Paste the Client ID and Secret from the same PayPal app, choose test or real payments, then use <strong>Save and connect PayPal</strong>. The Secret is stored securely and is not shown again. Leave it blank next time to keep the saved value.</p>
+        <summary>Why will my changes not save?</summary>
+        <p>Look for the message next to a field. Required titles, images and complete product formats must be filled in. An item with checkout switched on needs a price above zero, with no more than two decimal places. If Save is grey, there are no new changes to save.</p>
       </details>
       <details>
-        <summary>How do I test Visa or debit card payments?</summary>
-        <p>Connect a Sandbox app in <a href="/manage/paypal.html">PayPal payments</a> and keep the sample shop in test mode. Add an item to the basket and choose <strong>Debit or credit card</strong> when PayPal makes that option available. Use <a href="https://developer.paypal.com/credit-card-number-generator" target="_blank" rel="noopener noreferrer">generated sandbox card details</a>, never a real card. PayPal decides card availability for each buyer.</p>
+        <summary>Can I keep a work in progress?</summary>
+        <p>Yes. Save it as a draft and leave it unpublished. The Show switches hide completed listings from visitors after you publish the page; use drafts for work that is not ready to share.</p>
       </details>
       <details>
         <summary>I published, but I still see the old page.</summary>
-        <p>Allow the website update to finish, then refresh the page. If it still has not changed, ask the website owner to check the Netlify deployment.</p>
+        <p>Wait for the website update to finish, then refresh. If it still has not changed, the website owner should check the Netlify deployment. Saved content and uploads can work while production deployments are paused.</p>
+      </details>
+      <details>
+        <summary>Can I test a card payment?</summary>
+        <p>Keep the shop in test mode and connect a Sandbox app in <a href="/manage/paypal.html">PayPal payments</a>. Use PayPal sandbox buyer or generated test-card details. PayPal decides which card options are available; never use a real card for a sandbox test.</p>
       </details>
     </section>
   </main>

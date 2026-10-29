@@ -17,6 +17,22 @@
 .editor-shortcuts a { color: #672427; text-decoration: none; }
 .editor-shortcuts a:hover { text-decoration: underline; }
 .editor-shortcuts a:focus-visible { outline: 2px solid #bc2f31; outline-offset: 3px; }
+.editor-shortcuts { z-index: 1000; align-items: center; }
+.editor-shortcuts button, .editor-shortcuts summary { border: 0; padding: 0; background: transparent; color: #672427; cursor: pointer; font: inherit; }
+.editor-shortcuts button:hover, .editor-shortcuts summary:hover { text-decoration: underline; }
+.editor-shortcuts button:focus-visible, .editor-shortcuts summary:focus-visible { outline: 2px solid #bc2f31; outline-offset: 4px; }
+.manager-help { position: relative; }
+.manager-help-content { position: absolute; bottom: 30px; left: -170px; width: min(420px, calc(100vw - 48px)); padding: 18px; border: 1px solid #d6d6d6; border-radius: 8px; background: #fff; box-shadow: 0 8px 30px rgb(0 0 0 / 14%); color: #333; }
+.manager-help-content p:first-child { margin-top: 0; }
+.manager-help-content a { display: block; margin-top: 10px; }
+#manager-message:empty { display: none; }
+#nc-root .manager-item-actions { height: auto; min-height: 40px; align-items: center; gap: 8px; padding: 4px 8px; }
+#nc-root .manager-item-actions > button { width: auto; min-width: 80px; min-height: 32px; gap: 5px; padding: 5px 9px; border-radius: 4px; font: 600 12px/1.3 Arial, sans-serif; }
+#nc-root .manager-item-actions > button:hover { background: #fff; }
+#nc-root .manager-item-actions .manager-remove { color: #9d252b; }
+.manager-media-dialog { width: min(1100px, calc(100vw - 32px)) !important; max-width: calc(100vw - 32px) !important; max-height: calc(100dvh - 40px); overflow: auto; box-sizing: border-box; }
+.manager-media-dialog > * { max-width: 100%; box-sizing: border-box; }
 @media (max-width: 520px) {
   .editor-shortcuts { position: static; margin: 8px; }
+  .manager-help-content { position: fixed; bottom: 16px; left: 16px; max-height: calc(100dvh - 120px); overflow: auto; }
 }

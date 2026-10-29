@@ -5,17 +5,33 @@ import { createContext, runInContext } from 'node:vm';
 
 const source = readFileSync(new URL('../admin/validation.js', import.meta.url), 'utf8');
 
-function validators() {
+function validators(windowValues = {}) {
     const events = {};
     const CMS = { registerEventListener({ name, handler }) { events[name] = handler; } };
-    runInContext(source, createContext({ window: { CMS } }));
+    runInContext(source, createContext({ window: { CMS, ...windowValues } }));
     return events;
 }
 
+function immutableData(data, writes) {
+    const snapshot = structuredClone(data);
+    return {
+        toJS: () => structuredClone(snapshot),
+        setIn(path, value) {
+            writes.count += 1;
+            const next = structuredClone(snapshot);
+            let parent = next;
+            for (const key of path.slice(0, -1)) parent = parent[key];
+            parent[path.at(-1)] = value;
+            return immutableData(next, writes);
+        }
+    };
+}
+
 function entryFor(data, fields = {}) {
-    const storedData = { toJS: () => data };
+    const writes = { count: 0 };
+    const storedData = immutableData(data, writes);
     const values = { collection: 'shop', slug: 'shop', path: 'content/shop.json', data: storedData, ...fields };
-    return { get: name => values[name], storedData };
+    return { get: name => values[name], storedData, writes };
 }
 
 const product = overrides => ({ id: 'print-1', name: 'Print', price: 12.5, purchasable: true, ...overrides });
@@ -95,17 +111,195 @@ test('duplicate photograph references and format SKUs cannot overwrite another l
 
 test('unfinished photograph listings receive an explanation before saving or publishing', () => {
     const cases = [
-        [photograph({ id: '' }), /valid permanent ID/],
+        [photograph({ id: 'not a valid reference' }), /valid permanent ID/],
         [photograph({ name: ' ' }), /enter a name/],
         [photograph({ image: '' }), /upload a photograph or cover image/],
         [photograph({ variants: [] }), /add at least one/],
         [photograph({ variants: {} }), /add at least one/],
-        [photograph({ variants: [variant({ id: '' })] }), /valid permanent ID/],
+        [photograph({ variants: [variant({ id: 'not a valid reference' })] }), /valid permanent ID/],
         [photograph({ variants: [variant({ format: 'unsupported' })] }), /choose Art print, T-shirt, Framed print or Canvas/]
     ];
     for (const handler of Object.values(validators())) {
         for (const [photo, message] of cases) {
             assert.throws(() => handler({ entry: entryFor({ photographs: [photo] }) }), message);
+        }
+    }
+});
+
+test('missing references are generated when saving or publishing photographs, formats and legacy products', () => {
+    for (const handler of Object.values(validators())) {
+        for (const missing of [undefined, null, '']) {
+            const data = {
+                ...shop([product({ id: missing })]),
+                photographs: [photograph({ id: missing, variants: [variant({ id: missing })] })]
+            };
+            if (missing === undefined) {
+                delete data.products[0].id;
+                delete data.photographs[0].id;
+                delete data.photographs[0].variants[0].id;
+            }
+            const original = structuredClone(data);
+            const entry = entryFor(data);
+            const saved = handler({ entry });
+            const result = saved.toJS();
+            const ids = [result.products[0].id, result.photographs[0].id, result.photographs[0].variants[0].id];
+            assert.equal(new Set(ids).size, ids.length);
+            for (const id of ids) assert.match(id, /^[A-Za-z0-9._-]{1,80}$/);
+            assert.equal(entry.writes.count, 3);
+            assert.deepEqual(entry.storedData.toJS(), original, 'generated references produce a new Immutable value');
+            assert.deepEqual(data, original, 'the source content is not mutated');
+            delete result.products[0].id;
+            delete result.photographs[0].id;
+            delete result.photographs[0].variants[0].id;
+            delete original.products[0].id;
+            delete original.photographs[0].id;
+            delete original.photographs[0].variants[0].id;
+            assert.deepEqual(result, original, 'saving only adds the missing references');
+        }
+    }
+});
+
+test('same-named artwork receives distinct references even when the random source repeats', () => {
+    const events = validators({ crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000000' } });
+    for (const handler of Object.values(events)) {
+        const photo = () => photograph({
+            id: '', name: 'Same photograph',
+            variants: [variant({ id: '', option: 'A3' }), variant({ id: '', option: 'A3' })]
+        });
+        const entry = entryFor({ ...shop([product({ id: '', name: 'Same artwork' }), product({ id: '', name: 'Same artwork' })]), photographs: [photo(), photo()] });
+        const result = handler({ entry }).toJS();
+        const ids = [
+            ...result.products.map(item => item.id),
+            ...result.photographs.map(item => item.id),
+            ...result.photographs.flatMap(item => item.variants.map(offer => offer.id))
+        ];
+        assert.equal(new Set(ids).size, ids.length, 'every generated reference identifies one item');
+        for (const id of ids) assert.match(id, /^[A-Za-z0-9._-]{1,80}$/);
+        const again = entryFor(result);
+        assert.equal(handler({ entry: again }), again.storedData, 'a repeat save keeps those references');
+        assert.equal(again.writes.count, 0);
+    }
+});
+
+test('new generated references cannot overwrite an existing reference', () => {
+    const handler = validators({ crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000000' } }).preSave;
+    const photo = () => photograph({ id: '', name: 'Same photograph', variants: [variant({ id: '' })] });
+    const previous = handler({ entry: entryFor({ photographs: [photo()] }) }).toJS().photographs[0];
+    const entry = entryFor({
+        products: [product({ id: previous.variants[0].id })],
+        photographs: [photo()]
+    });
+    const result = handler({ entry }).toJS();
+    assert.equal(result.products[0].id, previous.variants[0].id, 'an existing basket SKU is preserved');
+    assert.notEqual(result.photographs[0].variants[0].id, previous.variants[0].id);
+});
+
+test('generated photograph and format references stay permanent after renaming and changing sizes', () => {
+    const events = validators();
+    const entry = entryFor({ photographs: [photograph({ id: null, variants: [variant({ id: '' })] })] });
+    const saved = events.preSave({ entry }).toJS();
+    const photoId = saved.photographs[0].id;
+    const offerId = saved.photographs[0].variants[0].id;
+    saved.photographs[0].name = 'Renamed photograph';
+    saved.photographs[0].variants[0].option = 'A4';
+    saved.photographs[0].variants[0].price = 15;
+    for (const handler of Object.values(events)) {
+        const renamed = entryFor(saved);
+        const result = handler({ entry: renamed });
+        assert.equal(result, renamed.storedData);
+        assert.equal(result.toJS().photographs[0].id, photoId);
+        assert.equal(result.toJS().photographs[0].variants[0].id, offerId);
+        assert.equal(renamed.writes.count, 0, 'renaming never replaces a saved basket reference');
+    }
+});
+
+test('adding references for new products and formats preserves every existing artwork reference', () => {
+    const data = {
+        ...shop([product({ id: 'legacy-stable' }), product({ id: '' })]),
+        photographs: [photograph({
+            id: 'photo-stable',
+            variants: [variant({ id: 'offer-stable' }), variant({ id: '', format: 'canvas' })]
+        })]
+    };
+    for (const handler of Object.values(validators())) {
+        const entry = entryFor(data);
+        const result = handler({ entry }).toJS();
+        assert.equal(result.products[0].id, 'legacy-stable');
+        assert.equal(result.photographs[0].id, 'photo-stable');
+        assert.equal(result.photographs[0].variants[0].id, 'offer-stable');
+        assert.equal(entry.writes.count, 2, 'only the two new items need references');
+    }
+});
+
+test('missing book and journal references are valid, unique and stable after a rename', () => {
+    const events = validators({ crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000000' } });
+    const cases = [
+        {
+            fields: { collection: 'shop', slug: 'books', path: 'content/books.json' },
+            key: 'books',
+            item: () => ({ name: 'Same edition', image: '/uploads/book.jpg', price: 35, purchasable: true }),
+            name: 'name', existingId: 'book-stable', pattern: /^[A-Za-z0-9._-]{1,80}$/
+        },
+        {
+            fields: { collection: 'pages', slug: 'concept', path: 'content/concept.json' },
+            key: 'posts', item: () => ({ title: 'Café journal', body: 'A new story.' }),
+            name: 'title', existingId: 'post-stable', pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+        }
+    ];
+    for (const example of cases) {
+        for (const handler of Object.values(events)) {
+            const data = { [example.key]: [
+                { ...example.item(), id: example.existingId },
+                example.item(),
+                { ...example.item(), id: null },
+                { ...example.item(), id: '' }
+            ] };
+            const entry = entryFor(data, example.fields);
+            const result = handler({ entry }).toJS();
+            const ids = result[example.key].map(item => item.id);
+            assert.equal(new Set(ids).size, 4);
+            assert.equal(ids[0], example.existingId, 'an existing published reference is never replaced');
+            for (const id of ids) assert.match(id, example.pattern);
+            result[example.key].forEach(item => { item[example.name] = 'Renamed'; });
+            const renamed = entryFor(result, example.fields);
+            assert.equal(handler({ entry: renamed }), renamed.storedData);
+            assert.deepEqual(renamed.storedData.toJS()[example.key].map(item => item.id), ids);
+            assert.deepEqual(entry.storedData.toJS(), data);
+        }
+    }
+});
+
+test('generating references does not bypass required names, images or valid shipping and never partially persists errors', () => {
+    const cases = [
+        { photo: { name: ' ' }, message: /enter a name/ },
+        { photo: { image: '' }, message: /upload a photograph or cover image/ },
+        { photo: {}, shipping: { enabled: true, amount: -1 }, message: /Shipping: enter a fee/ }
+    ];
+    for (const handler of Object.values(validators())) {
+        for (const example of cases) {
+            const data = {
+                ...shop([product({ id: '' })]),
+                photographs: [photograph({ id: '', ...example.photo, variants: [variant({ id: null })] })]
+            };
+            if (example.shipping) data.shipping = example.shipping;
+            const original = structuredClone(data);
+            const entry = entryFor(data);
+            assert.throws(() => handler({ entry }), example.message);
+            assert.equal(entry.writes.count, 0, 'all validation completes before any Immutable setIn');
+            assert.deepEqual(entry.storedData.toJS(), original);
+            assert.deepEqual(data, original);
+        }
+    }
+});
+
+test('nonempty malformed references remain errors instead of silently changing existing links', () => {
+    for (const handler of Object.values(validators())) {
+        for (const id of ['not valid', ' ', '../photo', 123, false]) {
+            assert.throws(() => handler({ entry: entryFor({ photographs: [photograph({ id })] }) }), /valid permanent ID/);
+            assert.throws(() => handler({ entry: entryFor({ photographs: [photograph({ variants: [variant({ id })] })] }) }), /valid permanent ID/);
+            assert.throws(() => handler({ entry: entryFor(shop([product({ id })])) }), /valid permanent ID/);
+            assert.throws(() => handler({ entry: entryFor({ books: [{ id, name: 'Book', image: '/uploads/book.jpg', price: 35 }] }, { collection: 'shop', slug: 'books', path: 'content/books.json' }) }), /valid permanent ID/);
+            assert.throws(() => handler({ entry: entryFor({ posts: [{ id, title: 'Journal' }] }, { collection: 'pages', slug: 'concept', path: 'content/concept.json' }) }), /valid permanent ID/);
         }
     }
 });

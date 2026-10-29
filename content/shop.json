@@ -13,6 +13,20 @@
   },
   "photographs": [
     {
+      "id": "ravens-in-the-mist",
+      "name": "Ravens in the Mist",
+      "description": "A quiet, wintry scene of two cloaked figures beneath bare branches and circling ravens. Choose an art print, framed print, T-shirt or canvas. Sample prices and sizes are editable in the website manager.",
+      "image": "/uploads/574497543_18349640863207914_5589187363528836487_n.webp",
+      "imageAlt": "Two cloaked figures stand in a frosty field beneath flying ravens, with bare trees fading into purple-grey mist.",
+      "available": true,
+      "variants": [
+        { "id": "ravens-print-a3", "format": "print", "option": "A3", "price": 25, "purchasable": true, "available": true },
+        { "id": "ravens-framed-30x40", "format": "framed", "option": "30 × 40 cm", "price": 60, "purchasable": true, "available": true },
+        { "id": "ravens-tshirt-m", "format": "tshirt", "option": "M", "price": 28, "purchasable": true, "available": true },
+        { "id": "ravens-canvas-40x60", "format": "canvas", "option": "40 × 60 cm", "price": 70, "purchasable": true, "available": true }
+      ]
+    },
+    {
       "id": "studio-artwork",
       "name": "Studio artwork - sample",
       "description": "One sample image offered in four product formats. Replace it with your photograph, describe the work and set each real format, size and price before selling.",

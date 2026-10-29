@@ -19,7 +19,7 @@
     <section class="welcome" aria-labelledby="welcome-title">
       <p class="eyebrow">Website dashboard</p>
       <h1 id="welcome-title">Make it yours.</h1>
-      <p class="intro">Update photos, write a story or add artwork. Everything is edited using simple forms.</p>
+      <p class="intro">Add artwork, change a picture or update your words. Choose a task below; no coding needed.</p>
     </section>
     <noscript><p class="notice">Enable JavaScript to sign in and edit the website.</p></noscript>
     <p id="account-status" class="account-status" role="status" aria-live="polite">Connecting to sign-in…</p>
@@ -38,17 +38,65 @@
         <h2 id="tasks-title">What would you like to change?</h2>
         <button id="sign-out" class="text-button" type="button">Sign out</button>
       </div>
-      <div class="task-grid">
-        <a class="task-card" href="/admin/#/collections/pages/entries/home"><span class="task-number" aria-hidden="true">01</span><h3>Homepage pictures</h3><p>Upload, replace or reorder the large homepage photos.</p><span class="task-action">Edit pictures <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/admin/#/collections/pages/entries/concept"><span class="task-number" aria-hidden="true">02</span><h3>Concept &amp; journal</h3><p>Change the Concept page, add photos or write a new post.</p><span class="task-action">Edit stories <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/admin/#/collections/shop/entries/shop"><span class="task-number" aria-hidden="true">03</span><h3>Photographs &amp; shop settings</h3><p>Upload a photograph once and offer prints, T-shirts, framed prints or canvas. Set prices, pounds and shipping.</p><span class="task-action">Manage photographs <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/admin/#/collections/shop/entries/books"><span class="task-number" aria-hidden="true">04</span><h3>Books</h3><p>Manage books separately. Upload a cover, describe each edition and set its price or accept enquiries.</p><span class="task-action">Manage books <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/admin/#/collections/pages/entries/contact"><span class="task-number" aria-hidden="true">05</span><h3>Contact details</h3><p>Update your email, contact message and social links.</p><span class="task-action">Edit contact details <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/admin/#/collections/site/entries/site-settings"><span class="task-number" aria-hidden="true">06</span><h3>Logo, social links &amp; footer</h3><p>Change the logo, Instagram and Facebook icons, profile links, menu names and footer.</p><span class="task-action">Edit website details <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/admin/#/collections/site/entries/coming-soon"><span class="task-number" aria-hidden="true">07</span><h3>Coming-soon page</h3><p>Update the message and logo on the separate /coming-soon.html page.</p><span class="task-action">Edit welcome page <span aria-hidden="true">→</span></span></a>
-        <a class="task-card" href="/manage/paypal.html"><span class="task-number" aria-hidden="true">08</span><h3>PayPal payments</h3><p>Add your PayPal client IDs, choose test or live payments, and complete the secure setup.</p><span class="task-action">Set up PayPal <span aria-hidden="true">→</span></span></a>
-      </div>
-      <aside class="publishing-note" aria-labelledby="publish-title"><h3 id="publish-title">Ready to share your changes?</h3><p>In the editor, save your changes as a draft, check the preview, then choose <strong>Publish</strong>. Your website updates after publishing finishes.</p><a href="/admin/guide.html">Read the simple editing guide</a></aside>
+      <nav class="task-shortcuts" aria-label="Jump to editing tasks">
+        <a href="#artwork-tools">Artwork &amp; books</a>
+        <a href="#image-tools">Images</a>
+        <a href="#page-tools">Pages</a>
+        <a href="#website-tools">Website settings</a>
+      </nav>
+
+      <section class="task-section" aria-labelledby="artwork-tools">
+        <div class="section-heading"><h3 id="artwork-tools">Artwork, books &amp; payments</h3><p>Keep your pictures and books in their own collections.</p></div>
+        <div class="task-grid">
+          <a class="task-card task-card-featured" href="/admin/#/collections/shop/entries/shop"><span class="task-tag">Artwork</span><h4>Photographs &amp; artwork</h4><p>Add a photograph, offer prints, T-shirts, frames or canvas, and change prices or availability.</p><span class="task-action">Manage artwork <span aria-hidden="true">→</span></span></a>
+          <a class="task-card" href="/admin/#/collections/shop/entries/books"><span class="task-tag">Books</span><h4>Books &amp; editions</h4><p>Add a cover and description, change a price or hide a book that is no longer available.</p><span class="task-action">Manage books <span aria-hidden="true">→</span></span></a>
+          <a class="task-card" href="/manage/paypal.html"><span class="task-tag">Payments</span><h4>PayPal setup</h4><p>Connect PayPal, choose test or real payments, and update your payment details.</p><span class="task-action">Manage payments <span aria-hidden="true">→</span></span></a>
+        </div>
+      </section>
+
+      <section id="image-tools" class="image-tools" aria-labelledby="images-title">
+        <div class="image-library">
+          <div><p class="eyebrow">Your pictures</p><h3 id="images-title">One image library. Use it anywhere.</h3><p>Upload a picture here, then choose it in an artwork, book or page form.</p></div>
+          <a class="button" href="/admin/?task=images">Manage images <span aria-hidden="true">→</span></a>
+        </div>
+        <details class="image-help">
+          <summary>How to add, replace or remove a picture</summary>
+          <div class="image-help-content">
+            <div><h4>Add</h4><p>Open the page or artwork you want to edit. Use its image field to upload a new picture or choose one from the library.</p></div>
+            <div><h4>Replace</h4><p>Open the existing image field and choose a different picture. Check the preview before publishing.</p></div>
+            <div><h4>Remove</h4><p>Remove the photo entry to take it off a page, or hide the artwork to keep it for later. Save and publish the change.</p></div>
+            <p class="image-library-note">Removing a picture from a page keeps the file in your library. Delete a library file only when it is no longer used anywhere on your website.</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="task-section" aria-labelledby="page-tools">
+        <div class="section-heading"><h3 id="page-tools">Pages &amp; pictures</h3><p>Choose the page you want visitors to see.</p></div>
+        <div class="task-grid">
+          <a class="task-card" href="/admin/#/collections/pages/entries/home"><h4>Homepage</h4><p>Add, replace, remove or reorder the large pictures on your homepage.</p><span class="task-action">Edit homepage <span aria-hidden="true">→</span></span></a>
+          <a class="task-card" href="/admin/#/collections/pages/entries/concept"><h4>Concept &amp; journal</h4><p>Edit the introduction, manage gallery pictures or write a journal post.</p><span class="task-action">Edit stories &amp; pictures <span aria-hidden="true">→</span></span></a>
+          <a class="task-card" href="/admin/#/collections/pages/entries/contact"><h4>Contact page</h4><p>Change your email, contact message and the links visitors use to reach you.</p><span class="task-action">Edit contact page <span aria-hidden="true">→</span></span></a>
+        </div>
+      </section>
+
+      <section class="task-section" aria-labelledby="website-tools">
+        <div class="section-heading"><h3 id="website-tools">Website settings</h3><p>The details shared across your website.</p></div>
+        <div class="task-grid task-grid-two">
+          <a class="task-card" href="/admin/#/collections/site/entries/site-settings"><h4>Logo, menus &amp; social links</h4><p>Update your logo, navigation labels, footer and Instagram, Facebook, email or support links.</p><span class="task-action">Edit website details <span aria-hidden="true">→</span></span></a>
+          <a class="task-card" href="/admin/#/collections/site/entries/coming-soon"><h4>Coming-soon page</h4><p>Edit the picture and message on your separate coming-soon page.</p><span class="task-action">Edit coming-soon page <span aria-hidden="true">→</span></span></a>
+        </div>
+      </section>
+
+      <aside class="publishing-note" aria-labelledby="publish-title">
+        <h3 id="publish-title">From a change to your website</h3>
+        <ol class="publishing-steps">
+          <li><strong>Save</strong><span>Your changes are kept as a draft.</span></li>
+          <li><strong>Check the preview</strong><span>Review your pictures and words beside the form.</span></li>
+          <li><strong>Publish</strong><span>Choose Publish when you are ready to share.</span></li>
+        </ol>
+        <p class="publish-help">The website updates after publishing finishes. If a change does not appear, the editing guide explains what to check.</p>
+        <a href="/admin/guide.html">Open the step-by-step editing guide</a>
+      </aside>
       <p class="all-options"><a href="/admin/">Open all editor options</a></p>
     </section>
   </main>

@@ -415,8 +415,8 @@ test('invalid CMS payment environments stop before any PayPal request', async ()
 
 test('sample GBP products and flat shipping create the exact server total', async () => {
     const calls = mockPaypal();
-    Object.assign(bundledShop, structuredClone(originalCatalog), { paypalClientId: 'sandbox-client-id' });
-    const products = catalog.expandCatalog(originalCatalog, originalBooks);
+    const products = [25, 60, 28, 70, 35].map((price, index) => ({ id: `total-check-${index}`, name: `Example ${index + 1}`, price, type: 'physical', purchasable: true }));
+    Object.assign(bundledShop, { currency: 'GBP', shipping: { enabled: true, amount: 4.95 }, products, paypalClientId: 'sandbox-client-id' });
     const response = await createOrder({ httpMethod: 'POST', body: JSON.stringify({ items: products.map(product => ({ id: product.id, quantity: 1 })) }) });
     assert.equal(response.statusCode, 200);
     const call = calls.find(call => call.url.endsWith('/v2/checkout/orders'));

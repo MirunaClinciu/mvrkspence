@@ -22,8 +22,18 @@
 <body>
   <nav class="editor-shortcuts" aria-label="Website editor help">
     <a href="/manage/">Website dashboard</a>
-    <a href="/admin/guide.html">Help with editing</a>
-    <a href="/manage/paypal.html">PayPal settings</a>
+    <button type="button" id="manager-images">Image library</button>
+    <details class="manager-help">
+      <summary>Quick help</summary>
+      <div class="manager-help-content">
+        <p id="manager-context">Choose a page or collection to start editing.</p>
+        <ol><li>Edit the text or pictures.</li><li>Save a draft and check the preview.</li><li>Choose Publish when ready.</li></ol>
+        <p>Removing a list item takes it off the page. Its picture stays in your image library for reuse.</p>
+        <p id="manager-message" role="status"></p>
+        <a href="/admin/guide.html">Step-by-step editing guide</a>
+        <a href="/manage/paypal.html">PayPal settings</a>
+      </div>
+    </details>
     <a href="/preview/" target="_blank" rel="noopener">View website</a>
   </nav>
   <noscript><p>Enable JavaScript to sign in and edit the website.</p></noscript>
@@ -35,9 +45,10 @@
         if (!user) {
           window.netlifyIdentity.on('login', () => {
             const editorHash = window.location.hash;
+            const editorQuery = window.location.search;
             window.location.href = editorHash.startsWith('#/collections/') || editorHash === '#/workflow'
-              ? `/admin/${editorHash}`
-              : '/admin/';
+              ? `/admin/${editorQuery}${editorHash}`
+              : `/admin/${editorQuery}`;
           });
         }
       });
@@ -59,5 +70,6 @@
   </script>
   <script src="/admin/validation.js"></script>
   <script src="/admin/preview.js"></script>
+  <script src="/admin/manager.js"></script>
 </body>
 </html>

@@ -329,8 +329,9 @@ test('photograph format selection updates the preview, price and basket SKU whil
     window.siteProducts = window.MvrkCatalog.expandCatalog(shop, books);
     context.renderArtwork(shop, books);
     const cards = byClass(roots['page-content'], 'photograph-card');
-    assert.equal(cards.length, 1, 'one uploaded photograph has one product card');
-    const card = cards[0];
+    assert.equal(cards.length, shop.photographs.filter(photo => photo.available !== false).length, 'each uploaded photograph has one product card');
+    const card = cards.find(item => item.dataset.photographId === 'studio-artwork');
+    assert.ok(card, 'the existing sample artwork is preserved');
     const select = byClass(card, 'product-variant-select')[0];
     assert.equal(select.children.length, 4);
     for (const [id, format, price] of [
