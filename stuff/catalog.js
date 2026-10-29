@@ -16,6 +16,24 @@
     const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
     const text = value => typeof value === 'string' ? value.trim() : '';
 
+    function tshirtColor(variant) {
+        const color = variant.color === undefined ? 'white' : text(variant.color).toLowerCase();
+        return ['white', 'black'].includes(color) ? color : '';
+    }
+
+    function variantLabel(variant) {
+        if (!isRecord(variant) || !Object.hasOwn(formatLabels, variant.format)) return '';
+        const parts = [formatLabels[variant.format]];
+        if (variant.format === 'tshirt') {
+            const color = tshirtColor(variant);
+            if (!color) return '';
+            parts.push(color === 'black' ? 'Black' : 'White');
+        }
+        const option = text(variant.option);
+        if (option) parts.push(option);
+        return parts.join(' · ');
+    }
+
     function hasPrice(value) {
         if (typeof value !== 'number' && typeof value !== 'string') return false;
         if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(value))) return false;
@@ -27,10 +45,14 @@
         const candidates = [];
         const addFlat = (product, group) => {
             if (!isRecord(product) || !validId(product.id) || !text(product.name)) return;
+            const color = product.format === 'tshirt' ? tshirtColor(product) : '';
+            if (product.format === 'tshirt' && !color) return;
+            const { color: ignoredColor, ...details } = product;
             candidates.push({
-                ...product,
+                ...details,
                 name: text(product.name),
                 group,
+                ...(color ? { color } : {}),
                 purchasable: product.purchasable !== false && hasPrice(product.price),
                 available: product.available !== false
             });
@@ -59,15 +81,19 @@
                 photograph.variants.forEach(variant => {
                     if (!isRecord(variant) || !validId(variant.id) || !Object.hasOwn(formatLabels, variant.format)) return;
                     const option = text(variant.option);
-                    // Keep format and size first so PayPal's item-name limit cannot
+                    const label = variantLabel(variant);
+                    if (!label) return;
+                    const color = variant.format === 'tshirt' ? tshirtColor(variant) : '';
+                    // Keep format, colour and size first so PayPal's item-name limit cannot
                     // remove the information needed to fulfil the selected variant.
-                    const label = `${formatLabels[variant.format]}${option ? ` · ${option}` : ''}`;
                     candidates.push({
                         id: variant.id,
                         name: `${label} — ${text(photograph.name)}`,
                         description: text(photograph.description),
                         image: text(photograph.image),
                         imageAlt: text(photograph.imageAlt) || text(photograph.name),
+                        detailImage: text(photograph.detailImage),
+                        detailImageAlt: text(photograph.detailImageAlt) || text(photograph.imageAlt) || text(photograph.name),
                         price: variant.price,
                         type: 'physical',
                         available: (photograph.available === undefined || photograph.available === true) &&
@@ -76,6 +102,7 @@
                         group: 'photographs',
                         photographId: photograph.id,
                         format: variant.format,
+                        ...(color ? { color } : {}),
                         option
                     });
                 });
@@ -94,5 +121,5 @@
         return candidates.filter(product => counts.get(product.id) === 1);
     }
 
-    return { expandCatalog, formatLabels };
+    return { expandCatalog, formatLabels, variantLabel };
 }));

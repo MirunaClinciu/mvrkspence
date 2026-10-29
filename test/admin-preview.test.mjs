@@ -66,12 +66,13 @@ test('photograph preview reuses one uploaded image while showing each format, si
         photographs: [{ name: 'River study', image: '/uploads/river.png', variants: [
             { format: 'print', option: 'A3', price: 25, purchasable: true },
             { format: 'tshirt', option: 'M', price: 28, purchasable: true },
+            { format: 'tshirt', color: 'black', option: 'M', price: 28, purchasable: true },
             { format: 'framed', option: '30 x 40 cm', price: 60, purchasable: true },
             { format: 'canvas', option: '40 x 60 cm', price: 70, purchasable: true }
         ] }]
     }, () => ({ toString: () => 'blob:https://portfolio.example/upload' }), 'shop');
     assert.deepEqual(images(result).map(image => image.props.src), ['blob:https://portfolio.example/upload']);
-    for (const expected of ['Art print · A3', 'T-shirt · M', 'Framed print · 30 x 40 cm', 'Canvas · 40 x 60 cm', '£25.00', '£28.00', '£60.00', '£70.00']) {
+    for (const expected of ['Art print · A3', 'T-shirt · White · M', 'T-shirt · Black · M', 'Framed print · 30 x 40 cm', 'Canvas · 40 x 60 cm', '£25.00', '£28.00', '£60.00', '£70.00']) {
         assert.ok(text(result).includes(expected), expected);
     }
 });

@@ -357,7 +357,7 @@ test('photograph format selection updates the preview, price and basket SKU whil
     const card = cards.find(item => item.dataset.photographId === 'studio-artwork');
     assert.ok(card, 'the existing sample artwork is preserved');
     const select = byClass(card, 'product-variant-select')[0];
-    assert.equal(select.children.length, 4);
+    assert.equal(select.children.length, 5);
     for (const [id, format, price] of [
         ['sample-art-print', 'print', '25.00'], ['sample-framed-art', 'framed', '60.00'],
         ['sample-art-tshirt', 'tshirt', '28.00'], ['sample-canvas', 'canvas', '70.00']
@@ -375,6 +375,46 @@ test('photograph format selection updates the preview, price and basket SKU whil
     assert.ok(book);
     assert.equal(byClass(book, 'product-variant-select').length, 0);
     assert.equal(byClass(roots['page-content'], 'shop-results-grid').length, 1);
+});
+
+test('shirt colours switch real SKUs and enlarged images describe the selected item', () => {
+    const { context, roots, window } = fixture('artwork');
+    const shop = JSON.parse(readFileSync(new URL('../content/shop.json', import.meta.url), 'utf8'));
+    const books = JSON.parse(readFileSync(new URL('../content/books.json', import.meta.url), 'utf8'));
+    shop.photographs[0].detailImage = '/uploads/ravens-original.jpg';
+    const opened = [];
+    window.MvrkProductImages = { open: options => opened.push(options) };
+    window.siteProducts = window.MvrkCatalog.expandCatalog(shop, books);
+    context.renderArtwork(shop, books);
+    const main = roots['page-content'];
+    const card = byClass(main, 'photograph-card').find(item => item.dataset.photographId === 'ravens-in-the-mist');
+    const select = byClass(card, 'product-variant-select')[0];
+    const colours = byClass(card, 'product-colour-options')[0];
+    assert.equal(colours.hidden, true);
+    select.value = 'ravens-tshirt-m';
+    select.listeners.change();
+    assert.equal(colours.hidden, false);
+    const black = byClass(card, 'product-colour-button').find(button => button.dataset.color === 'black');
+    const white = byClass(card, 'product-colour-button').find(button => button.dataset.color === 'white');
+    assert.equal(white.getAttribute('aria-pressed'), 'true');
+    black.listeners.click();
+    assert.equal(select.value, 'ravens-tshirt-black-m');
+    assert.equal(byClass(card, 'product-mockup')[0].dataset.color, 'black');
+    assert.equal(black.getAttribute('aria-pressed'), 'true');
+    assert.equal(byClass(card, 'add-to-basket-btn')[0].dataset.productId, 'ravens-tshirt-black-m');
+    byClass(card, 'product-mockup')[0].listeners.click();
+    assert.equal(opened[0].variantLabel, 'T-shirt · Black · M');
+    assert.equal(opened[0].color, 'black');
+    assert.equal(opened[0].priceText, '£28.00');
+    assert.equal(opened[0].detailImage, 'https://portfolio.example/uploads/ravens-original.jpg');
+    assert.equal(opened[0].trigger, byClass(card, 'product-mockup-surface')[0]);
+    white.listeners.click();
+    assert.equal(select.value, 'ravens-tshirt-m');
+    assert.equal(byClass(card, 'product-mockup')[0].dataset.color, 'white');
+    const book = byClass(main, 'product-card').find(item => item.dataset.productId === 'holy-window');
+    byClass(book, 'product-image-button')[0].listeners.click();
+    assert.equal(opened[1].variantLabel, 'Book');
+    assert.ok(opened[1].image.startsWith('https://portfolio.example/'));
 });
 
 test('one catalogue paginates without losing off-page basket products and searches by name', () => {

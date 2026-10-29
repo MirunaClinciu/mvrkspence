@@ -1,0 +1,284 @@
+.mvrk-product-image-viewer {
+  width: min(1180px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #d5d5d5;
+  border-radius: 0;
+  background: #fff;
+  color: #242424;
+  box-shadow: 0 20px 90px rgb(0 0 0 / 30%);
+}
+
+.mvrk-product-image-viewer::backdrop {
+  background: rgb(20 20 20 / 78%);
+}
+
+.mvrk-product-image-viewer [hidden] {
+  display: none !important;
+}
+
+.mvrk-product-image-viewer *,
+.mvrk-product-image-viewer *::before,
+.mvrk-product-image-viewer *::after {
+  box-sizing: border-box;
+}
+
+.mvrk-product-image-shell {
+  display: flex;
+  max-height: calc(100vh - 34px);
+  max-height: calc(100dvh - 34px);
+  min-height: 0;
+  flex-direction: column;
+}
+
+.mvrk-product-image-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #dedede;
+}
+
+.mvrk-product-image-heading {
+  min-width: 0;
+}
+
+.mvrk-product-image-heading h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  font-weight: 400;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.mvrk-product-image-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.mvrk-product-image-price {
+  font-weight: 700;
+}
+
+.mvrk-product-image-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 24px;
+}
+
+.mvrk-product-image-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mvrk-product-image-viewer button,
+.mvrk-product-image-original-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 1px solid #b8b8b8;
+  border-radius: 0;
+  background: #fff;
+  color: #242424;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mvrk-product-image-viewer button:hover,
+.mvrk-product-image-original-link:hover {
+  border-color: #242424;
+  background: #efefef;
+}
+
+.mvrk-product-image-viewer button[aria-pressed="true"] {
+  border-color: #242424;
+  background: #242424;
+  color: #fff;
+}
+
+.mvrk-product-image-viewer button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.mvrk-product-image-close {
+  flex: 0 0 auto;
+}
+
+.mvrk-product-image-viewer :is(button, a, [tabindex]):focus-visible {
+  outline: 3px solid var(--accent, #bc2f31);
+  outline-offset: 3px;
+}
+
+.mvrk-product-image-stage {
+  position: relative;
+  height: clamp(200px, 61vh, 780px);
+  height: clamp(200px, 61dvh, 780px);
+  min-width: 0;
+  min-height: 80px;
+  flex: 1 1 auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #eee;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mvrk-product-image-original-frame {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.mvrk-product-image-original {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.mvrk-product-image-stage.is-zoomed .mvrk-product-image-original-frame {
+  width: max-content;
+  height: max-content;
+  min-width: 100%;
+}
+
+.mvrk-product-image-stage.is-zoomed .mvrk-product-image-original {
+  max-width: none;
+  max-height: none;
+}
+
+.mvrk-product-image-viewer .mvrk-product-image-preview {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: clamp(22px, 4vw, 48px) clamp(24px, 6vw, 80px) 42px;
+}
+
+/* Preserve the shirt's proportions even when the viewport is narrow. */
+.mvrk-product-image-viewer .mvrk-product-image-preview[data-format="tshirt"] {
+  align-items: flex-start;
+  overflow: visible;
+}
+
+.mvrk-product-image-viewer .mvrk-product-image-preview[data-format="tshirt"] .product-mockup-surface {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  flex: 0 0 auto;
+  aspect-ratio: 1;
+}
+
+@supports (container-type: size) and (width: 1cqw) and (height: 1cqh) {
+  .mvrk-product-image-viewer .mvrk-product-image-preview[data-format="tshirt"] {
+    container-type: size;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .mvrk-product-image-viewer .mvrk-product-image-preview[data-format="tshirt"] .product-mockup-surface {
+    width: min(100cqw, 100cqh);
+    height: min(100cqw, 100cqh);
+  }
+}
+
+.mvrk-product-image-footer {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 20px;
+  align-items: center;
+  padding: 12px 24px 16px;
+  border-top: 1px solid #dedede;
+}
+
+.mvrk-product-image-description,
+.mvrk-product-image-resolution {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.mvrk-product-image-resolution {
+  color: #626262;
+}
+
+.mvrk-product-image-original-link {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+@media (max-width: 600px) {
+  .mvrk-product-image-viewer {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .mvrk-product-image-shell {
+    max-height: calc(100vh - 18px);
+    max-height: calc(100dvh - 18px);
+  }
+
+  .mvrk-product-image-header {
+    gap: 12px;
+    padding: 16px 14px 12px;
+  }
+
+  .mvrk-product-image-toolbar {
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .mvrk-product-image-viewer button {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .mvrk-product-image-footer {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 10px 14px 12px;
+  }
+
+  .mvrk-product-image-original-link {
+    min-height: 36px;
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+    margin-top: 4px;
+  }
+}

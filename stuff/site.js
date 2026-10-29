@@ -29,7 +29,7 @@ function safeImagePath(path) {
     try {
         const url = new URL(path, document.baseURI);
         if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
-        if (url.origin !== window.location.origin) return '';
+        if (url.origin !== window.location.origin || url.username || url.password) return '';
         return url.href;
     } catch (error) {
         console.error('Invalid image URL in site content.', error);
@@ -419,11 +419,23 @@ function renderStandaloneProduct(product, data) {
     card.dataset.productId = product.id;
     const imagePath = safeImagePath(product.image);
     if (imagePath) {
+        const imageButton = makeElement('button', 'product-image-button');
+        imageButton.type = 'button';
+        imageButton.setAttribute('aria-label', `View larger image of ${product.name}`);
+        imageButton.setAttribute('aria-haspopup', 'dialog');
         const image = document.createElement('img');
         image.src = imagePath;
         image.alt = product.imageAlt || product.name;
         image.loading = 'lazy';
-        card.append(image);
+        imageButton.append(image, makeElement('span', 'product-zoom-hint', 'View larger'));
+        imageButton.addEventListener('click', () => openProductImage({
+            title: product.name, image: imagePath, imageAlt: product.imageAlt || product.name,
+            detailImage: safeImagePath(product.detailImage), detailImageAlt: product.detailImageAlt,
+            variantLabel: product.group === 'books' ? 'Book' : product.type === 'digital' ? 'Digital artwork' : 'Artwork',
+            priceText: product.purchasable !== false && Number(product.price) > 0 ? formatPrice(product.price, data.currency) : 'Enquiries welcome',
+            trigger: imageButton
+        }));
+        card.append(imageButton);
     }
     const details = makeElement('div', 'product-details');
     details.append(makeElement('p', 'product-kind', product.group === 'books' ? 'Book' : 'Artwork'));
@@ -437,11 +449,18 @@ function renderStandaloneProduct(product, data) {
     return card;
 }
 
+function openProductImage(options) {
+    if (window.MvrkProductImages) window.MvrkProductImages.open(options);
+    else if (typeof window.open === 'function') window.open(options.detailImage || options.image, '_blank', 'noopener,noreferrer');
+}
+
 function renderPhotograph(photo, offers, data, selection = {}) {
     const card = makeElement('article', 'product-card photograph-card');
     card.dataset.photographId = photo.id;
     const preview = makeElement('figure', 'product-mockup');
-    const surface = makeElement('div', 'product-mockup-surface');
+    const surface = makeElement('button', 'product-mockup-surface');
+    surface.type = 'button';
+    surface.setAttribute('aria-haspopup', 'dialog');
     const imagePath = safeImagePath(photo.image);
     if (imagePath) {
         const image = document.createElement('img');
@@ -452,7 +471,7 @@ function renderPhotograph(photo, offers, data, selection = {}) {
         surface.append(image);
     }
     const caption = makeElement('figcaption', 'product-mockup-caption');
-    preview.append(surface, caption);
+    preview.append(surface, makeElement('span', 'product-zoom-hint', 'View larger'), caption);
     const details = makeElement('div', 'product-details');
     details.append(makeElement('p', 'product-kind', 'Artwork'));
     details.append(makeElement('h3', '', photo.name));
@@ -460,11 +479,10 @@ function renderPhotograph(photo, offers, data, selection = {}) {
     const choices = makeElement('div', 'product-choices');
     const select = makeElement('select', 'product-variant-select');
     select.id = `photo-${photo.id}-format`;
-    const label = makeElement('label', 'product-variant-label', 'Choose format & size');
+    const label = makeElement('label', 'product-variant-label', 'Choose format, size & colour');
     label.htmlFor = select.id;
     offers.forEach(offer => {
-        const format = window.MvrkCatalog.formatLabels[offer.format];
-        const name = `${format}${offer.option ? ` \u00b7 ${offer.option}` : ''}`;
+        const name = window.MvrkCatalog.variantLabel(offer);
         const amount = offer.purchasable !== false && Number(offer.price) > 0
             ? formatPrice(offer.price, data.currency) : 'Enquire';
         const option = makeElement('option', '', `${name} \u2014 ${amount}`);
@@ -472,17 +490,51 @@ function renderPhotograph(photo, offers, data, selection = {}) {
         select.append(option);
     });
     select.value = offers.some(offer => offer.id === selection.selectedId) ? selection.selectedId : offers[0].id;
+    const colours = makeElement('div', 'product-colour-options');
+    colours.setAttribute('role', 'group');
+    colours.setAttribute('aria-label', 'T-shirt colour');
+    const colourButtons = ['white', 'black'].map(color => {
+        const button = makeElement('button', 'product-colour-button', color === 'white' ? 'White' : 'Black');
+        button.type = 'button';
+        button.dataset.color = color;
+        button.addEventListener('click', () => {
+            const current = offers.find(offer => offer.id === select.value) || offers[0];
+            const match = offers.find(offer => offer.format === 'tshirt' && offer.color === color && offer.option === current.option);
+            if (match) { select.value = match.id; updateSelection(); }
+        });
+        return button;
+    });
+    colours.append(...colourButtons);
     const footer = makeElement('div', 'product-footer');
     const updateSelection = () => {
         const selected = offers.find(offer => offer.id === select.value) || offers[0];
         preview.dataset.format = selected.format;
-        caption.textContent = `${window.MvrkCatalog.formatLabels[selected.format]} preview${selected.option ? ` \u00b7 ${selected.option}` : ''}`;
+        preview.dataset.color = selected.color || 'white';
+        const description = window.MvrkCatalog.variantLabel(selected);
+        caption.textContent = `${description} · Illustrative preview`;
+        surface.setAttribute('aria-label', `View larger ${description} preview of ${photo.name}`);
+        colours.hidden = selected.format !== 'tshirt';
+        colourButtons.forEach(button => {
+            button.disabled = !offers.some(offer => offer.format === 'tshirt' && offer.color === button.dataset.color && offer.option === selected.option);
+            button.setAttribute('aria-pressed', String(selected.color === button.dataset.color));
+        });
         renderProductFooter(footer, selected, data);
         if (typeof selection.onSelectionChange === 'function') selection.onSelectionChange(selected.id);
     };
+    preview.addEventListener('click', () => {
+        const selected = offers.find(offer => offer.id === select.value) || offers[0];
+        if (imagePath) openProductImage({
+            title: photo.name, image: imagePath, imageAlt: photo.imageAlt || photo.name,
+            detailImage: safeImagePath(photo.detailImage), detailImageAlt: photo.detailImageAlt,
+            format: selected.format, color: selected.color, option: selected.option,
+            variantLabel: window.MvrkCatalog.variantLabel(selected),
+            priceText: selected.purchasable !== false && Number(selected.price) > 0 ? formatPrice(selected.price, data.currency) : 'Enquiries welcome',
+            trigger: surface
+        });
+    });
     select.addEventListener('change', updateSelection);
     updateSelection();
-    choices.append(label, select);
+    choices.append(label, select, colours);
     details.append(choices, footer);
     card.append(preview, details);
     return card;

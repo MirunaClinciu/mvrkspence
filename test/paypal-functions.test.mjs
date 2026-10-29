@@ -447,7 +447,7 @@ test('checkout combines the selected photograph format with separate books using
     assert.equal(order.amount.value, '95.95');
     assert.equal(order.amount.breakdown.item_total.value, '91.00');
     assert.equal(order.amount.breakdown.shipping.value, '4.95');
-    assert.match(order.items[0].name, /T-shirt · M — Coastline/);
+    assert.match(order.items[0].name, /T-shirt · White · M — Coastline/);
     assert.equal(order.items[0].unit_amount.value, '28.00');
     assert.equal(order.items[1].unit_amount.value, '35.00');
     assert.ok(order.items.every(item => item.category === 'PHYSICAL_GOODS'));

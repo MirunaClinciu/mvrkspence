@@ -21,7 +21,7 @@ body[data-page="artwork"] {
   min-width: 0;
   padding: clamp(20px, 3vw, 28px);
   border: 1px solid var(--line);
-  background: #f7f6f2;
+  background: #f7f7f6;
 }
 
 .shop-search-label {
@@ -177,6 +177,9 @@ body[data-page="artwork"] {
   display: flex;
   min-width: 0;
   flex-direction: column;
+  border: 1px solid #e3e3e1;
+  background: #fff;
+  box-shadow: 0 3px 16px rgb(0 0 0 / 3%);
 }
 
 .artwork-collections .product-details {
@@ -184,18 +187,23 @@ body[data-page="artwork"] {
   min-width: 0;
   flex: 1;
   flex-direction: column;
+  padding: 24px;
 }
 
 .artwork-collections .product-details h3 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.5rem;
+  font-size: clamp(1.45rem, 2.1vw, 1.7rem);
   font-weight: 400;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .artwork-collections .product-details > p {
+  min-height: 0;
+  margin-bottom: 18px;
+  color: #626262;
+  font-size: 0.9rem;
   line-height: 1.75;
   white-space: pre-line;
   overflow-wrap: anywhere;
@@ -204,20 +212,45 @@ body[data-page="artwork"] {
 .product-choices {
   min-width: 0;
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 10px;
 }
 
 .artwork-collections .product-details > .product-footer {
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ededeb;
+}
+
+.artwork-collections .product-details > .product-type {
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: 10px;
+}
+
+.artwork-collections .product-footer .button {
+  min-width: 116px;
+  min-height: 46px;
+  margin-left: auto;
+}
+
+.artwork-collections .product-price {
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+
+.artwork-collections .product-details > .product-detail-note {
+  margin: 12px 0 0;
+  color: #707070;
+  font-size: 0.76rem;
+  line-height: 1.55;
 }
 
 .product-variant-label {
   display: block;
   margin-bottom: 8px;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.015em;
 }
 
 .product-variant-select {
@@ -226,8 +259,8 @@ body[data-page="artwork"] {
   min-width: 0;
   max-width: 100%;
   min-height: 48px;
-  padding: 10px 8px;
-  border: 1px solid #b8b6ad;
+  padding: 11px 10px;
+  border: 1px solid #c6c6c2;
   border-radius: 0;
   background: #fff;
   color: var(--ink);
@@ -236,33 +269,184 @@ body[data-page="artwork"] {
   cursor: pointer;
 }
 
-.product-variant-select:focus-visible {
+.product-variant-select:focus-visible,
+.product-colour-button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
+.product-colour-options {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.product-colour-button {
+  display: inline-flex;
+  min-width: 88px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid #d4d4d0;
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.product-colour-button::before {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 1px solid #bcbcbc;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+}
+
+.product-colour-button[data-color="black"]::before {
+  border-color: #171717;
+  background: #171717;
+}
+
+.product-colour-button[aria-pressed="true"] {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  font-weight: 700;
+}
+
+.product-colour-button:hover {
+  border-color: var(--ink);
+}
+
+.product-image-button,
 .product-mockup {
-  --mockup-stage: #f0efea;
+  --mockup-stage: #eee;
   position: relative;
   display: flex;
-  height: clamp(230px, 24vw, 300px);
+  width: 100%;
+  min-width: 0;
+  height: clamp(280px, 27vw, 330px);
   align-items: center;
   justify-content: center;
   margin: 0;
-  padding: 22px 24px 44px;
+  padding: 30px 24px 48px;
+  border: 0;
+  border-bottom: 1px solid #e7e7e4;
+  border-radius: 0;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 35%, #faf9f6, var(--mockup-stage));
+  background: radial-gradient(ellipse at 50% 28%, #fafafa 0, #f4f4f3 55%, var(--mockup-stage) 100%);
+  color: var(--ink);
+  font: inherit;
+  text-align: center;
+}
+
+.product-image-button {
+  padding: 28px;
+  appearance: none;
+  cursor: zoom-in;
+}
+
+.product-image-button > img {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-mockup::before {
+  position: absolute;
+  right: 22%;
+  bottom: 39px;
+  left: 22%;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 8%);
+  filter: blur(8px);
+  content: "";
 }
 
 .product-mockup-surface {
   position: relative;
+  z-index: 1;
+  display: block;
   width: 82%;
   height: 100%;
+  min-width: 0;
   min-height: 0;
-  padding: 12px;
-  border: 1px solid #e6e3db;
+  margin: 0;
+  padding: 13px;
+  border: 1px solid #e3e3e0;
+  border-radius: 0;
+  appearance: none;
   background: #fff;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 13%);
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  box-shadow: 0 5px 14px rgb(0 0 0 / 10%);
+  cursor: zoom-in;
+  transition: box-shadow 160ms ease;
+}
+
+.product-image-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -5px;
+}
+
+.product-mockup-surface:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
+
+.product-mockup:focus-within {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.product-zoom-hint {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid rgb(0 0 0 / 8%);
+  background: rgb(255 255 255 / 94%);
+  color: #555;
+  font-size: 0.64rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.product-zoom-hint::before {
+  display: inline-grid;
+  width: 13px;
+  height: 13px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+  content: "+";
+}
+
+.product-image-button:hover .product-zoom-hint,
+.product-mockup:hover .product-zoom-hint,
+.product-image-button:focus-visible .product-zoom-hint,
+.product-mockup:focus-within .product-zoom-hint {
+  border-color: #b8b8b6;
+  color: var(--ink);
 }
 
 .product-mockup-image {
@@ -275,10 +459,10 @@ body[data-page="artwork"] {
 .product-mockup-caption {
   position: absolute;
   right: 12px;
-  bottom: 12px;
+  bottom: 13px;
   left: 12px;
-  color: #5e5b53;
-  font-size: 0.7rem;
+  color: #626262;
+  font-size: 0.66rem;
   line-height: 1.5;
   text-align: center;
   overflow-wrap: anywhere;
@@ -287,63 +471,85 @@ body[data-page="artwork"] {
 .product-mockup[data-format="framed"] .product-mockup-surface {
   width: 86%;
   height: 96%;
-  padding: 12px;
-  border: 9px solid #242424;
-  border-color: #373737 #171717 #111 #292929;
-  box-shadow: inset 0 0 0 1px #ddd9d0, 4px 6px 10px rgb(0 0 0 / 19%);
+  padding: 14px;
+  border: 8px solid #242424;
+  border-color: #393939 #171717 #141414 #2c2c2c;
+  box-shadow: inset 0 0 0 1px #e5e5e1, 3px 6px 12px rgb(0 0 0 / 17%);
 }
 
 .product-mockup[data-format="canvas"] .product-mockup-surface {
   width: 82%;
   height: 90%;
   padding: 0;
-  border: 1px solid #dedbd1;
-  box-shadow: 1px 1px 0 #e5e0d3, 3px 3px 0 #d7d1c3, 6px 6px 0 #c6c0b2,
+  border: 1px solid #dededb;
+  box-shadow: 1px 1px 0 #e5e5e2, 3px 3px 0 #d7d7d4, 5px 5px 0 #c6c6c3,
     10px 12px 16px rgb(0 0 0 / 16%);
+}
+
+.product-mockup[data-format="tshirt"] {
+  --shirt-edge: #d9d9d9;
+  --shirt-base: #f5f5f5;
+  --shirt-highlight: #fff;
+  --shirt-shadow: #e5e5e5;
+  --shirt-collar: #d1d1d1;
+  --shirt-stitch: rgb(0 0 0 / 11%);
+  --shirt-fold: rgb(0 0 0 / 4%);
+}
+
+.product-mockup[data-format="tshirt"][data-color="black"] {
+  --shirt-edge: #111;
+  --shirt-base: #252525;
+  --shirt-highlight: #303030;
+  --shirt-shadow: #181818;
+  --shirt-collar: #080808;
+  --shirt-stitch: rgb(255 255 255 / 13%);
+  --shirt-fold: rgb(0 0 0 / 18%);
 }
 
 .product-mockup[data-format="tshirt"] .product-mockup-surface {
   width: auto;
   max-width: 100%;
   height: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 1.03;
   padding: 0;
   border: 0;
-  background: linear-gradient(90deg, #dbd5c8, #f5f0e5 30%, #f1ebdf 70%, #d7d1c4);
+  background:
+    linear-gradient(100deg, transparent 20%, var(--shirt-fold) 23%, transparent 26%, transparent 73%, var(--shirt-fold) 77%, transparent 81%),
+    linear-gradient(90deg, var(--shirt-edge) 0%, var(--shirt-base) 23%, var(--shirt-highlight) 42%, var(--shirt-base) 66%, var(--shirt-shadow) 80%, var(--shirt-edge) 100%);
   box-shadow: none;
-  clip-path: polygon(25% 0, 39% 0, 43% 5%, 57% 5%, 61% 0, 75% 0,
-    100% 20%, 85% 40%, 75% 32%, 75% 100%, 25% 100%, 25% 32%, 15% 40%, 0 20%);
+  clip-path: polygon(29% 2%, 39% 0%, 43% 4%, 50% 6%, 57% 4%, 61% 0%, 71% 2%,
+    100% 20%, 88% 42%, 76% 34%, 76% 97%, 70% 100%, 30% 100%, 24% 97%, 24% 34%, 12% 42%, 0% 20%);
 }
 
 .product-mockup[data-format="tshirt"] .product-mockup-surface::before {
   position: absolute;
-  top: -2px;
+  top: -1px;
   left: 40%;
   width: 20%;
-  height: 13%;
-  border: 3px solid #cec6b5;
+  height: 10%;
+  border: 3px solid var(--shirt-collar);
   border-top: 0;
   border-radius: 0 0 50% 50%;
-  background: #f5f3ee;
+  background: #f4f4f3;
   content: "";
 }
 
 .product-mockup[data-format="tshirt"] .product-mockup-surface::after {
   position: absolute;
-  right: 28%;
+  right: 26%;
   bottom: 4%;
-  left: 28%;
+  left: 26%;
   height: 1px;
-  background: rgb(98 85 59 / 14%);
+  background: var(--shirt-stitch);
   content: "";
 }
 
 .product-mockup[data-format="tshirt"] .product-mockup-image {
   position: absolute;
-  top: 26%;
-  left: 30%;
-  width: 40%;
-  height: 40%;
+  top: 25%;
+  left: 32%;
+  width: 36%;
+  height: 42%;
   object-fit: contain;
 }
 
@@ -352,12 +558,32 @@ body[data-page="artwork"] {
     font-size: 1rem;
   }
 
+  .product-image-button,
   .product-mockup {
-    height: clamp(230px, 70vw, 420px);
+    height: clamp(280px, 74vw, 400px);
   }
 }
 
 @media (max-width: 480px) {
+  .artwork-collections .product-details {
+    padding: 20px;
+  }
+
+  .product-mockup {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .product-image-button {
+    padding: 24px;
+  }
+
+  .artwork-collections .product-footer .button {
+    min-width: 108px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
   .shop-search-controls {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

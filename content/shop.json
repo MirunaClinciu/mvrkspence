@@ -1,7 +1,7 @@
 {
   "eyebrow": "Books, prints & wearable art",
   "title": "Artwork & Shop",
-  "intro": "Explore artwork and books in one collection. Search by name, then choose your photograph as an art print, framed print, canvas or T-shirt.",
+  "intro": "Explore artwork and books. Choose an art print, framed print, canvas, or a black or white T-shirt. Click an image for a closer look.",
   "itemsPerPage": 9,
   "photographsTitle": "Photographs & artwork",
   "photographsIntro": "Choose a photograph, then choose a print, T-shirt, frame or canvas.",
@@ -23,7 +23,8 @@
       "variants": [
         { "id": "ravens-print-a3", "format": "print", "option": "A3", "price": 25, "purchasable": true, "available": true },
         { "id": "ravens-framed-30x40", "format": "framed", "option": "30 × 40 cm", "price": 60, "purchasable": true, "available": true },
-        { "id": "ravens-tshirt-m", "format": "tshirt", "option": "M", "price": 28, "purchasable": true, "available": true },
+        { "id": "ravens-tshirt-m", "format": "tshirt", "color": "white", "option": "M", "price": 28, "purchasable": true, "available": true },
+        { "id": "ravens-tshirt-black-m", "format": "tshirt", "color": "black", "option": "M", "price": 28, "purchasable": true, "available": true },
         { "id": "ravens-canvas-40x60", "format": "canvas", "option": "40 × 60 cm", "price": 70, "purchasable": true, "available": true }
       ]
     },
@@ -37,7 +38,8 @@
       "variants": [
         { "id": "sample-art-print", "format": "print", "option": "A3", "price": 25, "purchasable": true, "available": true },
         { "id": "sample-framed-art", "format": "framed", "option": "30 × 40 cm", "price": 60, "purchasable": true, "available": true },
-        { "id": "sample-art-tshirt", "format": "tshirt", "option": "M", "price": 28, "purchasable": true, "available": true },
+        { "id": "sample-art-tshirt", "format": "tshirt", "color": "white", "option": "M", "price": 28, "purchasable": true, "available": true },
+        { "id": "sample-art-tshirt-black", "format": "tshirt", "color": "black", "option": "M", "price": 28, "purchasable": true, "available": true },
         { "id": "sample-canvas", "format": "canvas", "option": "40 × 60 cm", "price": 70, "purchasable": true, "available": true }
       ]
     }

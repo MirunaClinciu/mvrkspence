@@ -112,12 +112,14 @@ There are no prewritten journal entries.
 
 Open **Artwork & books > Photographs & shop settings** and use **Add Photograph**
 under **Photographs & artwork**. Enter its title and description, then upload or
-select its image once. New photographs start with four enquiry-only formats:
-art print, T-shirt, framed print and canvas. Expand **Formats & sizes** to change
+select its image once. New photographs start with enquiry-only art print,
+white T-shirt, black T-shirt, framed print and canvas options. Expand **Formats & sizes** to change
 their sizes and prices, remove unwanted formats, or use **Add Format** for another
 size. References are generated automatically and hidden from the form; existing
 references remain stable when names or sizes change. The photograph is reused
-automatically for all formats. For several T-shirt sizes, add one entry per size.
+automatically for all formats. For several T-shirt sizes, add one entry per colour
+and size; each has its own price and basket reference. The colour selector changes
+the shirt preview and the actual ordered item together.
 Leave **Enable checkout for this
 format** off for enquiries, or enter a price above zero and switch it on to sell.
 Use **Offer this format** to hide one variant, or **Show this photograph on Artwork**
@@ -125,8 +127,14 @@ to hide the photograph and all its variants. The website's visual previews illus
 image placement; physical printing, production and dispatch are arranged manually.
 There is no automatic connection to a print-on-demand supplier.
 
+Visitors can click a product image to open a larger product preview, switch to
+the original image, and inspect it at its native size. The viewer reports the
+image's actual pixel dimensions. Add an optional **Higher-resolution detail image**
+to a photograph, book or older product listing to supply a larger original.
+The original upload's detail determines the available resolution.
+
 Books are edited separately in **Artwork & books > Books**, stored in
-`content/books.json`, and displayed in their own Artwork page section. Use **Add Book**,
+`content/books.json`, and displayed alongside artwork in the combined shop. Use **Add Book**,
 upload its cover and enter the title, edition description and price. Its stable
 reference is generated automatically.
 Books share the shop's currency and shipping settings. Leave **Enable PayPal checkout**

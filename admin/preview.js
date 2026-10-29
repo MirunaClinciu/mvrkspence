@@ -26,6 +26,15 @@
     const paragraphs = value => String(value || '').split(/\n\s*\n/)
         .filter(Boolean).map((text, index) => h('p', { key: index }, text));
     const formatLabels = { print: 'Art print', tshirt: 'T-shirt', framed: 'Framed print', canvas: 'Canvas' };
+    const variantLabel = variant => {
+        const parts = [formatLabels[variant.format] || 'Format'];
+        if (variant.format === 'tshirt') {
+            const color = variant.color === undefined ? 'white' : String(variant.color).trim().toLowerCase();
+            parts.push(color === 'white' ? 'White' : color === 'black' ? 'Black' : 'Choose colour');
+        }
+        if (variant.option) parts.push(variant.option);
+        return parts.join(' · ');
+    };
     const moneyFor = currency => price => {
         try { return new Intl.NumberFormat('en', { style: 'currency', currency: currency || 'GBP' }).format(price); }
         catch (_) { return String(price || 0); }
@@ -87,7 +96,7 @@
                         !(photograph.variants || []).length && h('p', {}, 'Add a format to offer this photograph as a product.'),
                         h('ul', { className: 'editor-formats' }, (photograph.variants || []).map((variant, variantIndex) =>
                             h('li', { key: variantIndex },
-                                h('span', {}, `${formatLabels[variant.format] || 'Format'}${variant.option ? ` · ${variant.option}` : ''}`),
+                                h('span', {}, variantLabel(variant)),
                                 h('strong', {}, variant.available === false ? 'Not offered'
                                     : variant.purchasable === true && Number(variant.price) > 0 ? money(variant.price) : 'Enquiries welcome')))),
                         h('p', { className: 'editor-format-note' }, 'One photograph is reused for every format. Books are edited in the separate Books entry.'))))),

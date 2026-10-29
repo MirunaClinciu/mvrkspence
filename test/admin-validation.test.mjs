@@ -95,6 +95,62 @@ test('one photograph can supply several separately priced sizes and product form
     assert.equal(JSON.stringify(data), before, 'validation does not duplicate or transform the uploaded photograph');
 });
 
+test('shirt colour validation permits white, black and legacy omissions but blocks unsupported colours', () => {
+    for (const handler of Object.values(validators())) {
+        for (const color of [undefined, 'white', 'black', ' BLACK ']) {
+            const entry = entryFor({ photographs: [photograph({ variants: [variant({ format: 'tshirt', color })] })] });
+            assert.equal(handler({ entry }), entry.storedData);
+        }
+        for (const color of [null, '', 'red', 3, false, [], {}]) {
+            const shirt = variant({ format: 'tshirt', color });
+            const entry = entryFor({ photographs: [photograph({ variants: [shirt] })] });
+            assert.throws(() => handler({ entry }), /choose White or Black for every T-shirt colour/);
+            assert.equal(entry.writes.count, 0);
+            assert.throws(() => handler({ entry: entryFor(shop([product({ format: 'tshirt', color })])) }), /choose White or Black/);
+        }
+        const print = entryFor({ photographs: [photograph({ variants: [variant({ color: 'red' })] })] });
+        assert.equal(handler({ entry: print }), print.storedData, 'colour is ignored for other formats');
+    }
+});
+
+test('new shirt references include colour and all saved references remain stable after colour edits', () => {
+    for (const handler of Object.values(validators({ crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000000' } }))) {
+        const entry = entryFor({ photographs: [photograph({
+            name: 'A photograph title that is long enough to exceed the reference name limit',
+            variants: [
+                variant({ id: 'permanent-shirt', format: 'tshirt', color: 'white', option: 'M' }),
+                variant({ id: '', format: 'tshirt', color: 'white', option: 'M' }),
+                variant({ id: '', format: 'tshirt', color: 'black', option: 'M' }),
+                variant({ id: '', format: 'tshirt', option: 'L' })
+            ]
+        })] });
+        const saved = handler({ entry }).toJS();
+        const shirts = saved.photographs[0].variants;
+        assert.equal(shirts[0].id, 'permanent-shirt');
+        assert.match(shirts[1].id, /^art-tshirt-white-m-/);
+        assert.match(shirts[2].id, /^art-tshirt-black-m-/);
+        assert.match(shirts[3].id, /^art-tshirt-white-l-/);
+        assert.equal(new Set(shirts.map(shirt => shirt.id)).size, 4);
+        shirts.forEach(shirt => { assert.match(shirt.id, /^[A-Za-z0-9._-]{1,80}$/); });
+        const ids = shirts.map(shirt => shirt.id);
+        shirts[0].color = 'black';
+        const updated = entryFor(saved);
+        assert.equal(handler({ entry: updated }), updated.storedData);
+        assert.deepEqual(updated.storedData.toJS().photographs[0].variants.map(shirt => shirt.id), ids);
+    }
+});
+
+test('CMS exposes separate white and black shirt defaults and optional full-resolution uploads', () => {
+    const config = readFileSync(new URL('../admin/config.yml', import.meta.url), 'utf8');
+    assert.match(config, /format: tshirt\s+color: white\s+option: M/);
+    assert.match(config, /format: tshirt\s+color: black\s+option: M/);
+    assert.match(config, /name: color\s+label: T-shirt colour\s+widget: select\s+required: false\s+default: white/);
+    assert.match(config, /label: White, value: white/);
+    assert.match(config, /label: Black, value: black/);
+    assert.equal((config.match(/name: detailImage, label: Higher-resolution detail image \(optional\), widget: image, choose_url: false, required: false/g) || []).length, 3);
+    assert.match(config, /name: books\s+label: Books\s+file: content\/books\.json/);
+});
+
 test('duplicate photograph references and format SKUs cannot overwrite another listing', () => {
     const duplicatePhoto = entryFor({ photographs: [photograph(), photograph({ variants: [variant({ id: 'different-print' })] })] });
     const duplicateVariant = entryFor({ photographs: [photograph({ variants: [variant(), variant({ format: 'canvas' })] })] });

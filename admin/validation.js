@@ -44,6 +44,13 @@
         }
     }
 
+    function validateTshirtColor(item, label) {
+        if (item.format === 'tshirt' && item.color !== undefined &&
+            (typeof item.color !== 'string' || !['white', 'black'].includes(item.color.trim().toLowerCase()))) {
+            throw new Error(`${label}: choose White or Black for every T-shirt colour.`);
+        }
+    }
+
     function addMissingReferences(data, shop, books, concept) {
         const changes = [];
         const reserved = new Set();
@@ -79,7 +86,13 @@
             assign(data.products, ['products'], 'item', item => item.name);
             assign(data.photographs, ['photographs'], 'photo', item => item.name);
             if (Array.isArray(data.photographs)) data.photographs.forEach((photo, index) => {
-                if (photo) assign(photo.variants, ['photographs', index, 'variants'], 'art', item => `${photo.name || 'artwork'}-${item.format || 'format'}-${item.option || ''}`);
+                if (photo) assign(photo.variants, ['photographs', index, 'variants'], 'art', item => {
+                    if (item.format === 'tshirt') {
+                        const color = item.color === undefined ? 'white' : item.color;
+                        return `tshirt-${color}-${item.option || ''}-${photo.name || 'artwork'}`;
+                    }
+                    return `${photo.name || 'artwork'}-${item.format || 'format'}-${item.option || ''}`;
+                });
             });
         }
         if (books) assign(data.books, ['books'], 'book', item => item.name);
@@ -106,6 +119,7 @@
             const products = data.products === undefined ? [] : data.products;
             uniqueIds(products, /^[A-Za-z0-9._-]{1,80}$/, 'Artwork');
             products.forEach((product, index) => {
+                validateTshirtColor(product, product.name || `Artwork item ${index + 1}`);
                 validatePrice(product, product.name || `Artwork item ${index + 1}`);
             });
             const photographs = data.photographs === undefined ? [] : data.photographs;
@@ -122,6 +136,7 @@
                     if (!['print', 'tshirt', 'framed', 'canvas'].includes(variant.format)) {
                         throw new Error(`${photograph.name}: choose Art print, T-shirt, Framed print or Canvas for every format.`);
                     }
+                    validateTshirtColor(variant, photograph.name);
                     const label = `${photograph.name} (${variant.option || variant.format})`;
                     validatePrice(variant, label, true, 'Enable checkout for this format');
                     allProducts.push(variant);
