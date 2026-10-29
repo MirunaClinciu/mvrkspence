@@ -132,4 +132,7 @@ test('editing tasks link directly to the existing CMS file entries', () => {
     assert.match(html, /id="editor-dashboard"[^>]*hidden inert/);
     assert.ok(!html.includes('type="password"'), 'credential handling belongs to Netlify Identity');
     assert.ok(html.includes('href="/manage/paypal.html"'), 'PayPal setup is available from the signed-in dashboard');
+    assert.match(html, /<meta name="robots" content="noindex, nofollow">/);
+    assert.match(html, /Private administrator access/);
+    assert.ok(html.includes('href="/preview/"'), 'the administrator can open the complete preview without using the public landing page');
 });

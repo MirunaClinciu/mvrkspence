@@ -240,13 +240,6 @@ function renderFooter() {
     footerLinks.className = 'social-links-list';
     footerLinks.setAttribute('aria-label', 'Social links');
     window.MvrkSocialLinks.render(footerLinks, window.siteSettings && window.siteSettings.footerLinks, { reference: true });
-    const adminLabel = window.siteSettings && typeof window.siteSettings.adminLinkLabel === 'string'
-        ? window.siteSettings.adminLinkLabel
-        : 'Admin';
-    const admin = makeElement('a', 'admin-link', adminLabel || 'Admin');
-    admin.href = '/manage/';
-    admin.setAttribute('aria-label', 'Open site administration');
-    copyright.append(makeElement('span', 'footer-separator', ' · '), admin);
     if (footerLinks.children.length) footer.append(footerLinks);
     footer.append(copyright);
     siteFooter.className = 'site-footer';

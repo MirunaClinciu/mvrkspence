@@ -108,7 +108,7 @@ test('every public page uses the same working mobile basket menu and marks its c
     }
 });
 
-test('all public footers use matching social icons, copyright and inline admin access', () => {
+test('public and preview footers keep social icons and copyright without exposing admin links', () => {
     const settings = JSON.parse(readFileSync(new URL('../content/site.json', import.meta.url), 'utf8'));
     let expectedIcons;
     let expectedCopyright;
@@ -125,15 +125,15 @@ test('all public footers use matching social icons, copyright and inline admin a
             expectedCopyright ??= copyright.textContent;
             assert.equal(copyright.textContent, expectedCopyright);
             assert.equal(byClass(footer, 'footer-brand')[0].href, `${prefix}index.html`);
-            const admin = byClass(footer, 'admin-link')[0];
-            assert.equal(admin.href, '/manage/');
-            assert.ok(copyright.contains(admin), 'admin access does not create an extra footer row');
+            assert.equal(byClass(footer, 'admin-link').length, 0);
+            assert.ok(byTag(footer, 'a').every(link => !/^\/(?:manage|admin)(?:\/|$)/.test(link.href)), 'editing access is absent from visitor footers');
+            assert.equal(byClass(footer, 'footer-separator').length, 0, 'there is no orphaned separator');
         }
     }
 });
 
-test('all eight public templates load the shared navigation/footer stylesheet and font', () => {
-    for (const path of ['index.html', 'concept.html', 'artwork.html', 'contact.html', 'preview/index.html', 'preview/concept.html', 'preview/artwork.html', 'preview/contact.html']) {
+test('portfolio templates load the shared navigation/footer stylesheet and font', () => {
+    for (const path of ['concept.html', 'artwork.html', 'contact.html', 'preview/index.html', 'preview/concept.html', 'preview/artwork.html', 'preview/contact.html']) {
         const html = readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
         assert.equal([...html.matchAll(/href="stuff\/site-chrome\.css"/g)].length, 1, path);
         assert.ok(html.indexOf('stuff/site-chrome.css') > html.indexOf('stuff/social-links.css'), path);

@@ -9,6 +9,60 @@
 [functions]
   node_bundler = "esbuild"
 
+# While the portfolio is in preview, old public page addresses show the landing page.
+[[redirects]]
+  from = "/artwork.html"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/artwork"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/concept.html"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/concept"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/contact.html"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/contact"
+  to = "/"
+  status = 302
+  force = true
+
+[[headers]]
+  for = "/preview/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "private, no-store"
+
+[[headers]]
+  for = "/manage/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "private, no-store"
+
 [[headers]]
   for = "/content/*"
   [headers.values]

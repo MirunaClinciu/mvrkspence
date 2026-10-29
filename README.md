@@ -7,17 +7,22 @@ the publishing branch. Automatic updates require the repository connection
 and available production deployment capacity. The included `netlify.toml`
 sets the publish directory and PayPal function directory.
 
-The root URL displays the original portfolio homepage. Home, Concept,
-Artwork & Shop, and Contact are available at
-`https://mvrkspence.com/`. The custom domain is connected to the Netlify site;
-`www.mvrkspence.com` redirects to the main domain. The `/preview/` pages remain
-available for testing. The separate coming-soon page is at `/coming-soon.html`.
-The portfolio homepage keeps the original image-led layout: full-width Book,
-Artwork, and Concept images stacked below the dark navigation.
+The public domain `https://mvrkspence.com/` is configured to show the coming-soon
+page. Squarespace manages the domain registration; Netlify serves the website.
+`www.mvrkspence.com` redirects to the main domain. Existing public Concept,
+Artwork and Contact addresses temporarily redirect to the landing page.
 
-The custom domain serves the portfolio. The shop stays in sandbox mode while
-sample prices and products are being tested. Administrator editing requires
-an invited website account; Netlify hosting-account access is separate.
+The complete portfolio and shop are at `https://mvrkspence.com/preview/`, with
+navigation, basket and payment return links kept within that preview. This is
+an unlisted, shareable preview, not password-protected content. The public
+landing page does not advertise it. Preview pages have noindex headers and
+metadata. The original image-led homepage remains in the preview.
+
+Private editing starts at `https://mvrkspence.com/manage/`. Public footers do
+not link to the administrator. Editing requires an invited Identity account;
+the sign-in page is accessible, and the editing controls and backend actions
+require authentication. Netlify hosting-account access is separate. Keep the
+shop in sandbox mode while sample prices and products are being tested.
 
 The latest hosting check reported a Netlify production deployment pause.
 Editor loading, media uploads and draft saving have been verified, but new
@@ -54,7 +59,7 @@ To enable the editor:
    ready. Publishing commits the content to GitHub. Confirm that the Netlify
    deployment succeeds before expecting the live website to change.
 
-The editor controls the separate `/coming-soon.html` page, shared site name/description/logo,
+The editor controls the public coming-soon page (also at `/coming-soon.html`), shared site name/description/logo,
 browser icon, navigation, footer, all page copy and images, contact/social
 links, journal posts, and shop settings/products. Open **PayPal payments** from
 the website dashboard to enter both the Client ID and Secret directly, choose

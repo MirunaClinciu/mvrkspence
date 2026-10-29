@@ -5,17 +5,44 @@
   "logoAlt": "Mvrk Spence",
   "favicon": "/stuff/img/Iconlogo.png",
   "navigation": [
-    { "label": "Home", "page": "index.html" },
-    { "label": "Concept", "page": "concept.html" },
-    { "label": "Artwork", "page": "artwork.html" },
-    { "label": "Contact", "page": "contact.html" }
+    {
+      "label": "Home",
+      "page": "index.html"
+    },
+    {
+      "label": "Concept",
+      "page": "concept.html"
+    },
+    {
+      "label": "Artwork",
+      "page": "artwork.html"
+    },
+    {
+      "label": "Contact",
+      "page": "contact.html"
+    }
   ],
   "footerText": "mvrkspence",
   "footerLinks": [
-    { "platform": "instagram", "label": "Instagram", "url": "https://www.instagram.com/mvrkspence/" },
-    { "platform": "facebook", "label": "Facebook", "url": "https://www.facebook.com/mvrkspence/" },
-    { "platform": "email", "label": "Email", "url": "mvrkspence@gmail.com" },
-    { "platform": "buymeacoffee", "label": "Buy Me a Coffee", "url": "https://buymeacoffee.com/mvrkspence" }
-  ],
-  "adminLinkLabel": "Admin"
+    {
+      "platform": "instagram",
+      "label": "Instagram",
+      "url": "https://www.instagram.com/mvrkspence/"
+    },
+    {
+      "platform": "facebook",
+      "label": "Facebook",
+      "url": "https://www.facebook.com/mvrkspence/"
+    },
+    {
+      "platform": "email",
+      "label": "Email",
+      "url": "mvrkspence@gmail.com"
+    },
+    {
+      "platform": "buymeacoffee",
+      "label": "Buy Me a Coffee",
+      "url": "https://buymeacoffee.com/mvrkspence"
+    }
+  ]
 }

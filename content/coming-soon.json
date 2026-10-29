@@ -3,7 +3,6 @@
   "logoAlt": "Mvrk Spence",
   "favicon": "/stuff/img/Iconlogo.png",
   "message": "Coming soon",
-  "previewLabel": "Preview the website",
-  "previewLink": "/preview/",
-  "footerText": "Mvrk Spence"
+  "footerText": "Mvrk Spence",
+  "intro": "A new collection of photography, art and stories is on its way."
 }

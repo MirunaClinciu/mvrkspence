@@ -7,68 +7,21 @@
   <meta name="author" content="Mvrk Spence">
   <meta name="theme-color" content="#080808">
   <title id="page-title">Mvrk Spence | Coming soon</title>
-  <link id="site-favicon" rel="icon" href="stuff/img/Iconlogo.png" type="image/png">
-  <link rel="stylesheet" href="stuff/social-links.css">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      display: grid;
-      min-width: 320px;
-      min-height: 100vh;
-      place-items: center;
-      margin: 0;
-      padding: 32px 20px;
-      background: #080808;
-      color: #fff;
-      font-family: Inter, Arial, Helvetica, sans-serif;
-      text-align: center;
-    }
-    main { width: min(100%, 520px); }
-    img {
-      display: block;
-      width: min(100%, 340px);
-      max-height: 190px;
-      object-fit: contain;
-      margin: 0 auto 42px;
-    }
-    p {
-      margin: 0 0 32px;
-      color: #bc2f31;
-      font-size: clamp(1.05rem, 3vw, 1.35rem);
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-    }
-    a {
-      display: inline-block;
-      padding: 12px 20px;
-      border: 1px solid #777;
-      color: #ddd;
-      font-size: 0.9rem;
-      text-decoration: none;
-      transition: border-color 160ms ease, color 160ms ease;
-    }
-    a:hover, a:focus-visible { border-color: #bc2f31; color: #fff; }
-    footer {
-      position: fixed;
-      right: 20px;
-      bottom: 18px;
-      left: 20px;
-      color: #737373;
-      font-size: 0.75rem;
-    }
-    footer a { padding: 0; border: 0; color: #999; font-size: inherit; }
-  </style>
+  <script src="/stuff/identity-redirect.js"></script>
+  <link rel="canonical" href="/">
+  <link id="site-favicon" rel="icon" href="/stuff/img/Iconlogo.png" type="image/png">
+  <link rel="stylesheet" href="/stuff/social-links.css">
+  <link rel="stylesheet" href="/stuff/coming-soon.css">
 </head>
 <body>
-  <main>
-    <img id="coming-soon-logo" src="stuff/img/logo.png" alt="Mvrk Spence">
-    <p id="coming-soon-message">Coming soon</p>
-    <a id="coming-soon-link" href="/preview/">Preview the website</a>
+  <main id="page-content">
+    <img id="coming-soon-logo" src="/stuff/img/logo.png" alt="Mvrk Spence">
+    <h1 id="coming-soon-message">Coming soon</h1>
+    <p id="coming-soon-intro">A new collection of photography, art and stories is on its way.</p>
     <nav id="coming-soon-socials" class="social-links-list coming-soon-socials" aria-label="Social links" hidden></nav>
   </main>
-  <footer>© <span id="year"></span> <span id="coming-soon-footer">Mvrk Spence</span> · <a href="/manage/">Admin</a></footer>
-  <script src="stuff/social-links.js" defer></script>
-  <script src="stuff/coming-soon.js" defer></script>
+  <footer>© <span id="year"></span> <span id="coming-soon-footer">Mvrk Spence</span></footer>
+  <script src="/stuff/social-links.js" defer></script>
+  <script src="/stuff/coming-soon.js" defer></script>
 </body>
 </html>

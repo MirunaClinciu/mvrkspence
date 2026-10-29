@@ -35,7 +35,7 @@ async function loadComingSoonContent() {
         }
         if (typeof content.logoAlt === 'string') logo.alt = content.logoAlt;
         setText('coming-soon-message', content.message);
-        setText('coming-soon-link', content.previewLabel);
+        setText('coming-soon-intro', content.intro);
         setText('coming-soon-footer', content.footerText);
         if (typeof settings.siteName === 'string' && settings.siteName.trim()) {
             document.getElementById('page-title').textContent = `${settings.siteName.trim()} | ${content.message || 'Coming soon'}`;
@@ -48,14 +48,9 @@ async function loadComingSoonContent() {
             favicon.href = `/${content.favicon.replace(/^\/+/, '')}`;
         }
 
-        const previewLink = document.getElementById('coming-soon-link');
-        if (typeof content.previewLink === 'string') {
-            const link = new URL(content.previewLink, window.location.origin);
-            if (link.origin === window.location.origin) previewLink.href = link.href;
-        }
     } catch (error) {
         console.error('Unable to load coming-soon page content.', error);
     }
 }
 
-if (!redirectIdentityEmailAction()) loadComingSoonContent();
+if (!window.MvrkIdentityRedirecting && !redirectIdentityEmailAction()) loadComingSoonContent();

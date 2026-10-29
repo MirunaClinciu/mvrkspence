@@ -64,14 +64,29 @@ test('portfolio entry leaves normal anchors and empty Identity tokens in place',
     }
 });
 
-test('both home entrypoints process Identity fragments before deferred site bootstrap', () => {
-    for (const [path, prefix] of [['index.html', '/'], ['preview/index.html', '/preview/']]) {
+test('landing and preview process Identity fragments before their deferred content bootstrap', () => {
+    for (const [path, bootstrap] of [['index.html', '/stuff/coming-soon.js'], ['preview/index.html', 'stuff/site.js']]) {
         const html = readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
         const scripts = [...html.matchAll(/<script\b([^>]*)\bsrc="([^"]+)"([^>]*)>/g)];
-        const redirectIndex = scripts.findIndex(match => match[2] === 'stuff/identity-redirect.js');
-        const bootstrapIndex = scripts.findIndex(match => match[2] === 'stuff/site.js');
+        const redirectIndex = scripts.findIndex(match => match[2].endsWith('stuff/identity-redirect.js'));
+        const bootstrapIndex = scripts.findIndex(match => match[2] === bootstrap);
         assert.ok(redirectIndex >= 0 && bootstrapIndex > redirectIndex, `${path} handles email links before the site`);
         assert.doesNotMatch(scripts[redirectIndex][0], /\b(?:async|defer)\b/, 'Identity redirect runs during head parsing');
-        assert.match(html, new RegExp(`<body data-page="home" data-site-prefix="${prefix}">`));
+        if (path.startsWith('preview/')) assert.ok(html.includes('data-site-prefix="/preview/"'));
+        else assert.ok(html.includes('id="coming-soon-message"'));
+    }
+});
+
+test('public landing does not advertise editing or preview routes, while the complete preview remains available', () => {
+    for (const path of ['index.html', 'coming-soon.html']) {
+        const html = readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+        assert.doesNotMatch(html, /<a\b[^>]*href="\/(?:manage|admin|preview)/);
+        assert.doesNotMatch(html, /src="(?:\/)?stuff\/(?:site|shop)\.js"/);
+        assert.ok(html.includes('id="coming-soon-socials"'));
+    }
+    for (const page of ['index', 'artwork', 'concept', 'contact']) {
+        const html = readFileSync(new URL(`../preview/${page}.html`, import.meta.url), 'utf8');
+        assert.ok(html.includes('data-site-prefix="/preview/"'));
+        assert.ok(html.includes('name="robots" content="noindex, nofollow, noarchive"'));
     }
 });

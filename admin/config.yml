@@ -63,7 +63,6 @@ collections:
                   - { label: Other link, value: link }
               - { name: label, label: Link name, widget: string, hint: 'The accessible name for the icon, such as Instagram or Facebook.' }
               - { name: url, label: Profile URL or email address, widget: string, hint: 'For social profiles, paste the complete https:// address. For Email, enter name@example.com; mailto:name@example.com also works.', pattern: [ '^(?![\s\S]*\s)(?:https://[^\s]+|(?:mailto:)?[^\s@]+@[^\s@]+\.[^\s@]+)$', 'Enter a complete https:// profile URL or email address, without spaces.' ] }
-          - { name: adminLinkLabel, label: Admin footer link text, widget: string, required: false }
       - name: coming-soon
         label: Coming soon page
         file: content/coming-soon.json
@@ -73,8 +72,7 @@ collections:
           - { name: logoAlt, label: Logo description, widget: string }
           - { name: favicon, label: Browser tab icon, widget: image, choose_url: false, hint: "Choose an image to upload a file or pick from your library. Replace image changes it. To remove a whole photo or artwork, use Remove on its list item." }
           - { name: message, label: Main message, widget: string }
-          - { name: previewLabel, label: Preview link text, widget: string }
-          - { name: previewLink, label: Preview link URL, widget: string }
+          - { name: intro, label: Short message below the heading, widget: text, required: false }
           - { name: footerText, label: Footer text, widget: string }
 
   - name: pages
