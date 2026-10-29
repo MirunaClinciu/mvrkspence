@@ -143,11 +143,15 @@ test('public and preview footers keep social icons and copyright without exposin
             assert.ok(byTag(footer, 'a').every(link => !/^\/(?:manage|admin)(?:\/|$)/.test(link.href)), 'editing access is absent from visitor footers');
             assert.equal(byClass(footer, 'footer-separator').length, 0, 'there is no orphaned separator');
             const policies = byClass(footer, 'footer-policy-links')[0];
-            assert.equal(policies.getAttribute('aria-label'), 'Shop policies');
-            assert.deepEqual(byTag(policies, 'a').map(link => link.href), [
-                '/policies/#terms-and-conditions', '/policies/#refunds', '/policies/#delivery',
-                '/policies/#privacy-and-security', '/policies/#secure-checkout', '/policies/#accepted-payment-methods'
-            ]);
+            if (page === 'artwork') {
+                assert.equal(policies.getAttribute('aria-label'), 'Shop policies');
+                assert.deepEqual(byTag(policies, 'a').map(link => link.href), [
+                    '/policies/#terms-and-conditions', '/policies/#refunds', '/policies/#delivery',
+                    '/policies/#privacy-and-security', '/policies/#secure-checkout', '/policies/#accepted-payment-methods'
+                ]);
+            } else {
+                assert.equal(policies, undefined, `${page} has no shop policy links`);
+            }
         }
     }
 });

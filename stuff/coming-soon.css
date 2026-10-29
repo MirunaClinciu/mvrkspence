@@ -10,8 +10,5 @@ h1 { margin: 0 0 20px; color: #e35b60; font-size: clamp(1.3rem, 5vw, 2rem); font
 .coming-soon-socials a:hover { color: #e35b60; }
 a:focus-visible { outline: 2px solid #e35b60; outline-offset: 5px; }
 footer { width: 100%; padding-top: 24px; color: #93918d; font-size: .8rem; }
-.coming-soon-policies { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 22px; max-width: 1000px; margin: 14px auto 0; }
-.coming-soon-policies a { display: inline-flex; min-height: 44px; align-items: center; color: #bfbdb9; text-decoration: underline; text-underline-offset: 3px; }
-.coming-soon-policies a:hover { color: #fff; }
 @media (max-width: 360px) { body { padding-inline: 20px; } h1 { letter-spacing: .14em; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }

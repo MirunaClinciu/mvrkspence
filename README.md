@@ -88,7 +88,8 @@ when the collection exceeds the page size. Change **Items per shop page** in
 **Photographs & shop settings** (nine by default). Photograph formats stay
 together, and browsing does not remove items already in the basket.
 
-Shop policies are at `/policies/`, linked from visitor footers and the basket.
+Shop policies are at `/policies/`, linked only from the Artwork & Shop footer
+and its basket.
 Open **Website setup > Shop policies & seller details** to edit the five policies,
 payment-method image and wording, seller identity, returns address, delivery
 arrangements and privacy information. These are explicitly editable drafts;

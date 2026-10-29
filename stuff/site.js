@@ -163,7 +163,7 @@ function renderModal() {
         <div id="cart-items-container"></div>
         <p class="cart-shipping" id="cart-shipping-row" hidden>Shipping <strong id="cart-shipping-amount"></strong></p>
         <p class="cart-total">Total <strong id="cart-total-amount">0.00</strong></p>
-        <p class="checkout-policies">Please read our <a href="/policies/#terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>, <a href="/policies/#refunds" target="_blank" rel="noopener noreferrer">Refund Policy</a> and <a href="/policies/#delivery" target="_blank" rel="noopener noreferrer">Delivery Policy</a> before ordering. See <a href="/policies/#privacy-and-security" target="_blank" rel="noopener noreferrer">Privacy and Security</a>, <a href="/policies/#secure-checkout" target="_blank" rel="noopener noreferrer">Secure Checkout Policy</a> and <a href="/policies/#accepted-payment-methods" target="_blank" rel="noopener noreferrer">Accepted Payment Methods</a>. Policy links open in a new tab.</p>
+        ${page === 'artwork' ? '<p class="checkout-policies">Please read our <a href="/policies/#terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>, <a href="/policies/#refunds" target="_blank" rel="noopener noreferrer">Refund Policy</a> and <a href="/policies/#delivery" target="_blank" rel="noopener noreferrer">Delivery Policy</a> before ordering. See <a href="/policies/#privacy-and-security" target="_blank" rel="noopener noreferrer">Privacy and Security</a>, <a href="/policies/#secure-checkout" target="_blank" rel="noopener noreferrer">Secure Checkout Policy</a> and <a href="/policies/#accepted-payment-methods" target="_blank" rel="noopener noreferrer">Accepted Payment Methods</a>. Policy links open in a new tab.</p>' : ''}
         <div id="checkout-payment-methods" hidden>
           <section class="payment-method" aria-labelledby="card-payment-heading">
             <h3 id="card-payment-heading">Debit or credit card</h3>
@@ -242,18 +242,21 @@ function renderFooter() {
     footerLinks.setAttribute('aria-label', 'Social links');
     window.MvrkSocialLinks.render(footerLinks, window.siteSettings && window.siteSettings.footerLinks, { reference: true });
     if (footerLinks.children.length) footer.append(footerLinks);
-    const policies = makeElement('nav', 'footer-policy-links');
-    policies.setAttribute('aria-label', 'Shop policies');
-    for (const [anchor, label] of [
-        ['terms-and-conditions', 'Terms and Conditions'], ['refunds', 'Refund Policy'],
-        ['delivery', 'Delivery Policy'], ['privacy-and-security', 'Privacy and Security'],
-        ['secure-checkout', 'Secure Checkout Policy'], ['accepted-payment-methods', 'Accepted Payment Methods']
-    ]) {
-        const link = makeElement('a', '', label);
-        link.href = `/policies/#${anchor}`;
-        policies.append(link);
+    footer.append(copyright);
+    if (page === 'artwork') {
+        const policies = makeElement('nav', 'footer-policy-links');
+        policies.setAttribute('aria-label', 'Shop policies');
+        for (const [anchor, label] of [
+            ['terms-and-conditions', 'Terms and Conditions'], ['refunds', 'Refund Policy'],
+            ['delivery', 'Delivery Policy'], ['privacy-and-security', 'Privacy and Security'],
+            ['secure-checkout', 'Secure Checkout Policy'], ['accepted-payment-methods', 'Accepted Payment Methods']
+        ]) {
+            const link = makeElement('a', '', label);
+            link.href = `/policies/#${anchor}`;
+            policies.append(link);
+        }
+        footer.append(policies);
     }
-    footer.append(copyright, policies);
     siteFooter.className = 'site-footer';
     siteFooter.replaceChildren(footer);
 }
