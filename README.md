@@ -24,11 +24,12 @@ the sign-in page is accessible, and the editing controls and backend actions
 require authentication. Netlify hosting-account access is separate. Keep the
 shop in sandbox mode while sample prices and products are being tested.
 
-The latest hosting check reported a Netlify production deployment pause.
-Editor loading, media uploads and draft saving have been verified, but new
-published content will not appear live until the hosting owner resolves the
-deployment restriction. Uploading an image or saving a draft alone does not
-confirm that Netlify has deployed a new website version.
+Production publishing was restored on 29 October 2026. The coming-soon landing,
+full preview, private admin entry and public redirects are live and verified.
+Uploading an image or saving a draft alone does not publish that edit: use the
+editor's Publish action and confirm that Netlify finishes the deployment.
+If production credits are exhausted again, editing may still work while new
+deployments wait for production capacity to be restored.
 
 The simple website manager is at `/manage/`. It provides sign-in and direct
 editing options for home pictures, Concept and journal, photographs and their product formats, separate books,
